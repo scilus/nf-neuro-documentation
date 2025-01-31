@@ -43,4 +43,9 @@ export default defineConfig({
       gfm: true,
     }),
   ],
+  content: {
+    collections: {
+      docs: {} // Define docs collection
+    }
+  }
 });

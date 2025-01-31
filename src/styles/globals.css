@@ -302,6 +302,19 @@ table tr:last-child td:last-child {
   @apply appearance-none w-3 h-3 border-2 border-Red rounded-sm bg-background checked:bg-Green checked:border-0 mr-2;
 }
 
+/* Add these styles in your global CSS to handle the rotation */
+.transition-transform {
+  transition: transform 0.3s ease-in-out;
+}
+
+.rotate-90 {
+  transform: rotate(90deg);
+}
+
+nav a {
+  text-decoration: none;
+}
+
 /* ===== pattern ===== */
 .pattern {
   --dot-bg: hsl(var(--background));

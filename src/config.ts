@@ -15,10 +15,10 @@ export const LOCALE = {
 } as const;
 
 export const menu_items: { title: string; href: string }[] = [
-  // {
-  //   title: "Home",
-  //   href: "/",
-  // },
+  {
+    title: "Home",
+    href: "/",
+  },
 ];
 
 // Just works with top-level folders and files. For files, don't add extension as it looks for the slug, and not the file name.
