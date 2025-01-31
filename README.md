@@ -1,7 +1,7 @@
 <h1 align="center">nf-neuro Documentation</h1>
 
 <p align="center">
-<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/HYP3R00T/CelestialDocs/deploy.yml?style=for-the-badge&labelColor=363a4f&color=8aadf4">
+<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/scilus/nf-neuro-documentation/deploy.yml?style=for-the-badge&labelColor=363a4f&color=8aadf4">
 </p>
 
 ## How to contribute to the `nf-neuro` documentation.
