@@ -83,7 +83,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.generate-module.outputs.module_name }}
-          path: modules/${{ steps.generate-module.outputs.module_name }}.md
+          path: modules/
 
   markdown-subworkflows:
     name: markdown-subworkflows
@@ -121,7 +121,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.subworkflow }}
-          path: subworkflows/${{ matrix.subworkflow }}.md
+          path: subworkflows/
 
   collect-markdown:
     name: collect-markdown
