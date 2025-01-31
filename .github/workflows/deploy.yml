@@ -69,7 +69,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v5.4.0
         with:
-          python-version: 3.10
+          python-version: "3.10"
           cache: pip
       - name: generate-modules
         id: generate-module
@@ -111,7 +111,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v5.4.0
         with:
-          python-version: 3.10
+          python-version: "3.10"
           cache: pip
       - name: generate-subworkflows
         run: |
