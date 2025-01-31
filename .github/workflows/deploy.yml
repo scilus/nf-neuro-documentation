@@ -71,16 +71,19 @@ jobs:
         with:
           cache: pip
       - name: generate-modules
+        id: generate-module
         run: |
-          mkdir -p $(dirname ${{ matrix.module }})
+          mkdir -p modules
+          MODULE=$(echo ${{ matrix.module }} | sed 's/\//_/g')
           python .github/workflows/convert_module_yml_to_md.py \
             nf-neuro/modules/nf-neuro/${{ matrix.module }}/meta.yml \
-            ${{ matrix.module }}.md
+            modules/${MODULE}.md
+            echo "module_name=$MODULE" >> $GITHUB_OUTPUT
       - name: Pack into artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.module }}
-          path: ${{ matrix.module }}.md
+          name: ${{ steps.generate-module.outputs.module_name }}
+          path: modules/${{ steps.generate-module.outputs.module_name }}.md
 
   markdown-subworkflows:
     name: markdown-subworkflows
