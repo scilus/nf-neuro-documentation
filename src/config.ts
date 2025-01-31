@@ -17,13 +17,13 @@ export const LOCALE = {
 export const menu_items: { title: string; href: string }[] = [
   {
     title: "Home",
-    href: "/",
+    href: `${import.meta.env.BASE_URL}`,
   },
 ];
 
 // Just works with top-level folders and files. For files, don't add extension as it looks for the slug, and not the file name.
 export const side_nav_menu_order: string[] = [
-  "getting-started",
+  `${import.meta.env.BASE_URL}/getting-started`,
   "guides",
   "guides/basic_environment",
   "guides/setup_environment",
