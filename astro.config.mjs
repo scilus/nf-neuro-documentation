@@ -7,7 +7,8 @@ import mdx from "@astrojs/mdx";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://alexvcaron.github.io/dummy-boy",
+  site: "https://alexvcaron.github.io",
+  base: "/dummy-boy",
   markdown: {
     smartypants: true,
     syntaxHighlight: "shiki",
@@ -28,7 +29,7 @@ export default defineConfig({
       [ 
         rehypeAstroRelativeMarkdownLinks,
         {
-          base: "/dummy-boy/",
+          base: "/dummy-boy",
         },
        ],
     ],
