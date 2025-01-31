@@ -1,15 +1,15 @@
 {
-  "name": "celestialdocs",
+  "name": "nf-neuro-documentation",
   "type": "module",
   "version": "0.0.5",
-  "description": "Documentation template using AstroJS and Shadcn",
+  "description": "Documentation for the nf-neuro project",
   "author": "Hyperoot <rajesh@hyperoot.dev>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HYP3R00T/CelestialDocs"
+    "url": "https://github.com/scilus/nf-neuro-documentation"
   },
-  "homepage": "https://celestialdocs.hyperoot.dev/",
+  "homepage": "https://nf-neuro.scilus.github.io",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
