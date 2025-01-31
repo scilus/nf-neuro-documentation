@@ -11,55 +11,10 @@ permissions:
   id-token: write
 
 jobs:
-  collect-components:
-    name: collect-components
-    runs-on: ubuntu-latest
-    outputs:
-      paths: ${{ steps.changes.outputs.components }}
-      modules: ${{ steps.components.outputs.modules }}
-      subworkflows: ${{ steps.components.outputs.subworkflows }}
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-        with:
-          repository: scilus/nf-neuro
-          ref: main
-          fetch-depth: 0
-
-      - name: List changed components
-        id: changes
-        uses: adamrtalbot/detect-nf-test-changes@7c8be3ffd0d6538312b363c8c949dbbf5f26c3dd # v0.0.4
-        with:
-          head: main
-          base: 11305b48cb4d0351a43898057b3306f073f78e90 # Initial nf-neuro commit, so we catch everything
-          n_parents: 2
-
-      - name: Separate modules and subworkflows
-        id: components
-        run: |
-          echo modules=$(echo '${{ steps.changes.outputs.components }}' | jq -c '. | map(select(contains("modules"))) | map(gsub("modules/nf-neuro/"; ""))') >> $GITHUB_OUTPUT
-          echo subworkflows=$(echo '${{ steps.changes.outputs.components }}' | jq '. | map(select(contains("subworkflows"))) | map(gsub("subworkflows/nf-neuro/"; ""))') >> $GITHUB_OUTPUT
-
-      - name: debug
-        run: |
-          echo ${{ steps.components.outputs.modules }}
-          echo ${{ steps.components.outputs.subworkflows }}
-
-  markdown-modules:
+  markdown-components:
     name: markdown-modules
-    needs: [collect-components]
-    if: ${{ (needs.collect-components.outputs.modules != '[]') }}
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        module: ["${{ fromJson(needs.collect-components.outputs.modules) }}"]
     steps:
-      - name: Checkout website code
-        uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            .github/workflows/convert_module_yml_to_md.py
-          sparse-checkout-cone-mode: false
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           repository: scilus/nf-neuro
@@ -74,99 +29,34 @@ jobs:
       - name: Install dependencies
         run: |
           pip install pyyaml
-      - name: generate-modules
+      - name: Generate markdown
         id: generate-module
         run: |
-          mkdir -p modules
-          MODULE=$(echo ${{ matrix.module }} | sed 's/\//_/g')
-          python .github/workflows/convert_module_yml_to_md.py \
-            nf-neuro/modules/nf-neuro/${{ matrix.module }}/meta.yml \
-            modules/${MODULE}.md
-            echo "module_name=$MODULE" >> $GITHUB_OUTPUT
+          mkdir -p modules/ subworkflows/
+          python nf-neuro/docs/astro/convert_modules.yml nf-neuro/modules/nf-neuro modules/
+          python nf-neuro/docs/astro/convert_subworkflows.yml nf-neuro/subworkflows/nf-neuro subworkflows/
       - name: Pack into artifact
         uses: actions/upload-artifact@v4
         with:
-          name: module-${{ steps.generate-module.outputs.module_name }}
-          path: modules/
-
-  markdown-subworkflows:
-    name: markdown-subworkflows
-    needs: [collect-components]
-    if: ${{ (needs.collect-components.outputs.subworkflows != '[]') }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        subworkflow: ["${{ fromJson(needs.collect-components.outputs.subworkflows) }}"]
-    steps:
-      - name: Checkout website code
-        uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            .github/workflows/convert_subworkflow_yml_to_md.py
-          sparse-checkout-cone-mode: false
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-        with:
-          repository: scilus/nf-neuro
-          ref: main
-          path: nf-neuro
-          fetch-depth: 0
-      - name: Setup python
-        uses: actions/setup-python@v5.4.0
-        with:
-          python-version: "3.10"
-          cache: pip
-      - name: Install dependencies
-        run: |
-          pip install pyyaml
-      - name: generate-subworkflows
-        run: |
-          mkdir -p subworkflows
-          python .github/workflows/convert_subworkflow_yml_to_md.py \
-            nf-neuro/subworkflows/nf-neuro/${{ matrix.subworkflow }}/meta.yml \
-            subworkflows/${{ matrix.subworkflow }}.md
-      - name: Pack into artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: subworkflow-${{ matrix.subworkflow }}
-          path: subworkflows/
-
-  collect-markdown:
-    name: collect-markdown
-    needs: [markdown-modules, markdown-subworkflows]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Merge modules markdown artifacts
-        uses: actions/upload-artifact/merge@v4
-        with:
-          name: modules-markdown
-          pattern: 'module-*'
-          delete-merged: true
-      - name: Merge subworkflows markdown artifacts
-        uses: actions/upload-artifact/merge@v4
-        with:
-          name: subworkflows-markdown
-          pattern: 'subworkflow-*'
-          delete-merged: true
+          name: markdown
+          path: |
+            modules/
+            subworkflows/
 
   build:
-    needs: collect-markdown
+    needs: markdown-components
     runs-on: ubuntu-latest
     steps:
       - name: Checkout website code
         uses: actions/checkout@v4
+        with:
+          repository: AlexVCaron/nf-neuro-documentation
 
-      - name: Download modules markdown
+      - name: Download components markdown
         uses: actions/download-artifact@v4
         with:
-          name: modules-markdown
-          path: src/content/docs/modules
-
-      - name: Download subworkflows markdown
-        uses: actions/download-artifact@v4
-        with:
-          name: subworkflows-markdown
-          path: src/content/docs/subworkflows
+          name: markdown
+          path: src/content/docs/
 
       - name: Install, build, and upload your site
         uses: withastro/action@v2
