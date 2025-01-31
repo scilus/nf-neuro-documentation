@@ -6,19 +6,19 @@ const items = await generateSidebar();
 
 <nav class="sidebar">
   <ul>
-    {items.map((item) => (
+    {items.map((item: { children: any[]; label: unknown; href: string | URL | null | undefined; }) => (
       <li>
         {item.children ? (
           <details>
             <summary>{item.label}</summary>
             <ul>
-              {item.children.map((child) => (
+              {item.children.map((child: { children: any[]; label: unknown; href: string | URL | null | undefined; }) => (
                 <li>
                   {child.children ? (
                     <details>
                       <summary>{child.label}</summary>
                       <ul>
-                        {child.children.map((subchild) => (
+                        {child.children.map((subchild: { href: string | URL | null | undefined; label: unknown; }) => (
                           <li><a href={subchild.href}>{subchild.label}</a></li>
                         ))}
                       </ul>

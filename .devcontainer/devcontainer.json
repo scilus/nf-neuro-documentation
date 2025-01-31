@@ -10,7 +10,7 @@
             "onAutoForward": "openPreview"
         }
     },
-    "postCreateCommand": "pnpm install",
+    "postCreateCommand": "pnpm install && pnpm build",
     "waitFor": "postCreateCommand",
     "postAttachCommand": {
         "Server": "pnpm start --host"
