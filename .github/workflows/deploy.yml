@@ -82,7 +82,7 @@ jobs:
       - name: Pack into artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.generate-module.outputs.module_name }}
+          name: module-${{ steps.generate-module.outputs.module_name }}
           path: modules/
 
   markdown-subworkflows:
@@ -120,7 +120,7 @@ jobs:
       - name: Pack into artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.subworkflow }}
+          name: subworkflow-${{ matrix.subworkflow }}
           path: subworkflows/
 
   collect-markdown:
@@ -128,11 +128,17 @@ jobs:
     needs: [markdown-modules, markdown-subworkflows]
     runs-on: ubuntu-latest
     steps:
-      - name: Merge markdown artifacts
-        id: merge
+      - name: Merge modules markdown artifacts
         uses: actions/upload-artifact/merge@v4
         with:
-          name: components-markdown
+          name: modules-markdown
+          pattern: 'module-*'
+          delete-merged: true
+      - name: Merge subworkflows markdown artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: subworkflows-markdown
+          pattern: 'subworkflow-*'
           delete-merged: true
 
   build:
@@ -142,15 +148,22 @@ jobs:
       - name: Checkout website code
         uses: actions/checkout@v4
 
-      - name: Download components markdown
+      - name: Download modules markdown
         uses: actions/download-artifact@v4
         with:
-          name: components-markdown
-          path: src/content/docs
+          name: modules-markdown
+          path: src/content/docs/modules
+
+      - name: Download subworkflows markdown
+        uses: actions/download-artifact@v4
+        with:
+          name: subworkflows-markdown
+          path: src/content/docs/subworkflows
 
       - name: Install, build, and upload your site
         uses: withastro/action@v2
         with:
+          node-version: 22
           package-manager: pnpm@latest
 
   deploy:
