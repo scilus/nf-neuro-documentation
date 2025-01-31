@@ -21,10 +21,10 @@ interface Props {
 const { variant, title, icon: CustomIcon } = Astro.props as Props;
 
 const variantClasses: Record<Variant, string> = {
-  info: "border-Blue bg-Blue text-background hover:bg-Blue cursor-default",
+  info: "border-[#5dade2] bg-[#5dade2] text-background hover:bg-Blue cursor-default",
   warning:
-    "border-Orange bg-Orange text-background hover:bg-Orange cursor-default",
-  danger: "border-Red bg-Red text-background hover:bg-Red cursor-default",
+    "border-[#f39c12] bg-[#f39c12] text-background hover:bg-Orange cursor-default",
+  danger: "border-[#ff2b2b] bg-[#ff2b2b] text-background hover:bg-Red cursor-default",
   success:
     "border-Green bg-Green text-background hover:bg-Green cursor-default",
 };
@@ -52,12 +52,12 @@ const alertClasses = variantClasses[validVariant];
 ---
 
 <div class="callout py-2 w-full">
-  <Alert className={`flex flex-row items-start gap-2 ${alertClasses}`}>
+  <Alert className={`flex flex-row items-start gap-3 ${alertClasses}`}>
     <Button variant="ghost" size="icon" className=`${alertClasses}`>
-      <Icon className="h-[1.2rem] w-[1.2rem]" />
+      <Icon className="h-[1.rem] w-[1.8rem]" />
     </Button>
     <div>
-      <AlertTitle className="m-0">{alertTitle}</AlertTitle>
+      <AlertTitle className="l-0">{alertTitle}</AlertTitle>
       <AlertDescription>
         <slot />
       </AlertDescription>

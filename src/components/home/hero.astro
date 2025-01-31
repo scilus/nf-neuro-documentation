@@ -2,7 +2,8 @@
 const { class: className } = Astro.props;
 import { Image } from "astro:assets";
 import { Button } from "@/components/ui/button";
-import KittyAstronaut from "@/assets/KittyAstronaut.svg";
+import nfneurolight from "@/assets/images/nf-neuro_logo_light.svg";
+import nfneurodark from "@/assets/images/nf-neuro_logo_dark.svg";
 ---
 
 <div
@@ -18,7 +19,7 @@ import KittyAstronaut from "@/assets/KittyAstronaut.svg";
       <h1
         class="text-pretty text-center md:text-left md:text-4xl lg:text-5xl tracking-wide"
       >
-        Elevate Your Documentation with a <i class="text-primary">Celestial</i> Touch
+        Build efficient neuroimaging pipelines with <i class="text-primary">nf-neuro</i>
       </h1>
       <a href="/getting-started" class="py-4">
         <Button size="lg" className="rounded-lg">
@@ -27,9 +28,25 @@ import KittyAstronaut from "@/assets/KittyAstronaut.svg";
       </a>
     </div>
     <div class="hidden md:flex w-1/2 justify-center align-middle">
-      <Image src={KittyAstronaut} alt="404" />
+      <Image id="light-logo" src={nfneurolight} alt="404" />
+      <Image id="dark-logo" src={nfneurodark} alt="404" />
     </div>
   </div>
 </div>
 
-<style></style>
+<style>
+  #dark-logo {
+    display: none;
+  }
+  #light-logo {
+    display: block;
+  }
+
+  :global(.dark) #dark-logo {
+    display: block;
+  }
+
+  :global(.dark) #light-logo {
+    display: none;
+  }
+</style>

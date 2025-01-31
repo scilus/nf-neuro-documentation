@@ -2,11 +2,11 @@ import type { SocialObjects } from "@/lib/types";
 
 export const SITE = {
   website: "https://hyperoot.dev", // replace this with your deployed domain
-  author: "HYP3R00T",
-  desc: "Documentation template using Astro and Shadcn",
-  title: "CelestialDocs",
+  author: "Sherbrooke's Connectivity Imaging Lab (SCIL)",
+  desc: "Documentation for nf-neuro",
+  title: "nf-neuro",
   ogImage: "og-image.jpg",
-  repo: "https://github.com/HYP3R00T/CelestialDocs",
+  repo: "https://github.com/scilus/nf-neuro",
 };
 
 export const LOCALE = {
@@ -25,11 +25,15 @@ export const menu_items: { title: string; href: string }[] = [
 export const side_nav_menu_order: string[] = [
   "getting-started",
   "guides",
-  "guides/pages",
-  "guides/table-of-contents",
-  "guides/sidebar-navigation",
-  "custom-components",
-  "reference",
+  "guides/basic_environment",
+  "guides/setup_environment",
+  "guides/nfneuro_devcontainer",
+  "guides/modules",
+  "guides/subworkflows",
+  "guides/prototyping",
+  "guides/production",
+  "modules",
+  "subworkflows",
 ];
 
 // Don't delete anything. You can use 'true' or 'false'.
@@ -49,7 +53,7 @@ export const docconfig = {
 export const Socials: SocialObjects = [
   {
     name: "Github",
-    href: "https://github.com/HYP3R00T/",
+    href: "https://github.com/scilus/nf-neuro",
     linkTitle: ` ${SITE.title} on Github`,
     active: true,
   },
@@ -75,7 +79,7 @@ export const Socials: SocialObjects = [
     name: "Mail",
     href: "mailto:rajesh@hyperoot.dev",
     linkTitle: `Send an email to ${SITE.title}`,
-    active: true,
+    active: false,
   },
   {
     name: "Twitter",
@@ -141,6 +145,6 @@ export const Socials: SocialObjects = [
     name: "Mastodon",
     href: "https://mastodon.social/@hyp3r00t",
     linkTitle: `${SITE.title} on Mastodon`,
-    active: true,
+    active: false,
   },
 ];

@@ -14,9 +14,9 @@
     --card-foreground: 234 16% 35%; /* Text */
     --border: 223 16% 83%; /* Surface 0 */
     --input: 223 16% 83%; /* Surface 0 */
-    --primary: 220 91% 54%; /* Blue */
+    --primary: 144 56% 41%; /* Blue */
     --primary-foreground: 220 23% 95%; /* Base */
-    --secondary: 220 91% 85%; /* Blue Modified */
+    --secondary: 144 56% 66%; /* Blue Modified */
     --secondary-foreground: 234 16% 35%; /* Text */
     --accent: 234 16% 35%; /* Text */
     --accent-foreground: 220 23% 95%; /* Base */
@@ -30,7 +30,7 @@
     --Red: 347 87% 44%;
     --Orange: 22 99% 52%;
     --Yellow: 35 77% 49%;
-    --Green: 109 58% 40%;
+    --Green: 144 56% 41%;
     --Teal: 183 74% 35%;
     --Sky: 197 97% 46%;
     --Blue: 220 91% 54%;
@@ -47,9 +47,9 @@
     --card-foreground: 227 68% 88%;
     --border: 230 19% 26%;
     --input: 230 19% 26%;
-    --primary: 220 83% 75%;
+    --primary: 144 56% 41%;
     --primary-foreground: 232 23% 18%;
-    --secondary: 220 83% 85%;
+    --secondary: 144 56% 51%;
     --secondary-foreground: 232 23% 18%;
     --accent: 227 68% 88%;
     --accent-foreground: 232 23% 18%;
@@ -62,7 +62,7 @@
     --Red: 351 74% 73%;
     --Orange: 21 86% 73%;
     --Yellow: 40 70% 78%;
-    --Green: 105 48% 72%;
+    --Green: 144 56% 41%;
     --Teal: 171 47% 69%;
     --Sky: 189 59% 73%;
     --Blue: 220 83% 75%;
@@ -76,6 +76,39 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@font-face {
+  font-family: 'Harding Text Web';
+  src: url('/fonts/HardingTextWeb-Regular') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Harding Text Web';
+  src: url('/fonts/HardingTextWebBoldRegular') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'MonaspaceKrypton';
+  src: url('/fonts/MonaspaceKrypton-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'MonaspaceKrypton';
+  src: url('/fonts/MonaspaceKrypton-Bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+}
+
+:root {
+  --font-sans: 'Harding Text Web', 'sans-serif';
+  --font-mono: 'MonaspaceKrypton', 'monospace';
 }
 
 h1 {
@@ -119,19 +152,70 @@ ol {
 }
 
 table {
-  @apply w-full;
+  width: 100%;
+  border-collapse: separate; /* Change from 'collapse' to 'separate' */
+  border-spacing: 0; /* Ensures no extra spacing */
+  border-radius: 2px; /* Adjust for more/less rounding */
+  overflow: hidden; /* Ensures corners are rounded */
+  border: 0px solid grey;
 }
 
-tr {
-  @apply m-0 border-t p-0 even:bg-muted;
+th, td {
+  padding: 10px;
+  border: 0px solid #ddd;
+  text-align: left;
 }
 
+/* First row (header) - dark grey */
 th {
-  @apply border px-4 py-2 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right;
+  background-color: #71cc97; /* Dark grey */
+  color: white; /* Ensure text is readable */
+  font-weight: bold;
 }
 
-td {
-  @apply border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right;
+/* Alternating row colors */
+tr:nth-child(odd) {
+  background-color: white;
+}
+
+tr:nth-child(even) {
+  background-color: #f0f0f0; /* Light grey */
+}
+
+/* For dark mode */
+html.dark th, td {
+  border: 0px solid #2a2a2a; /* Dark grey */
+}
+
+html.dark table th {
+  background-color: #71cc97; /* Dark grey */
+  color: black;
+  font-weight: bold;
+}
+
+html.dark table tr:nth-child(odd) {
+  background-color: #2a2a2a; /* Dark grey */
+}
+
+html.dark table tr:nth-child(even) {
+  background-color: #1e1e1e; /* Darker grey */
+}
+
+/* Apply rounding specifically to table corners */
+table th:first-child {
+  border-top-left-radius: 8px;
+}
+
+table th:last-child {
+  border-top-right-radius: 8px;
+}
+
+table tr:last-child td:first-child {
+  border-bottom-left-radius: 8px;
+}
+
+table tr:last-child td:last-child {
+  border-bottom-right-radius: 8px;
 }
 
 .lead {
@@ -180,6 +264,7 @@ td {
 
 .astro-code {
   @apply p-4 mt-2;
+  font-size: 0.875rem; /* Example font size, adjust as needed */
 }
 
 /* ===== markdown ===== */
@@ -190,6 +275,7 @@ td {
 
 .prose code:not(.astro-code code) {
   @apply bg-popover text-popover-foreground py-1 px-2 rounded;
+  font-size: 0.875rem; /* Example font size, adjust as needed */
 }
 
 .prose h1 {

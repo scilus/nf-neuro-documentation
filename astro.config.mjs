@@ -1,5 +1,6 @@
 import { defineConfig } from "astro/config";
 import rehypeExternalLinks from "rehype-external-links";
+import rehypeAstroRelativeMarkdownLinks from "astro-rehype-relative-markdown-links";
 import tailwind from "@astrojs/tailwind";
 import react from "@astrojs/react";
 import mdx from "@astrojs/mdx";
@@ -24,6 +25,12 @@ export default defineConfig({
           target: "_blank",
         },
       ],
+      [ 
+        rehypeAstroRelativeMarkdownLinks,
+        {
+          base: "/",
+        },
+       ],
     ],
     prefetch: true,
   },

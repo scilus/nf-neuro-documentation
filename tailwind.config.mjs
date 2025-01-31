@@ -109,8 +109,8 @@ module.exports = {
       },
     },
     fontFamily: {
-      sans: ["Montserrat", ...defaultTheme.fontFamily.sans],
-      mono: ["'JetBrains Mono'", ...defaultTheme.fontFamily.mono],
+      sans: ['Harding', 'sans-serif'],
+      mono: ['MonaspaceKrypton', 'monospace'],
     },
   },
   plugins: [require("tailwindcss-animate")],
