@@ -33,8 +33,8 @@ jobs:
         id: generate-module
         run: |
           mkdir -p modules/ subworkflows/
-          python nf-neuro/docs/astro/convert_modules.yml nf-neuro/modules/nf-neuro modules/
-          python nf-neuro/docs/astro/convert_subworkflows.yml nf-neuro/subworkflows/nf-neuro subworkflows/
+          python nf-neuro/docs/astro/convert_modules.py nf-neuro/modules/nf-neuro modules/
+          python nf-neuro/docs/astro/convert_subworkflows.py nf-neuro/subworkflows/nf-neuro subworkflows/
       - name: Pack into artifact
         uses: actions/upload-artifact@v4
         with:
