@@ -1,7 +1,7 @@
 import type { SocialObjects } from "@/lib/types";
 
 export const SITE = {
-  website: "https://hyperoot.dev", // replace this with your deployed domain
+  website: "https://nf-neuro.scilus.github.io", // replace this with your deployed domain
   author: "Sherbrooke's Connectivity Imaging Lab (SCIL)",
   desc: "Documentation for nf-neuro",
   title: "nf-neuro",
