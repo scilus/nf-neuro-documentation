@@ -7,7 +7,7 @@ import mdx from "@astrojs/mdx";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://alexvcaron.github.io",
+  site: "https://alexvcaron.github.io/dummy-boy",
   base: "/dummy-boy",
   markdown: {
     smartypants: true,
