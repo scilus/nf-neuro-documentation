@@ -7,7 +7,7 @@ import mdx from "@astrojs/mdx";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://nf-neuro.scilus.github.io",
+  site: "https://alexvcaron.github.io/dummy-boy",
   markdown: {
     smartypants: true,
     syntaxHighlight: "shiki",
