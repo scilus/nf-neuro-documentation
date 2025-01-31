@@ -58,13 +58,14 @@ def main():
         keywords += f"| {keyword} |\n"
 
     # Table for the tools section.
-    tools = "|  | Description | Homepage |\n"
-    tools += "|------|-------------|----------|\n"
+    tools = "|  | Description | Homepage | DOI |\n"
+    tools += "|------|-------------|----------|-----|\n"
     for tool in yaml_data['tools']:
         name = next(iter(tool))
         description = tool[name]['description'].replace("\n", " ")
-        homepage = tool[name]['homepage'].replace("\n", " ")
-        tools += f"| {name} | {description} | {homepage} |\n"
+        homepage = tool[name].get('homepage', "").replace("\n", " ")
+        doi = tool[name].get('doi', "").replace("\n", " ")
+        tools += f"| {name} | {description} | {homepage} | {doi} |\n"
 
     # Table for inputs.
     inputs = "|  | Type | Description | Pattern |\n"

@@ -105,6 +105,8 @@ jobs:
         with:
           repository: scilus/nf-neuro
           ref: main
+          path: nf-neuro
+          fetch-depth: 0
       - name: Setup python
         uses: actions/setup-python@v5.4.0
         with:
