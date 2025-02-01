@@ -24,7 +24,7 @@ const { class: className } = Astro.props;
         return (
           <li class="w-full">
             <a
-              href={`/${item.slug}`}
+              href={`${import.meta.env.BASE_URL}/${item.slug}`}
               class={`${className}  text-sm leading-none w-full`}
             >
               {label}

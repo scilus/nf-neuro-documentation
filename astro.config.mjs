@@ -29,7 +29,7 @@ export default defineConfig({
       [ 
         rehypeAstroRelativeMarkdownLinks,
         {
-          base: "/dummy-boy",
+          base: "/",
         },
        ],
     ],
