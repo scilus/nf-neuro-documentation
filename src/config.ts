@@ -24,16 +24,16 @@ export const menu_items: { title: string; href: string }[] = [
 // Just works with top-level folders and files. For files, don't add extension as it looks for the slug, and not the file name.
 export const side_nav_menu_order: string[] = [
   `${import.meta.env.BASE_URL}/getting-started`,
-  "guides",
-  "guides/basic_environment",
-  "guides/setup_environment",
-  "guides/nfneuro_devcontainer",
-  "guides/modules",
-  "guides/subworkflows",
-  "guides/prototyping",
-  "guides/production",
-  "modules",
-  "subworkflows",
+  `${import.meta.env.BASE_URL}/guides`,
+  `${import.meta.env.BASE_URL}/guides/basic_environment`,
+  `${import.meta.env.BASE_URL}/guides/setup_environment`,
+  `${import.meta.env.BASE_URL}/guides/nfneuro_devcontainer`,
+  `${import.meta.env.BASE_URL}/guides/modules`,
+  `${import.meta.env.BASE_URL}/guides/subworkflows`,
+  `${import.meta.env.BASE_URL}/guides/prototyping`,
+  `${import.meta.env.BASE_URL}/guides/production`,
+  `${import.meta.env.BASE_URL}/modules`,
+  `${import.meta.env.BASE_URL}/subworkflows`
 ];
 
 // Don't delete anything. You can use 'true' or 'false'.

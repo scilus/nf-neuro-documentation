@@ -23,20 +23,20 @@ const { class: className } = Astro.props;
     class="flex space-x-4 justify-between items-center md:items-center md:space-x-0 md:max-w-8xl"
   >
     <div class="font-bold flex flex-row items-center">
-      <a href="/" class="px-4 hidden md:flex no-underline">
+      <a href=`${import.meta.env.BASE_URL}` class="px-4 hidden md:flex no-underline">
         <Button
           client:load
           className="flex gap-2 hover:no-underline text-2xl"
           variant="link"
         >
-          <img id="light-logo" src="/logo-white.svg" alt="Logo" class="w-[2rem] h-[2rem]" />
-          <img id="dark-logo" src="/logo-black.svg" alt="Logo" class="w-[2rem] h-[2rem]" />
+          <img id="light-logo" src=`${import.meta.env.BASE_URL}/logo-white.svg` alt="Logo" class="w-[2rem] h-[2rem]" />
+          <img id="dark-logo" src=`${import.meta.env.BASE_URL}/logo-black.svg` alt="Logo" class="w-[2rem] h-[2rem]" />
           {SITE.title}
         </Button>
       </a>
-      <a href="/" class="px-4 flex md:hidden">
+      <a href=`${import.meta.env.BASE_URL}` class="px-4 flex md:hidden">
         <Button client:load className="" variant="ghost" size="icon">
-          <img src="/logo-white.svg" alt="Logo" class="w-[2rem] h-[2rem]" />
+          <img src=`${import.meta.env.BASE_URL}/logo-white.svg` alt="Logo" class="w-[2rem] h-[2rem]" />
         </Button>
       </a>
       <div class="hidden md:block">
