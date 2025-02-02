@@ -5,6 +5,22 @@ import tailwind from "@astrojs/tailwind";
 import react from "@astrojs/react";
 import mdx from "@astrojs/mdx";
 
+
+const rehypePlugins = [
+  [  rehypeExternalLinks,
+    {
+      target: "_blank",
+    },
+  ],
+  [ 
+    rehypeAstroRelativeMarkdownLinks,
+    {
+      base: "/dummy-boy",
+      collectionBase: false
+    }
+  ]
+];
+
 // https://astro.build/config
 export default defineConfig({
   site: "https://alexvcaron.github.io",
@@ -19,21 +35,7 @@ export default defineConfig({
         dark: "catppuccin-macchiato",
       },
     },
-    rehypePlugins: [
-      [
-        rehypeExternalLinks,
-        {
-          target: "_blank",
-        },
-      ],
-      [ 
-        rehypeAstroRelativeMarkdownLinks,
-        {
-          base: "/dummy-boy",
-          collectionBase: false
-        },
-       ],
-    ],
+    rehypePlugins: rehypePlugins,
     prefetch: true,
   },
   integrations: [
@@ -42,6 +44,7 @@ export default defineConfig({
       applyBaseStyles: false,
     }),
     mdx({
+      rehypePlugins: rehypePlugins,
       gfm: true,
     }),
   ],
