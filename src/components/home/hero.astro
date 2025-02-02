@@ -2,6 +2,7 @@
 const { class: className } = Astro.props;
 import { Image } from "astro:assets";
 import { Button } from "@/components/ui/button";
+import { withBase } from "@/utils";
 import nfneurolight from "@/assets/images/nf-neuro_logo_light.svg";
 import nfneurodark from "@/assets/images/nf-neuro_logo_dark.svg";
 ---
@@ -21,7 +22,7 @@ import nfneurodark from "@/assets/images/nf-neuro_logo_dark.svg";
       >
         Build efficient neuroimaging pipelines with <i class="text-primary">nf-neuro</i>
       </h1>
-      <a href=`${import.meta.env.BASE_URL}/getting-started` class="py-4">
+      <a href={withBase("/getting-started")} class="py-4">
         <Button size="lg" className="rounded-lg">
           <h4 class="text-lg">Get started</h4>
         </Button>

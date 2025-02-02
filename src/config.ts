@@ -1,7 +1,8 @@
 import type { SocialObjects } from "@/lib/types";
+import { BASE, withBase } from '@/utils'
 
 export const SITE = {
-  website: "https://alexvcaron.github.io/dummy-boy", // replace this with your deployed domain
+  website: `https://alexvcaron.github.io${BASE}`, // replace this with your deployed domain
   author: "Sherbrooke's Connectivity Imaging Lab (SCIL)",
   desc: "Documentation for nf-neuro",
   title: "nf-neuro",
@@ -17,23 +18,23 @@ export const LOCALE = {
 export const menu_items: { title: string; href: string }[] = [
   {
     title: "Home",
-    href: `${import.meta.env.BASE_URL}`,
+    href: BASE,
   },
 ];
 
 // Just works with top-level folders and files. For files, don't add extension as it looks for the slug, and not the file name.
 export const side_nav_menu_order: string[] = [
-  `${import.meta.env.BASE_URL}/getting-started`,
-  `${import.meta.env.BASE_URL}/guides`,
-  `${import.meta.env.BASE_URL}/guides/basic_environment`,
-  `${import.meta.env.BASE_URL}/guides/setup_environment`,
-  `${import.meta.env.BASE_URL}/guides/nfneuro_devcontainer`,
-  `${import.meta.env.BASE_URL}/guides/modules`,
-  `${import.meta.env.BASE_URL}/guides/subworkflows`,
-  `${import.meta.env.BASE_URL}/guides/prototyping`,
-  `${import.meta.env.BASE_URL}/guides/production`,
-  `${import.meta.env.BASE_URL}/modules`,
-  `${import.meta.env.BASE_URL}/subworkflows`
+  withBase("/getting-started"),
+  withBase("/guides"),
+  withBase("/guides/basic_environment"),
+  withBase("/guides/setup_environment"),
+  withBase("/guides/nfneuro_devcontainer"),
+  withBase("/guides/modules"),
+  withBase("/guides/subworkflows"),
+  withBase("/guides/prototyping"),
+  withBase("/guides/production"),
+  withBase("/modules"),
+  withBase("/subworkflow")
 ];
 
 // Don't delete anything. You can use 'true' or 'false'.

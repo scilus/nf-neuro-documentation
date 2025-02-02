@@ -1,6 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+
+@theme {
+  --font-sans: 'Fjalla One', 'sans-serif';
+  --font-mono: 'Monaspace Krypton', 'monospace';
+}
+
 
 @layer base {
   :root {
@@ -76,39 +83,6 @@
   body {
     @apply bg-background text-foreground;
   }
-}
-
-@font-face {
-  font-family: 'Harding Text Web';
-  src: url('/fonts/HardingTextWeb-Regular') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Harding Text Web';
-  src: url('/fonts/HardingTextWebBoldRegular') format('truetype');
-  font-weight: bold;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'MonaspaceKrypton';
-  src: url('/fonts/MonaspaceKrypton-Regular.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'MonaspaceKrypton';
-  src: url('/fonts/MonaspaceKrypton-Bold.woff') format('woff');
-  font-weight: bold;
-  font-style: normal;
-}
-
-:root {
-  --font-sans: 'Harding Text Web', 'sans-serif';
-  --font-mono: 'MonaspaceKrypton', 'monospace';
 }
 
 h1 {

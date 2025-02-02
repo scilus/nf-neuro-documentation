@@ -1,6 +1,7 @@
 ---
 import { capitalizeFirstLetter } from "@/lib/utils";
 import type { SideNavMenuProps } from "@/lib/types";
+import { withBase } from "@/utils";
 
 const { items, level } = Astro.props as SideNavMenuProps;
 const pathname: string = new URL(Astro.request.url).pathname;
@@ -24,7 +25,7 @@ const { class: className } = Astro.props;
         return (
           <li class="w-full">
             <a
-              href={`${import.meta.env.BASE_URL}/${item.slug}`}
+              href={withBase("/" + item.slug)}
               class={`${className}  text-sm leading-none w-full`}
             >
               {label}
