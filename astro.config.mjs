@@ -11,13 +11,6 @@ const rehypePlugins = [
     {
       target: "_blank",
     },
-  ],
-  [ 
-    rehypeAstroRelativeMarkdownLinks,
-    {
-      base: "/dummy-boy",
-      collectionBase: false
-    }
   ]
 ];
 
