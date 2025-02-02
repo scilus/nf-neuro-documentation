@@ -2,7 +2,13 @@
 title: Getting Started
 hide_breadcrumbs: true
 ---
+
 import Callout from "@/components/Callout.astro";
+import { Image } from 'astro:assets';
+import cli_modules_list from '../../assets/images/cli/nfcore_modules_list.png';
+import cli_modules_info from '../../assets/images/cli/nfcore_modules_info.png';
+import cli_subworkflows_list from '../../assets/images/cli/nfcore_subworkflows_list.png';
+import cli_subworkflows_info from '../../assets/images/cli/nfcore_subworkflows_info.png';
 
 ## Getting Started
 
@@ -49,47 +55,28 @@ With your environment ready, you can list `nf-neuro` modules available with a si
 ```bash
 nf-core modules list remote
 ```
-<p>
-  <figure align="center">
-    <img src="/src/assets/images/cli/nfcore_modules_list.png" alt="nf-core modules list remote"/>
-  </figure> 
-</p>
+<Image src={cli_modules_list} alt="nf-core modules list remote"/>
 
 The same goes for `subworkflows` :
 
 ```bash
 nf-core subworkflows list remote
 ```
-
-<p> 
-  <figure align="center">
-    <img src="/src/assets/images/cli/nfcore_subworkflows_list.png" alt="nf-core subworkflows list remote"/>
-  </figure>
-</p> 
+<Image src={cli_subworkflows_list} alt="nf-core subworkflows list remote"/>
 
 To get more information on a module (say `denoising/nlmeans`) use :
 
 ```bash
 nf-core modules info denoising/nlmeans
 ```
-
-<p>
-  <figure align="center">
-    <img src="src/assets/images/cli/nfcore_modules_info.png" alt="nf-core modules info"/>
-  </figure>
-</p> 
+<Image src={cli_modules_info} alt="nf-core modules info <category/module>"/>
 
 or for a subworkflow (say `preproc_t1`) :
 
 ```bash
 nf-core subworkflows info preproc_t1
 ```
-
-<p>
-  <figure align="center">
-    <img src="src/assets/images/cli/nfcore_subworkflows_info.png" alt="nf-core subworkflows info"/>
-  </figure>
-</p> 
+<Image src={cli_subworkflows_info} alt="nf-core subworkflows info <subworkflow>"/>
 
 <Callout variant="info" title="Info">
   Additionally, `VS Code` users can install the [nextflow extension](https://marketplace.visualstudio.com/items?itemName=nextflow.nextflow),
