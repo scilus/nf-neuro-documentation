@@ -1,0 +1,29 @@
+{
+    "name": "nf-neuro documentation",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "forwardPorts": [4321],
+    "portsAttributes": {
+        "4321": {
+            "label": "Application",
+            "onAutoForward": "openPreview"
+        }
+    },
+    "postCreateCommand": "pnpm install && pnpm build",
+    "waitFor": "postCreateCommand",
+    "postAttachCommand": {
+        "Server": "pnpm start --host"
+    },
+    "customizations": {
+        "codespaces": {
+            "openFiles": ["src/pages/index.astro"]
+        },
+        "vscode": {
+            "extensions": [
+                "astro-build.astro-vscode",
+                "esbenp.prettier-vscode"
+            ]
+        }
+    }
+}

@@ -1,97 +1,40 @@
 ---
 import { capitalizeFirstLetter } from "@/lib/utils";
 import type { SideNavMenuProps } from "@/lib/types";
+import { withBase } from "@/utils";
 
 const { items, level } = Astro.props as SideNavMenuProps;
 const pathname: string = new URL(Astro.request.url).pathname;
 
 // To pass the tailwindcss classes to the astro component
 const { class: className } = Astro.props;
-
-function handleToggle(event) {
-  const details = event.currentTarget;
-  const ul = details.querySelector("ul");
-  if (details.open) {
-    ul.style.maxHeight = ul.scrollHeight + "px";
-    setTimeout(() => (ul.style.overflow = "visible"), 300);
-  } else {
-    ul.style.maxHeight = "0px";
-    ul.style.overflow = "hidden";
-  }
-}
 ---
 
 <ul class:list={["list-none m-0", className]}>
   {
     items
       .filter((item) => !item.draft)
-      .map((item, index) => {
+      .map((item) => {
         const label = item.title
           ? capitalizeFirstLetter(item.title)
           : capitalizeFirstLetter(item.slug.split("/").pop() || "");
         const className = `
-          ${level === 0 ? "font-semibold" : "text-muted-foreground"}
-          ${pathname === "/" + item.slug ? "text-primary" : "no-underline"}
-          hover:text-primary
+        ${level === 0 ? "font-semibold" : "text-muted-foreground"}
+        ${pathname === "/" + item.slug ? "text-primary" : "no-underline"}
         `.trim();
-        const hasChildren = item.children.length > 0;
-
         return (
           <li class="w-full">
-            {hasChildren ? (
-              <details
-                class="w-full group"
-                open={item.children.some(child => pathname.startsWith("/" + child.slug))}
-                on:toggle={handleToggle}
-              >
-                <summary class="w-full cursor-pointer flex items-center justify-between text-sm group-hover:text-primary">
-                  <span class={className}>{label}</span>
-                  <span class="transition-transform duration-300 ease-in-out group-open:rotate-180">
-                    ▼
-                  </span>
-                </summary>
-                <ul
-                  class="list-none m-0 pl-0 ml-0 overflow-hidden transition-max-height duration-500 ease-in-out"
-                  ref={el => animateDropdown(el)}
-                >
-                  <Astro.self
-                    items={item.children}
-                    level={level + 1}
-                  />
-                </ul>
-              </details>
-            ) : (
-              <a
-                href={`/${item.slug}`}
-                class={`${className} text-sm leading-none w-full block py-2`}
-              >
-                {label}
-              </a>
+            <a
+              href={withBase("/" + item.slug)}
+              class={`${className}  text-sm leading-none w-full`}
+            >
+              {label}
+            </a>
+            {item.children.length > 0 && (
+              <Astro.self items={item.children} level={level + 1} />
             )}
           </li>
         );
       })
   }
 </ul>
-
-<script>
-  function animateDropdown(el) {
-    if (!el) return;
-    
-    // Initially hide all children and set max-height transition
-    el.style.maxHeight = el.scrollHeight + "px";
-    const children = el.querySelectorAll('li');
-    children.forEach((child, index) => {
-      child.style.opacity = "0"; // Start with hidden items
-      child.style.transition = "opacity 500ms ease-in-out"; // Fade effect
-      child.style.transitionDelay = `${index * 100}ms`; // Staggered delay for each child
-    });
-
-    // Once max-height transition is done, begin fading in items one by one
-    setTimeout(() => {
-      children.forEach((child) => {
-        child.style.opacity = "1"; // Fade in the items
-      });
-    }, 300); // Delay the fade-in to allow max-height transition to finish
-  }
-</script>

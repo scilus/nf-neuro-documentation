@@ -1,12 +1,8 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Trigger the workflow every time you push to the `main` branch
-  # Using a different branch name? Replace `main` with your branch's name
-  push:
-    branches: [main]
-  # Allows you to run this workflow manually from the Actions tab on GitHub.
   workflow_dispatch:
+  workflow_call:
 
 # Allow this job to clone the repo and create a page deployment
 permissions:
@@ -15,17 +11,58 @@ permissions:
   id-token: write
 
 jobs:
-  build:
+  markdown-components:
+    name: markdown-modules
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout your repository using git
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          repository: scilus/nf-neuro
+          ref: main
+          path: nf-neuro
+          fetch-depth: 0
+      - name: Setup python
+        uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.10"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          pip install pyyaml
+      - name: Generate markdown
+        id: generate-module
+        run: |
+          mkdir -p modules/ subworkflows/
+          python nf-neuro/docs/astro/convert_modules.py nf-neuro/modules/nf-neuro modules/
+          python nf-neuro/docs/astro/convert_subworkflows.py nf-neuro/subworkflows/nf-neuro subworkflows/
+      - name: Pack into artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: markdown
+          path: |
+            modules/
+            subworkflows/
+
+  build:
+    needs: markdown-components
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout website code
         uses: actions/checkout@v4
+        with:
+          repository: scilus/nf-neuro-documentation
+
+      - name: Download components markdown
+        uses: actions/download-artifact@v4
+        with:
+          name: markdown
+          path: src/content/docs/
+
       - name: Install, build, and upload your site
         uses: withastro/action@v2
         with:
-          # path: . # The root location of your Astro project inside the repository. (optional)
-          # node-version: 20 # The specific version of Node that should be used to build your site. Defaults to 20. (optional)
-          package-manager: pnpm@latest # The Node package manager that should be used to install dependencies and build your site. Automatically detected based on your lockfile. (optional)
+          node-version: 22
+          package-manager: pnpm@latest
 
   deploy:
     needs: build

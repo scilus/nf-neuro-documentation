@@ -4,12 +4,17 @@ hide_breadcrumbs: true
 ---
 
 import Callout from "@/components/Callout.astro";
+import { withBase } from '@/utils';
+
+export function pagelink (text, url) {
+  return <a href={withBase(url)}>{text}</a>
+}
 
 ## Environment configuration
 
 To get setup fast, we recommend using **VS Code** and the `development container`. Follow the
-[guide here](nfneuro_devcontainer) to do so. You can also use
-[those instructions](basic_environment) to setup yourself manually.
+{pagelink("guide here", "/guides/nfneuro_devcontainer")} to do so. You can also use
+{pagelink("those instructions", "/guides/basic_environment")} to setup yourself manually.
 
 ## Basic prototype pipeline creation
 
