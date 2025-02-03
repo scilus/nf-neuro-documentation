@@ -4,6 +4,11 @@ hide_breadcrumbs: true
 ---
 
 import Callout from "@/components/Callout.astro";
+import { withBase } from '@/utils';
+
+export function pagelink (text, url) {
+  return <a href={withBase(url)}>{text}</a>
+}
 
 ## Adding a new subworkflow to nf-neuro
 
@@ -140,7 +145,7 @@ don't need to specify them all. Provide at least 3 relevant `keywords` and list 
 
 ### Create test cases
 
-Adding tests to your subworkflow is near identical to modules. For detailed instructions, please see [here](modules#create-test-cases).
+Adding tests to your subworkflow is near identical to modules. For detailed instructions, please see {pagelink("here", "/guides/modules#create-test-cases")}.
 
 <Callout variant="warning" title="Important">
 Take attention to the `wording` ! As the section refers to `modules` and `process`, carefully
