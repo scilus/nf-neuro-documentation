@@ -2,7 +2,7 @@ import type { SocialObjects } from "@/lib/types";
 import { BASE, withBase } from '@/utils'
 
 export const SITE = {
-  website: `https://alexvcaron.github.io${BASE}`, // replace this with your deployed domain
+  website: `https://scilus.github.io${BASE}`,
   author: "Sherbrooke's Connectivity Imaging Lab (SCIL)",
   desc: "Documentation for nf-neuro",
   title: "nf-neuro",
@@ -11,8 +11,8 @@ export const SITE = {
 };
 
 export const LOCALE = {
-  lang: "en", // html lang code. Set this empty and default will be "en"
-  langTag: ["en-EN"], // BCP 47 Language Tags. Set this empty [] to use the environment default
+  lang: "en",
+  langTag: ["en-EN"],
 } as const;
 
 export const menu_items: { title: string; href: string }[] = [
@@ -22,7 +22,6 @@ export const menu_items: { title: string; href: string }[] = [
   },
 ];
 
-// Just works with top-level folders and files. For files, don't add extension as it looks for the slug, and not the file name.
 export const side_nav_menu_order: string[] = [
   withBase("/getting-started"),
   withBase("/guides"),
@@ -37,8 +36,6 @@ export const side_nav_menu_order: string[] = [
   withBase("/subworkflow")
 ];
 
-// Don't delete anything. You can use 'true' or 'false'.
-// These are global settings
 export const docconfig = {
   hide_table_of_contents: false,
   hide_breadcrumbs: false,

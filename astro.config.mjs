@@ -15,8 +15,8 @@ const rehypePlugins = [
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://alexvcaron.github.io",
-  base: "/dummy-boy",
+  site: "https://scilus.github.io",
+  base: "/nf-neuro",
   markdown: {
     smartypants: true,
     syntaxHighlight: "shiki",
