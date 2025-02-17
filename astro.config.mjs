@@ -1,13 +1,22 @@
 import { defineConfig } from "astro/config";
 import rehypeExternalLinks from "rehype-external-links";
-import rehypeAstroRelativeMarkdownLinks from "astro-rehype-relative-markdown-links";
 import tailwind from "@astrojs/tailwind";
 import react from "@astrojs/react";
 import mdx from "@astrojs/mdx";
 
+
+const rehypePlugins = [
+  [  rehypeExternalLinks,
+    {
+      target: "_blank",
+    },
+  ]
+];
+
 // https://astro.build/config
 export default defineConfig({
-  site: "https://nf-neuro.scilus.github.io",
+  site: "https://scilus.github.io",
+  base: "/nf-neuro",
   markdown: {
     smartypants: true,
     syntaxHighlight: "shiki",
@@ -18,20 +27,7 @@ export default defineConfig({
         dark: "catppuccin-macchiato",
       },
     },
-    rehypePlugins: [
-      [
-        rehypeExternalLinks,
-        {
-          target: "_blank",
-        },
-      ],
-      [ 
-        rehypeAstroRelativeMarkdownLinks,
-        {
-          base: "/",
-        },
-       ],
-    ],
+    rehypePlugins: rehypePlugins,
     prefetch: true,
   },
   integrations: [
@@ -40,6 +36,7 @@ export default defineConfig({
       applyBaseStyles: false,
     }),
     mdx({
+      rehypePlugins: rehypePlugins,
       gfm: true,
     }),
   ],
