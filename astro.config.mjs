@@ -16,7 +16,7 @@ const rehypePlugins = [
 // https://astro.build/config
 export default defineConfig({
   site: "https://scilus.github.io",
-  base: "/nf-neuro",
+  base: "/nf-neuro-documentation",
   markdown: {
     smartypants: true,
     syntaxHighlight: "shiki",
