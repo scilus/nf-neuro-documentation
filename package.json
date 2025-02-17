@@ -9,7 +9,7 @@
     "type": "git",
     "url": "https://github.com/scilus/nf-neuro-documentation"
   },
-  "homepage": "https://nf-neuro.scilus.github.io",
+  "homepage": "https://scilus.github.io/nf-neuro",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
