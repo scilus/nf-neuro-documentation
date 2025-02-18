@@ -32,6 +32,10 @@ npm run dev
 ```
 Open the `localhost` link that appeared in your terminal, it should open a browser with a preview of the website. Each time you save a file, the website will update according to your changes.
 
+## Github pages deployment
+
+The documentation website is deployed on [scilus.github.io/nf-neuro](https://scilus.github.io/nf-neuro). To do so, the `github workflow` must run on the [main nf-neuro repository](https://github.com/scilus/nf-neuro). It is achieved using the `deploy.yml` **callable workflow** located in this repository and calling it in workflows located in the nf-neuro main repository. This way, the workflow runs in the correct context and can deploy correctly to the prescribed endpoint.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
