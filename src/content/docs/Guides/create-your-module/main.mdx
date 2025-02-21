@@ -1,0 +1,394 @@
+---
+title: Editing the template
+hide_breadcrumbs: true
+---
+
+import Callout from "@/components/Callout.astro";
+import { withBase } from '@/utils';
+
+export function pagelink (text, url) {
+  return <a href={withBase(url)}>{text}</a>
+}
+
+## Edit the template
+
+You have successfully generated a template for your new module, but it does not perform
+the desired task just yet. To make it usable, you will need to modify multiple sections,
+add quality control (QC) steps, and add some tests to make sure it executes properly.
+If you want an example of a module prior to completing this tutorial, you can take
+a look at any modules in the [`nf-neuro`](https://github.com/scilus/nf-neuro.git)
+GitHub repository, as they should already follow all guidelines. Otherwise, you
+can follow this tutorial and we will work step-by-step to complete your new module!
+
+In your newly created module folder, you will see a `main.nf` file. It contains
+all of the inputs, outputs, container, and code specification to run your module.
+Let's modify the generated template to fit your needs:
+
+### Specifying a container for your module 
+
+1. First, remove the line `conda "YOUR-TOOL-HERE"`. As of now, we do not use
+conda to package softwares, so we don't need it.
+
+2. Second, you need to specify a [docker](https://hub.docker.com/) container to
+use when running your module. Simply replace the existing containers to match
+the container you selected. For example, if you want to use the `scilus`
+container, do these replacements:
+
+  `depot.galaxyproject.org...` &DoubleLongRightArrow; `https://scil.usherbrooke.ca/containers/scilus_<version>.sif`
+
+  `biocontainers/YOUR-TOOL-HERE` &DoubleLongRightArrow; `scilus/scilus:<version>`
+
+Once those two steps are completed, the first few lines of your modules should
+look similar to this:
+
+```groovy
+process DENOISING_NLMEANS {
+    tag "$meta.id"
+    label 'process_medium'
+
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://scil.usherbrooke.ca/containers/scilus_2.0.2.sif' :
+        'scilus/scilus:2.0.2' }"
+```
+
+### Specifying the input files for your module
+
+Now, let's define your inputs in the `input:` section :
+
+<Callout variant="info" title="Info">
+  Each line below `input:` defines an input channel containing one or more files or values
+  for the process. A channel can be made of one (`val`, `path`, ...) elements or
+  a combinaison of multiples grouped within a `tuple` item. For a comprehensive overview
+  of what channels are and how they are define, see the
+  [Nextflow hello tutorials](https://training.nextflow.io/latest/hello_nextflow/02_hello_channels/)
+  or the [Nextflow documentation](https://www.nextflow.io/docs/latest/channel.html) on channel factories.
+</Callout>
+
+  > When possible, add all optional arguments (not data !) to `task.ext` instead of
+  > listing them in the `input:` section (see {pagelink ("this section",
+  > "/guides/create-your-module/arguments")}
+  > for more information).
+
+  - One important concept is that all inputs are assumed to be
+  **`required`** by default. However, some inputs CAN be optional (not
+  officially supported by nextflow). You simply have to pass it an empty list
+  `[]` for Nextflow to consider its value as empty, but correct.
+
+<Callout variant="info" title="Info">
+  If you decide an input `path` value is optional, add `/* optional, value = [] */`
+  aside the parameter (e.g. f1 is optional, so `path(f1) /* optional, value = [] */`
+  or even `tuple val(meta), path(f1) /* optional, value = [] */, path(...` are valid
+  syntaxes). This will make input lines long, but they will be detectable. When we
+  can define input tuples on multiple lines, we'll deal with this.
+</Callout>
+
+  - To avoid losing track of files that are related to a subject, you need to
+  tag them using `tuple val(meta), ...`. The `meta` value here represents 
+  subject-specific metadata (minimally its ID) that will prevent mixing
+  files between subjects at runtime.
+
+Now that we glanced over the relevant concept for the inputs definition, let's
+set up our inputs for the module `denoising/nlmeans`. Since the module will
+perform denoising on an image, we need an input for the image. Since we don't
+want to mix them up between subjects, we will also use the `meta` value as 
+described above. Additionally, we might want to constrain the region to denoise
+using an optional mask input. Combining all of them together should result in
+something similar to this input definition:
+
+```groovy
+    input:
+    tuple val(meta), path(image), path(mask) /* optional, value = [] */
+```
+
+### Defining the output files from your module
+ 
+The next section let's you define which files you want to output from your modules.
+
+Similarly to the input section, all lines defines an output channel. If you want
+to assign specific files a single subject, use the `tuple val(meta), ...` prior
+to defining your output files. Here are mandatory rules that you need to respect
+in your outputs definition:
+
+    - File extensions **MUST ALWAYS** be defined (e.g. `path("*{nii,nii.gz}")`).
+    - Each line **MUST** contain only a single output file. If your module outputs
+      more than one file, add lines! 
+    - Each line **MUST** use `emit: <name>` to make its results reusable in other
+      modules and tag using a **relevant name**. Once your module is up and running,
+      you will be able to fetch its output using `DENOISING_NLMEANS.out.<name>`.
+    - You should always output a `path "versions.yml"` file containing the softwares'
+      versions. This will be collected throughout a pipeline run to keep track of
+      which version were used for processing your data. See
+      [this section](#defining-softwares-versions) for
+      how to define this `versions.yml` file.
+    - Optional outputs are possible and supported, simply add `optional: true`
+      after the `emit: <name>` statement.
+
+By following those conventions, the output section of your module should be similar
+to this:
+
+```groovy
+    output:
+    tuple val(meta), path("*_denoised.nii.gz")      , emit: image
+    path "versions.yml"                             , emit: versions
+```
+
+### Jumping in the script section
+
+It is now time to dig in the `script:` section!
+
+At the beginning of this section, you will see a `def args = ...` definition.
+This is the section where you will unpack all the relevant arguments for your
+module supplied from a `nextflow.config` file ({pagelink ("see this section",
+"/guides/create-your-module/arguments")}).
+For each of those arguments, you will need to unpack them into a `usable variable`. For our
+current denoising module, we could supply a number of coils to the command-line script:
+
+```groovy
+    def ncoils = task.ext.number_of_coils ?: 1
+```
+
+We then can use the variable `ncoils` in the script.
+
+    > At its most simple, a variable is `usable` if its conversion to a string is valid
+    > in the script (e.g. : if a variable can be empty or null, then its conversion to an
+    > empty string must be valid in the sense of the script for the variable to be considered
+    > `usable`).
+
+Similarly, if you include an optional input, you will need to unpack it in the same 
+section. Briefly, you will want to obtain an empty string if the optional input is 
+absent, so that the following script runs without issue. This can be done by creating 
+a similar variable as for the argument above:
+
+```groovy
+    if (mask) args += ["--mask $mask"]
+```
+
+If we complete the unpacking of all arguments and optional inputs for the 
+`denoising/nlmeans` module, we should obtain this section:
+
+```groovy
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def ncoils = task.ext.number_of_coils ?: 1
+    def args = ["--processes $task.cpus"]
+    if (mask) args += ["--mask $mask"]
+```
+
+<Callout variant="warning" title="Important">
+If your files are scoped to a single subject, you need to use the `prefix` variable
+to name the scoped output files to the same subject. This is done by extracting
+the ID from the metadata associated with this subject as shown by the
+`def prefix ...` above.
+</Callout>
+
+It is now time to define the operations you want to perform within your module.
+For `denoising/nlmeans`, we want to perform denoising using
+[`scil_denoising_nlmeans.py`](https://scilpy.readthedocs.io/en/latest/scripts/scil_denoising_nlmeans.html).
+We will call the command in the section between `""" """`, which contains all the
+commands that will be run when calling this module. You can fill this section using
+a similar call to the command-line script as you would in your normal terminal shell
+while replacing the normal input/output with the one you previously defined.
+
+```groovy
+script:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def ncoils = task.ext.number_of_coils ?: 1
+    def args = ["--processes $task.cpus"]
+    if (mask) args += ["--mask $mask"]
+
+    """
+    export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+
+    scil_denoising_nlmeans.py $image ${prefix}__denoised.nii.gz $ncoils ${args.join(" ")}
+    """
+```
+
+### Including quality control (QC) steps within your module
+
+When applicable, each module should include its own quality control (QC) steps compatible with the
+[MultiQC](https://docs.seqera.io/multiqc) report. This step should be run only
+if specified in the `nextflow.config` file, using the `ext.run_qc` scope.
+The QC can take different form depending on which processing steps are
+performed within your module.
+Common types are: 
+    - Static image (overlay of labels/segmentation on T1w image, `.{png,jpeg,tiff,...}`),
+    - Dynamic image (dynamic change between pre-post eddy correction, `.{gif,webp}`)
+    - Simple numerical values as either `.{txt,csv,tsv,...}` files.
+    
+Typically, the images are created using the mid slice for all three axes and then
+combined into a mosaic using [ImageMagick](https://imagemagick.org/index.php).
+Below is a code snippet giving general instructions or guidelines for this QC section:
+
+```bash
+    if $run_qc;
+    then
+        # Start by extracting the dimension of your image, then store it into a
+        # single variable for each axis.
+        extract_dim=\$(mrinfo ${prefix}__<image>.nii.gz -size)
+        read sagittal_dim axial_dim coronal_dim <<< "\${extract_dim}"
+
+        # Get the middle slice
+        coronal_dim=\$((\$coronal_dim / 2))
+        axial_dim=\$((\$axial_dim / 2))
+        sagittal_dim=\$((\$sagittal_dim / 2))
+
+        # Set visualization parameters to be applied to all images.
+        viz_params="--display_slice_number --display_lr --size 256 256"
+
+        # Sometimes, it might be useful to normalize the intensities to ensure 
+        # its consistency across images.
+        scil_volume_math.py normalize_max ${prefix}__<image>.nii.gz \
+          ${prefix}__<image>_norm.nii.gz
+
+        # Do the actual screenshotting (adapt to your needs).
+        scil_viz_volume_screenshot.py ${prefix}__<image>_norm.nii.gz \
+          ${prefix}__<image>_coronal.png \${viz_params} --slices \${coronal_dim} \
+          --axis coronal
+        <...>
+
+        # To create mosaics, use [ImageMagick](https://imagemagick.org/index.php).
+        convert ${prefix}_<image>_axial*.png ${prefix}_<image>_coronal*.png \
+          ${prefix}_<image>_saggital*.png +append ${prefix}_<image>_mqc.png
+        
+        # Clean up the intermediate pngs.
+        rm ${prefix}_<image>_axial*.png ${prefix}_<image>_coronal*.png ${prefix}_<image>_saggital*.png
+    fi
+```
+
+For simplicity, we will not add a QC step for the current `denoising/nlmeans` module.
+For more complete example, you can refer to the [`preproc/topup`](https://github.com/scilus/nf-neuro/blob/main/modules/nf-neuro/preproc/topup/main.nf),
+[`preproc/eddy`](https://github.com/scilus/nf-neuro/blob/main/modules/nf-neuro/preproc/eddy/main.nf),
+or [`registration/anattodwi`](https://github.com/scilus/nf-neuro/blob/main/modules/nf-neuro/registration/anattodwi/main.nf).
+
+### Defining softwares' versions
+
+For every modules, it is mandatory to export the versions of the tools used within
+your module to ensure proper tracking of softwares' versions used during processing.
+This is done by exporting the versions into a `versions.yml` file. The code snippet
+generated by the template is already pretty complete, simply fill the middle section
+with the versions of all the softwares used in your modules using the format
+`<name>: <version>`:
+
+```bash
+    cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+        scilpy: \$(pip list | grep scilpy | tr -s ' ' | cut -d' ' -f2)
+    END_VERSIONS
+```
+
+<Callout variant="info" title="Info">
+You can hard-bake the version as a number here, but if possible extract if from
+the dependency dynamically as shown in the example above.
+</Callout>
+
+### Fill the `stub` section
+
+This section might not be as intuitive as the other described above. Basically,
+the stub section represents the code that will be run during a dry-run of your
+module. This is particularly useful when we want to test the chaining of modules
+on the pipeline level or when the module execution takes too long for a proper
+test run. Therefore, for all the reasons above, it is **very important** that this
+section is well defined and mimick as closely as possible the true execution
+defined in the script section, without actually running the command. 
+
+This can be done by performing two quick operations:
+
+1. Call the help of every command line tools used within the `script` section.
+This will ensure that they are available at runtime.
+1. Create empty files for each output you defined. This will mimick the files
+that would be normally generated during a traditionnal run of the module.
+1. Fetch the versions the tools you use the same way you defined them in the `script`
+section (see [this section for more informations](#defining-softwares-versions))
+
+For the `denoising/nlmeans` module, we should then validate that `scil_denoising_nlmeans.py`
+is accessible by calling its help function, then create our output files and export
+the version of our tool:
+
+```groovy
+    stub:
+        def prefix = task.ext.prefix ?: "${meta.id}"
+
+        """
+        scil_denoising_nlmeans.py -h
+
+        touch ${prefix}_denoised.nii.gz
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            scilpy: \$(pip list | grep scilpy | tr -s ' ' | cut -d' ' -f2)
+        END_VERSIONS
+        """
+```
+
+<Callout variant="info" title="Info">
+Sometimes, the help function of some tools returns non-zero exit code, which
+will make Nextflow crash when running the stub section. To avoid this, you
+can add a small function that will catch those non-zero exit code and
+hid them from Nextflow. If this is the case for your tool, please refer to
+the [`betcrop/fslbetcrop`](https://github.com/scilus/nf-neuro/blob/main/modules/nf-neuro/betcrop/fslbetcrop/main.nf)
+module for a complete example.
+</Callout>
+
+### A complete example
+
+If you followed every step of this current tutorial page, you should now have
+a complete, guideline-abiding, and usable `main.nf` file! Your resulting file
+should be closely similar to the `denoising/nlmeans` module:
+
+```groovy
+process DENOISING_NLMEANS {
+    tag "$meta.id"
+    label 'process_medium'
+
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://scil.usherbrooke.ca/containers/scilus_2.0.2.sif':
+        'scilus/scilus:2.0.2' }"
+
+    input:
+    tuple val(meta), path(image), path(mask)
+
+    output:
+    tuple val(meta), path("*_denoised.nii.gz")      , emit: image
+    path "versions.yml"                             , emit: versions
+
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def ncoils = task.ext.number_of_coils ?: 1
+    def args = ["--processes $task.cpus"]
+    if (mask) args += ["--mask $mask"]
+
+    """
+    export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+
+    scil_denoising_nlmeans.py $image ${prefix}__denoised.nii.gz $ncoils ${args.join(" ")}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        scilpy: \$(pip list | grep scilpy | tr -s ' ' | cut -d' ' -f2)
+    END_VERSIONS
+    """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+
+    """
+    scil_denoising_nlmeans.py -h
+
+    touch ${prefix}_denoised.nii.gz
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        scilpy: \$(pip list | grep scilpy | tr -s ' ' | cut -d' ' -f2)
+    END_VERSIONS
+    """
+}
+```
+
+You are now ready to proceed to the next module creation step: {pagelink ("Creating documentation for your module",
+"/guides/create-your-module/documentation")}.
