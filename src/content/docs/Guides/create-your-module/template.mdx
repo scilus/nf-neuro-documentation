@@ -1,0 +1,65 @@
+---
+title: Generate the template
+hide_breadcrumbs: true
+---
+
+import Callout from "@/components/Callout.astro";
+import { withBase } from '@/utils';
+
+export function pagelink (text, url) {
+  return <a href={withBase(url)}>{text}</a>
+}
+
+## Starting from the `nf-core` template
+
+This page is the first of this tutorial series focusing on the creation of a custom
+module meant for `nf-neuro`. By following the different pages, you will learn how to:
+1. [Generate a new module using the `nf-core` template.](#generate-the-template)
+1. {pagelink ("Edit the template.", "/guides/create-your-module/main")}
+1. {pagelink ("Document your module.", "/guides/create-your-module/documentation")}
+1. {pagelink ("Set up test cases for your module.", "/guides/create-your-module/tests")}
+
+**We welcome all new modules relevant to neuro-imaging, regardless of the modality
+it comes from!** Let's say, for the purpose of this tutorial, that you want to 
+create a new module performing denoising on a T1w image using 
+[`scil_denoising_nlmeans.py`](https://scilpy.readthedocs.io/en/latest/scripts/scil_denoising_nlmeans.html).
+
+### Generate the template
+
+Since `nf-neuro` is based on the [nf-core tools](https://nf-co.re/docs/nf-core-tools),
+you have access to a command-line (CLI) script that will generate the skeleton,
+using a template, of your module. First verify you are located at the root of 
+this repository (not in `modules`), then run the following interactive command :
+
+```bash
+nf-core modules create
+```
+
+You will be prompted several times to configure the new module correctly. Refer
+to the following to ensure configuration abides with `nf-neuro` :
+
+- **Name of tool/subtool** : `category/tool` of the module you plan creating (e.g. denoising/nlmeans).
+- **Bioconda package** : select `no`.
+- **Github author** : use your Github handle, or `@scilus` if you prefer not being identified through `nf-neuro`.
+- **Resource label** : select `process_single` if you required a single core. If your tool
+  support multiprocessing, you can select `process_low` for 2 cores, `process_medium` for
+  4 cores, and `process_high` for 6 cores. Please set this up responsibly. For `denoising/nlmeans`,
+  we will select `process_medium`.
+- **Meta map** : select `yes`.
+
+Alternatively, you can use the following command to supply nearly all information :
+
+```bash
+nf-core modules create --author @scilus --label process_medium --meta denoising/nlmeans
+```
+
+You will still have to interact with the **bioconda** prompt, still select `no`.
+
+<Callout variant="info" title="Info">
+  Once used to the conventions for developping within `nf-neuro`, adding `--empty-template`
+  to the command will disable auto-generation of comments, examples and TODOs and
+  can be a time-saver.
+</Callout>
+
+The command will generate your new module template in the `./modules/nf-neuro/denoising/nlmeans`
+directory. You now have all files required to properly set up your module! {pagelink ("Now it is time to edit your `main.nf` file.", "/guides/create-your-module/main")}

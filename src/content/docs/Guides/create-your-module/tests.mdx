@@ -1,0 +1,259 @@
+---
+title: Creating test cases for your module
+hide_breadcrumbs: true
+---
+
+import Callout from "@/components/Callout.astro";
+import { withBase } from '@/utils';
+
+export function pagelink (text, url) {
+  return <a href={withBase(url)}>{text}</a>
+}
+
+## Create test cases
+
+The module's test infrastructure is auto-generated when creating a module using
+the `nf-core` command. First file you should modify is the `main.nf.test`, which
+contains the input and assertion instructions for `nf-test`.
+
+<Callout variant="info" title="Info">
+Multiple tests can be specified one after the other in the `main.nf.test`, 
+be sure to corner most of the use-case of your module to ensure catching any 
+potential bugs!
+</Callout>
+
+### Edit `tests/main.nf.test`
+
+To specify test data, you need to define a `setup` section before the actual
+test definition. This setup section will use the `LOAD_TEST_DATA` workflow to
+fetch your test data from an available package (refer to {pagelink ("this section",
+"/guides/create-your-module/infrastructure")} to learn how to find packages). Once you 
+selected the archives and files you need, add a `setup` section before the 
+test section.
+
+```groovy
+setup {
+  run("LOAD_TEST_DATA", alias: "LOAD_DATA") {
+    script "../../../../../subworkflows/nf-neuro/load_test_data/main.nf"
+    process {
+      """
+      input[0] = Channel.from( [ "<archive>" ] )
+      input[1] = "test.load-test-data"
+      """
+    }
+  }
+}
+```
+
+Replace the `<archive>` with the name of the one you need and you'll be able to
+access the archives within your test suite! Next, you want to define your inputs
+for your actual tests. The inputs are defined in a positional order, meaning
+that `input[0]` will be the first one provided to your process. Every `input[i]`
+represents a channel, so if your process takes, for example, a
+`tuple val(meta), path(image)`, you will have to define the meta and image
+within the same `input[i]`. A code block for a test that takes this tuple as
+input would look like this:
+
+```groovy
+    test("example - simple") {
+        config "./nextflow.config"
+        when {
+            process {
+                """
+                input[0] = LOAD_DATA.out.test_data_directory.map{
+                    test_data_directory -> [
+                        [ id:'test', single_end:false ], // meta map    -> your meta
+                        file("\${test_data_directory}/image.nii.gz") // -> your image file.
+                    ]
+                }
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+```
+
+If your process takes an optional input (such as a mask), you can simply add
+an empty list:
+
+```groovy
+  """
+  input[0] = LOAD_DATA.out.test_data_directory.map{
+      test_data_directory -> [
+          [ id:'test', single_end:false ], // meta map      -> your meta
+          file("\${test_data_directory}/image.nii.gz"), //  -> your image file.
+          []                                            //  -> your optional input.
+      ]
+  }
+  """
+```
+
+Once you have set up your input correctly, you need to define, in the `then`
+section, the assertions to carry on the files and variables the module's
+outputs. The `snapshot` function usually takes care of correctly resuming the
+data it receives into `md5sums` and most times giving it `process.out` is enough.
+
+```groovy
+then {
+    assertAll(
+        { assert process.success },
+        { assert snapshot(process.out).match() }
+    )
+}
+```
+
+However, it is not the case right now for `Nifti` images, which require the use
+of a dedicated method to extract a reproducible `md5sum`, aka `Nifti_md5sum`.
+To assert a `Nifti` output, in this example case the first one, do the following :
+
+```groovy
+then {
+    assertAll(
+        { assert process.success },
+        { assert snapshot(
+          Nifti_md5sum(process.out.get(0).get(1)),
+          ...
+          ).match()
+        }
+    )
+}
+```
+
+Here we consider all outputs are `tuples`, with the first field being the
+`meta` dictionary associated to it. For more details regarding the possible
+assertions, see the [nf-test doc](https://www.nf-test.com/docs/assertions/assertions/).
+
+To add more test cases, you can add multiple `test` sections as defined above
+(all within the same `nextflow process {}`). This can be done to test with
+different inputs, or different parameters provided through a `nextflow.config`
+file. If you want to define specific parameters for a single test, assign the
+`nextflow.config` file using the `config` parameter within the test definition
+(as shown above). If you want to assign identical parameters for all tests, you
+can bind the `nextflow.config` file at the beginning of the `main.nf.test`:
+
+```groovy
+nextflow_process {
+
+    name "Test Process <CATEGORY>_<TOOL>"
+    script "../main.nf"
+    process "<CATEGORY>_<TOOL>"
+    config "./nextflow.config"
+```
+
+Finally, ensure all the tags at the beginning of the process definition include
+the `LOAD_TEST_DATA` subworkflow. If not, add those two lines:
+
+```groovy
+    tag "subworkflows"
+    tag "subworkflows/load_test_data"
+```
+
+Make sure there is no more comments generated by the `nf-core` template, and
+you should be good to go!
+
+### Edit `tests/nextflow.config`
+
+The `nextflow.config` file does not exist by default, so you will have to
+create it if needed. This is not mandatory, except if you have defined
+optional parameters with `task.ext` and want to alter their values for some
+test cases. Refer to {pagelink ("this section", "/guides/create-your-module/arguments")} to
+see how to scope those parameters to specific tests using `selectors`.
+
+### Generate tests snapshots
+
+<Callout variant="warning" title="Warning">
+Verify you are located at the root of `nf-neuro` (not inside modules) before
+running commands !
+</Callout>
+
+Once you have correctly setup your test cases and made sure the data is available,
+the test module has to be pre-tested so output files that gets generated are 
+snapshotted correctly before being pushed to `nf-neuro`.
+
+To do so, run:
+
+```bash
+nf-core modules test -u <category>/<tool>
+```
+
+All the test case you defined will be run, watch out for errors ! Once
+everything runs smoothly, look at the snapshot file produced at
+`tests/main.nf.test.snap` in your module's directory and validate that ALL
+outputs produced by test cases are caught. Their `md5sum` is
+critical to ensure future executions of your test produce valid outputs.
+
+### A complete example for the `denoising/nlmeans` module.
+
+Since we used the `denoising/nlmeans` module as an example from the beginning of
+this documentation, let's create a test case for this module as a final example.
+This example contains only a single test, providing an image and an optional mask
+as inputs:
+
+```groovy
+nextflow_process {
+
+    name "Test Process DENOISING_NLMEANS"
+    script "../main.nf"
+    process "DENOISING_NLMEANS"
+    config "./nextflow.config"
+
+    tag "modules"
+    tag "modules_nfcore"
+    tag "denoising"
+    tag "denoising/nlmeans"
+
+    tag "subworkflows"
+    tag "subworkflows/load_test_data"
+
+    setup {
+        run("LOAD_TEST_DATA", alias: "LOAD_DATA") {
+            script "../../../../../subworkflows/nf-neuro/load_test_data/main.nf"
+            process {
+                """
+                input[0] = Channel.from( [ "raw_b0.zip", "raw_segmentation.zip" ] )
+                input[1] = "test.load-test-data"
+                """
+            }
+        }
+    }
+
+    test("denoising - nlmeans") {
+        when {
+            process {
+                """
+                ch_split_test_data = LOAD_DATA.out.test_data_directory
+                    .branch{
+                        b0: it.simpleName == "raw_b0"
+                        segmentation: it.simpleName == "raw_segmentation"
+                    }
+                ch_b0 = ch_split_test_data.b0.map{
+                    test_data_directory -> [
+                        [ id:'test' ],
+                        file("\${test_data_directory}/b0.nii.gz")
+                    ]
+                }
+                ch_mask = ch_split_test_data.segmentation.map{
+                    test_data_directory -> [
+                        [ id:'test' ],
+                        file("\${test_data_directory}/brainmask/slices/axial.nii.gz")
+                    ]
+                }
+                input[0] = ch_b0
+                    .join(ch_mask)
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+}
+```
