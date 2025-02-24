@@ -251,8 +251,9 @@ Below is a code snippet giving general instructions or guidelines for this QC se
         convert ${prefix}_<image>_axial*.png ${prefix}_<image>_coronal*.png \
           ${prefix}_<image>_saggital*.png +append ${prefix}_<image>_mqc.png
         
-        # Clean up the intermediate pngs.
+        # Clean up the intermediate pngs and norm image.
         rm ${prefix}_<image>_axial*.png ${prefix}_<image>_coronal*.png ${prefix}_<image>_saggital*.png
+        rm *_norm.nii.gz
     fi
 ```
 
