@@ -19,8 +19,21 @@ const items = await generateSidebar();
                     <details>
                       <summary>{child.label}</summary>
                       <ul>
-                        {child.children.map((subchild: { href: string | URL | null | undefined; label: unknown; }) => (
-                          <li><a href={withBase(subchild.href)}>{subchild.label}</a></li>
+                        {child.children.map((subchild: { children: any[]; href: string | URL | null | undefined; label: unknown; }) => (
+                          <li>
+                            {subchild.children ? (
+                              <details>
+                                <summary>{subchild.label}</summary>
+                                <ul>
+                                  {subchild.children.map((subsubchild: { href: string | URL | null | undefined; label: unknown; }) => (
+                                    <li><a href={withBase(subsubchild.href)}>{subsubchild.label}</a></li>
+                                  ))}
+                                </ul>
+                              </details>
+                            ) : (
+                              <a href={withBase(subchild.href)}>{subchild.label}</a>
+                            )}
+                          </li>
                         ))}
                       </ul>
                     </details>

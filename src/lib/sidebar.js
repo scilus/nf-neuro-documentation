@@ -10,15 +10,13 @@ export const capitalizeFirstLetter = (str) => {
 };
 
 // Order of top-level items
-const TOP_LEVEL_ORDER = ["getting-started", "guides", "subworkflows"];
+const TOP_LEVEL_ORDER = ["getting-started", "guides"];
 
 // Define custom orders for sections and their nested sub-sections
 const SECTION_ORDERS = {
   guides: [
+    "environments",
     "create-your-module",
-    "basic_environment",
-    "setup_environment",
-    "nfneuro_devcontainer",
     "subworkflows",
     "prototyping",
     "production",
@@ -33,6 +31,16 @@ const SECTION_ORDERS = {
     "infrastructure",
     "resources",
   ],
+  "guides/environments": [
+    "devcontainers",
+    "nf-core",
+    "devops"
+  ],
+  "guides/environments/devcontainers": [
+    "prototyping",
+    "production",
+    "devops"
+  ]
 };
 
 /**
