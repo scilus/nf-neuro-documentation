@@ -24,12 +24,29 @@ it comes from!** Let's say, for the purpose of this tutorial, that you want to
 create a new module performing denoising on a T1w image using 
 [`scil_denoising_nlmeans.py`](https://scilpy.readthedocs.io/en/latest/scripts/scil_denoising_nlmeans.html).
 
+## First steps
+
+Before starting, if not done already, clone the `nf-neuro` repository locally and
+navigate to it :
+
+```bash
+git clone https://github.com/scilus/nf-neuro.git
+cd nf-neuro
+```
+
+Then, create a new branch for your module (in this tutorial, you'll re-develop the
+`denoising/nlmeans` module, so name it `module/denoising_nlmeans) :
+
+```bash
+git checkout -b module/denoising_nlmeans
+```
+
 ### Generate the template
 
 Since `nf-neuro` is based on the [nf-core tools](https://nf-co.re/docs/nf-core-tools),
 you have access to a command-line (CLI) script that will generate the skeleton,
 using a template, of your module. First verify you are located at the root of 
-this repository (not in `modules`), then run the following interactive command :
+the `nf-neuro` repository (not in `modules`), then run the following interactive command :
 
 ```bash
 nf-core modules create
