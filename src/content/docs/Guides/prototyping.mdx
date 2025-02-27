@@ -133,7 +133,7 @@ workflow get_data {
     emit:
         dwi = dwi_channel
         rev = rev_channel
-        t1 = t1_channel
+        anat = t1_channel
 }
 
 workflow {
@@ -141,7 +141,7 @@ workflow {
     data = get_data()
     data.dwi.view() // Contains your DWI data: [meta, dwi, bval, bvec]
     data.rev.view() // Contains your reverse B0 data: [meta, rev]
-    data.t1.view() // Contains your anatomical data (T1 in this case): [meta, t1]
+    data.anat.view() // Contains your anatomical data (T1 in this case): [meta, t1]
 }
 ```
 
@@ -226,7 +226,7 @@ workflow {
     // ** Create the input channel for nlmeans. ** //
     // **  - Note that it also can take a mask as input, but it is not required. ** //
     // **  - Replacing it by an empty list here. ** //
-    ch_denoising = inputs.t1
+    ch_denoising = inputs.anat
         .map{ it + [[]] } // This add one empty list to the channel, since we do not have a mask.
 
     // ** Run DENOISING_NLMEANS ** //
