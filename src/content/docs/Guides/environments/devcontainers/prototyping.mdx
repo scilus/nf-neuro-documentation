@@ -4,6 +4,7 @@ hide_breadcrumbs: true
 ---
 
 import Callout from "@/components/Callout.astro";
+import { Icon } from "astro-icon/components"
 
 ## Prototype pipeline development container
 
@@ -29,21 +30,37 @@ After running this command, you need to log out and log back in your terminal to
 
 ## Usage
 
+First, create a `.devcontainer` directory at your project's root.
+```bash
+mkdir <project_dir>/.devcontainer
+```
+
 <Callout variant="warning" title="Important">
-The `prototyping` environment definition is not meant to be run from the `nf-neuro` repository root.
-Locate your project elsewhere (we recommend putting it outside this directory to prevent
-conflicts with `git`).
+The `prototyping` environment definition is not meant to be run from the `nf-neuro` repository root. If you downloaded or
+cloned the `nf-neuro` repository, don't place your project at its root (we recommend putting your project outside its
+directory to prevent conflicts with `git`).
 </Callout>
 
-- Copy the **devcontainer** definition path at `.devcontainer/prototyping` and its content inside your project
+### Get the devcontainer configuration
+
+If you downloaded or cloned `nf-neuro` locally :
+
+- Copy the `prototyping` directory and its content, located in `<nf-neuro root>/.devcontainer`, to the `.devcontainer`
+  directory in your project :
   ```bash
-  mkdir -p <project_dir>/.devcontainer
-  cp -r .devcontainer/prototyping <project_dir>/.devcontainer/.
+  cp -r <nf-neuro root>/.devcontainer/prototyping <project_dir>/.devcontainer/.
   ```
-  - the target path in your project should be `<project_dir>/.devcontainer/prototyping`
+
+If you don't have nf-neuro locally, download the **prototyping devcontainer archive** at
+[this link](https://github.com/scilus/nf-neuro/releases/download/latest/prototyping-devcontainer.zip) and extract it in
+your project's `.devcontainer` directory.
+
+### Launch your project in the devcontainer
+
+To open your project in the devcontainer, using VSCode :
 - Open your project with **VS CODE**
-  - create a new window with **File > New Window** or `ctrl+shift+N`, then use **File > Open Folder**.
-- Click on the **blue box** in the lower left corner, to get a prompt to `Reopen in container`
+  - create a new window with **File > New Window** or `ctrl+shift+N`, then use **File > Open Folder** to open your `<project_dir>`.
+- Click on the **box** <Icon name="arcticons:microsoft-remotedesktop" class="text-sky-700 text-xl text-bold inline-block" /> in the lower left corner, to get a prompt to `Reopen in container`
   - alternatively, open the **command palette** with `ctrl+shit+P` and start typing `Reopen in ...` to filter in
     and select the command
 
