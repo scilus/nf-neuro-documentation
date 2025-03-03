@@ -44,7 +44,7 @@ cd path/to/project
 ## Environment configuration
 
 To get setup fast, we recommend using **VS Code** and the `development container`. Follow the
-{pagelink("guide here", "/guides/environments/prototyping")} to do so. You can also use
+{pagelink("guide here", "/guides/environments/devcontainers/prototyping")} to do so. You can also use
 {pagelink("those instructions", "/guides/environments/nf-core")} to setup yourself manually.
 
 ## Basic prototype pipeline creation
@@ -133,7 +133,7 @@ workflow get_data {
     emit:
         dwi = dwi_channel
         rev = rev_channel
-        t1 = t1_channel
+        anat = t1_channel
 }
 
 workflow {
@@ -141,7 +141,7 @@ workflow {
     data = get_data()
     data.dwi.view() // Contains your DWI data: [meta, dwi, bval, bvec]
     data.rev.view() // Contains your reverse B0 data: [meta, rev]
-    data.t1.view() // Contains your anatomical data (T1 in this case): [meta, t1]
+    data.anat.view() // Contains your anatomical data (T1 in this case): [meta, t1]
 }
 ```
 
@@ -226,7 +226,7 @@ workflow {
     // ** Create the input channel for nlmeans. ** //
     // **  - Note that it also can take a mask as input, but it is not required. ** //
     // **  - Replacing it by an empty list here. ** //
-    ch_denoising = inputs.t1
+    ch_denoising = inputs.anat
         .map{ it + [[]] } // This add one empty list to the channel, since we do not have a mask.
 
     // ** Run DENOISING_NLMEANS ** //
@@ -304,6 +304,8 @@ Once your pipeline is built, or when you want to test it, run :
 nextflow run main.nf --input <directory>
 ```
 
-You can find example **input data** [here](dummy.link.to.updata) or use any of your own, as long
+You can find example **input data** [here](https://openneuro.org/datasets/ds004513/versions/1.0.4). Take
+note that the dataset is very large, consider using a **data management system** like datalab
+to download a single subject. You are also free to use any of your own data, as long
 as they respect the directory structure defined [above](#create-a-prototype-pipeline).
 </Callout>
