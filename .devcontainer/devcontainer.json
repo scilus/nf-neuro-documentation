@@ -10,14 +10,14 @@
             "onAutoForward": "openPreview"
         }
     },
-    "postCreateCommand": "pnpm install && pnpm build",
+    "postCreateCommand": "pnpm install",
     "waitFor": "postCreateCommand",
     "postAttachCommand": {
-        "Server": "pnpm start --host"
+        "Server": "pnpm run dev"
     },
     "customizations": {
         "codespaces": {
-            "openFiles": ["src/pages/index.astro"]
+            "openFiles": ["src/contents/docs/index.mdx"]
         },
         "vscode": {
             "extensions": [
