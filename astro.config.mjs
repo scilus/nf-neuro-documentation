@@ -45,6 +45,7 @@ export default defineConfig({
 				{
 					label: 'Contribute to nf-neuro',
 					items: [
+						{ label: 'Contributing', slug: 'contribute/contributing' },
 						{ label: 'Create your module',
 							items: [
 								'contribute/create-your-module/template',
