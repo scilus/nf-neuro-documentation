@@ -1,0 +1,209 @@
+---
+title: Setting up your computer
+description: Setting up your computer for creating a custom pipeline.
+---
+
+## Prototype pipeline development container
+
+## Requirements
+
+- [VS Code](https://code.visualstudio.com) &geq; 1.95
+- [Docker](https://www.docker.com/get-started/) &geq; 24 (we recommend using [Docker Desktop](https://www.docker.com/products/docker-desktop))
+
+### Configure Docker access
+
+The simplest way of installing everything Docker is to use [Docker Desktop](https://www.docker.com/products/docker-desktop).
+You can also go the [engine way](https://docs.docker.com/engine/install) and install Docker manually.
+
+Once installed, you need to configure some access rights to the Docker daemon. The easiest way to do this is to add your user
+to the `docker` group. This can be done with the following command :
+
+```bash
+sudo groupadd docker
+sudo usermod -aG docker $USER
+```
+
+After running this command, you need to log out and log back in your terminal to apply the changes.
+
+## Usage
+
+First, create a `.devcontainer` directory at your project's root.
+```bash
+mkdir <project_dir>/.devcontainer
+```
+
+:::caution
+The `prototyping` environment definition is not meant to be run from the `nf-neuro` repository root. If you downloaded or
+cloned the `nf-neuro` repository, don't place your project at its root (we recommend putting your project outside its
+directory to prevent conflicts with `git`).
+:::
+
+### Get the devcontainer configuration
+
+If you downloaded or cloned `nf-neuro` locally :
+
+- Copy the `prototyping` directory and its content, located in `<nf-neuro root>/.devcontainer`, to the `.devcontainer`
+  directory in your project :
+  ```bash
+  cp -r <nf-neuro root>/.devcontainer/prototyping <project_dir>/.devcontainer/.
+  ```
+
+If you don't have nf-neuro locally, download the **prototyping devcontainer archive** at
+[this link](https://github.com/scilus/nf-neuro/releases/download/latest/prototyping-devcontainer.zip) and extract it in
+your project's `.devcontainer` directory.
+
+### Launch your project in the devcontainer
+
+To open your project in the devcontainer, using VSCode :
+- Open your project with **VS CODE**
+  - create a new window with **File > New Window** or `ctrl+shift+N`, then use **File > Open Folder** to open your `<project_dir>`.
+- Click on the **box** in the lower left corner, to get a prompt to `Reopen in container`
+  - alternatively, open the **command palette** with `ctrl+shit+P` and start typing `Reopen in ...` to filter in
+    and select the command
+
+The procedure will start a docker build, wait for a few minutes and enjoy your fully configured development environment.
+
+## Available in the container
+
+- `nf-core` accessible through the terminal, which is configured to access `nf-neuro` modules and subworkflows
+- `git`, `github-cli`
+- `curl`, `wget`, `apt-get`
+- `nextflow`, `docker`, `tmux`
+
+## Available in the VS Code IDE through extensions
+
+- Docker images and containers management
+- Nextflow execution environemnt
+- Python and C++ linting, building and debugging tools
+- Github Pull Requests management
+- Github flavored markdown previewing
+- Neuroimaging data viewer
+- Test Data introspection
+- Resource monitoring
+- Remote development
+- Live sharing with collaborators
+
+## Manual installation
+
+### Dependencies
+
+- Python &geq; 3.8, < 3.13
+- Docker &geq; 24 (we recommend using [Docker Desktop](https://www.docker.com/products/docker-desktop))
+- Java Runtime &geq; 11, &leq; 17
+  - On Ubuntu, install `openjdk-jre-<version>` packages
+- Nextflow &geq; 23.04.0
+- nf-test &geq; 0.9.0
+- Node &geq; 14, `Prettier` and `editorconfig` (see [below](#installing-prettier-and-editorconfig))
+
+:::caution
+Nextflow might not detect the right `Java virtual machine` by default, more so if
+multiple versions of the runtime are installed. If so, you need to set the environment
+variable `JAVA_HOME` to target the right one.
+
+- Linux : look in `/usr/lib/jvm` for
+  a folder named `java-<version>-openjdk-<platform>` and use it as `JAVA_HOME`.
+- MacOS : if the `Java jvm` is the preferential one, use `JAVA_HOME=$(/usr/libexec/java_home)`.
+  Else, look into `/Library/Java/JavaVirtualMachines` for the folder with the correct
+  runtime version (named `jdk<inner version>_1<runtime version>.jdk`) and use the
+  following : `/Library/Java/JavaVirtualMachines/jdk<inner version>_1<runtime version>.jdk/Contents/Home`.
+:::
+
+### Python environment
+
+The project uses _poetry_ to manage python dependencies. To install it using pipx,
+run the following commands :
+
+```bash
+pip install pipx
+pipx ensurepath
+pipx install poetry==1.8.*
+```
+
+:::note
+If the second command above fails, `pipx` cannot be found in the path. Prepend the
+second command with `$(which python) -m` and rerun the whole block.
+:::
+
+:::caution
+Poetry doesn't like when other python environments are activated around it. Make
+sure to deactivate any before calling `poetry` commands.
+:::
+
+Once done, install the project with :
+
+```bash
+poetry install --no-root
+```
+
+### Loading the project's environment
+
+:::caution
+Make sure no python environment is activated before running commands !
+:::
+
+The project scripts and dependencies can be accessed using :
+
+```bash
+poetry shell
+```
+
+which will activate the project's python environment in the current shell.
+
+:::note
+You will know the poetry environment is activated by looking at your shell. The
+input line should be prefixed by : `(nf-neuro-tools-py<version>)`, with `<version>`
+being the actual Python version used in the environment.
+:::
+
+To exit the environment, simply enter the `exit` command in the shell.
+
+:::caution
+Do not use traditional deactivation (calling `deactivate`), since it does not relinquish
+the environment gracefully, making it so you won't be able to reactivate it without
+exiting the shell.
+:::
+
+### Global environment
+
+Set the following environment variables in your `.bashrc` (or whatever is the equivalent for your shell) :
+
+```bash
+export NFCORE_MODULES_GIT_REMOTE=https://github.com/scilus/nf-neuro.git
+export NFCORE_MODULES_GIT_BRANCH=main
+export NFCORE_SUBWORKFLOWS_GIT_REMOTE=https://github.com/scilus/nf-neuro.git
+export NFCORE_SUBWORKFLOWS_GIT_BRANCH=main
+```
+
+This will make it so the `nf-core` commands target the right repository by default. Else, you'll need to
+add `--git-remote` and `--branch` options to pretty much all commands relating to `modules` and `subworkflows`.
+
+### Working with VS Code
+
+The `nf-neuro` project curates a bundle of useful extensions for Visual Studio Code, the `nf-neuro-extensions`
+package. You can find it easily on the [extension marketplace](https://marketplace.visualstudio.com/items?itemName=nf-neuro.nf-neuro-extensionpack).
+
+## Installing Prettier and editorconfig
+
+To install **Prettier** and **editorconfig** for the project, you need to have `node` and `npm` installed on
+your system to at least version 14. On Ubuntu, you can do it using snap :
+
+```bash
+sudo snap install node --classic
+```
+
+However, if you cannot install snap, or have another OS, refer to the [official documentation](https://nodejs.org/en/download/package-manager/)
+for the installation procedure.
+
+Under the current configuration for the _Development Container_, for this project, we use the following procedure,
+considering `${NODE_MAJOR}` is at least 14 for Prettier :
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - &&\
+apt-get install -y nodejs
+
+npm install --save-dev --save-exact prettier
+npm install --save-dev --save-exact editorconfig-checker
+
+echo "function prettier() { npm exec prettier $@; }" >> ~/.bashrc
+echo "function editorconfig-checker() { npm exec editorconfig-checker $@; }" >> ~/.bashrc
+```

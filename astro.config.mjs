@@ -24,6 +24,7 @@ export default defineConfig({
 				{
 					label: 'Custom pipeline',
 					items: [
+						{ label: 'Setup your computer', slug: 'custom-pipeline/setup' },
 						{ label: 'Example Pipeline', slug: 'custom-pipeline/prototyping' },
 					],
 				},
@@ -45,7 +46,7 @@ export default defineConfig({
 				{
 					label: 'Contribute to nf-neuro',
 					items: [
-						{ label: 'Contributing', slug: 'contribute/contributing' },
+						{ label: 'Setup your computer', slug: 'contribute/setup' },
 						{ label: 'Create your module',
 							items: [
 								'contribute/create-your-module/template',
