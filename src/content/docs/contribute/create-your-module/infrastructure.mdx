@@ -1,0 +1,65 @@
+---
+title: Test data infrastructure
+description: Overview of the available test data.
+---
+
+## Test data infrastructure
+
+`nf-neuro` provides an infrastructure to host and distribute test data, freely available to all
+contributors. Access to this data is done through the dedicated subworkflow `LOAD_TEST_DATA`. Test
+data packages are listed in `tests/config/test_data.json`. Introspection of their content is
+available in VS Code only, using the [Test Data Explorer](https://marketplace.visualstudio.com/items?itemName=nf-neuro.test-data-explorer)
+extension. Once installed, it adds the `Test Data Explorer` to the explorer panel (`Ctrl+Shift+E`),
+which you can use to browse and download test data packages and their content.
+
+To download test data inside your test workflows, first include the `LOAD_TEST_DATA` workflow
+in their `main.nf` :
+
+```groovy
+include { LOAD_TEST_DATA } from '../../../../../subworkflows/nf-neuro/load_test_data/main'
+```
+
+The workflow has two inputs :
+
+- A channel containing a list of package names to download.
+
+- A name for the temporary directory where the data will be put.
+
+To call it, use the following syntax :
+
+```groovy
+archives = Channel.from( [ "<archive1>", "archive2", ... ] )
+LOAD_TEST_DATA( archives, "<directory>" )
+```
+
+:::caution
+This will download the `archives` and unpack them under the `directory`
+specified, using the archive's names as `sub-directories` to unpack to.
+:::
+
+The archives contents are accessed using the output parameter of the workflow
+`LOAD_TEST_DATA.out.test_data_directory`. To create the test input from it for
+a given `PROCESS` to test use the `.map` operator :
+
+```groovy
+input = LOAD_TEST_DATA.out.test_data_directory
+  .map{ test_data_directory -> [
+    [ id:'test', single_end:false ], // meta map
+    file("${test_data_directory}/<file for input 1>"),
+    file("${test_data_directory}/<file for input 2>"),
+    ...
+  ] }
+```
+
+Then feed it to it :
+
+```groovy
+PROCESS( input )
+```
+
+:::note
+The subworkflow must be called individually in each test workflow, even if they download
+the same archives, since there is no mechanism to pass data channels to them from the
+outside. Nevertheless, downloaded archives are cached locally to ensure efficiency and
+preserve bandwidth.
+:::

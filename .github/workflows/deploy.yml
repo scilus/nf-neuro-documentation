@@ -55,7 +55,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: markdown
-          path: src/content/docs/
+          path: src/content/docs/api/
 
       - name: Install, build, and upload your site
         uses: withastro/action@v2

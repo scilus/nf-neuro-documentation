@@ -1,68 +1,17 @@
 {
-  "name": "nf-neuro-documentation",
+  "name": "",
   "type": "module",
-  "version": "0.0.5",
-  "description": "Documentation for the nf-neuro project",
-  "author": "Hyperoot <rajesh@hyperoot.dev>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/scilus/nf-neuro-documentation"
-  },
-  "homepage": "https://scilus.github.io/nf-neuro",
+  "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro check && astro build",
+    "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
-  "keywords": [
-    "docs",
-    "documentation",
-    "astro",
-    "withastro"
-  ],
   "dependencies": {
-    "@astrojs/check": "^0.8.2",
-    "@astrojs/mdx": "^3.1.3",
-    "@astrojs/react": "^3.6.0",
-    "@astrojs/tailwind": "^6.0.0",
-    "@fontsource-variable/jetbrains-mono": "^5.0.21",
-    "@fontsource-variable/montserrat": "^5.0.19",
-    "@fontsource/fjalla-one": "^5.1.1",
-    "@fontsource/monaspace-krypton": "^5.1.0",
-    "@iconify-json/arcticons": "^1.2.19",
-    "@radix-ui/react-dialog": "^1.1.1",
-    "@radix-ui/react-dropdown-menu": "^2.1.1",
-    "@radix-ui/react-icons": "^1.3.0",
-    "@radix-ui/react-scroll-area": "^1.1.0",
-    "@radix-ui/react-separator": "^1.1.0",
-    "@radix-ui/react-slot": "^1.1.0",
-    "@radix-ui/react-toggle": "^1.1.0",
-    "@tailwindcss/vite": "^4.0.3",
-    "@types/react": "^18.3.3 <19",
-    "astro": "^4.12.2",
-    "astro-icon": "^1.1.5",
-    "astro-rehype-relative-markdown-links": "^0.18.1",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.1.1",
-    "cmdk": "^1.0.0",
-    "fuse.js": "^7.0.0",
-    "lucide-react": "^0.411.0",
-    "react": "^18.3.1 <19",
-    "react-dom": "^18.3.1",
-    "rehype-external-links": "^3.0.0",
-    "sharp": "^0.33.5",
-    "simple-icons-astro": "^13.3.0",
-    "tailwind-merge": "^2.4.0",
-    "tailwindcss": "^3.4.17",
-    "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5.5.3"
-  },
-  "devDependencies": {
-    "@tailwindcss/typography": "^0.5.16",
-    "prettier": "^3.3.3",
-    "prettier-plugin-astro": "^0.14.1"
+    "@astrojs/starlight": "^0.32.2",
+    "astro": "^5.1.5",
+    "sharp": "^0.32.5"
   }
 }

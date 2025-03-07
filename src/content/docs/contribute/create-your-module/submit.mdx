@@ -1,0 +1,36 @@
+---
+title: Submit your module
+description: Submit your module for review!
+---
+
+## Lint your code
+
+Before submitting to _nf-neuro_, once you've commit and push everything, the code need to be correctly linted, else the checks won't pass. This is done using `prettier` and `editorconfig-checker` on your new module, through the _nf-core_ command line :
+
+```bash
+nf-core modules lint <category>/<tool>
+```
+
+You'll probably get a bunch of _whitespace_ and _indentation_ errors, but also image errors, bad _nextflow_ syntax and more. You need to fix all `errors` and as much as the `warnings` as possible.
+
+If at any point you modified files outside of your module's directory, those also need to be linted. To do so, run the following commands at the root of the repository :
+
+```bash
+prettier --check .
+editorconfig-checker
+```
+
+You'll get lists of syntax errors to fix from both commands. For prettier, you can run `prettier --write .` to fix most of them automatically. For `editorconfig-checker`, you'll have to fix them manually.
+
+## Submit your PR
+
+Open a PR to the `nf-neuro` repository master. We'll test everything, make sure it's
+working and that code follows standards.
+
+:::note
+It's the perfect place to get new tools added to our containers, if need be !
+:::
+
+Once LGTM has been declared, wave to the maintainers and look at your hard work paying off.
+
+PR merged !
