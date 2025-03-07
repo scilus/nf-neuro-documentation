@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightVersions from 'starlight-versions';
 
 // https://astro.build/config
 export default defineConfig({
@@ -71,6 +72,16 @@ export default defineConfig({
 					autogenerate: { directory: 'api' },
 					collapsed: true,
 				},
+			],
+			plugins: [
+				starlightVersions({
+					versions: [
+						{
+							slug: '0.0.1',
+							label: 'v0.0.1',
+						},
+					],
+				}),
 			],
 		}),
 	],
