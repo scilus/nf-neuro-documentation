@@ -25,6 +25,7 @@ export default defineConfig({
 				github: 'https://github.com/scilus/nf-neuro.git',
 			},
 			sidebar: [
+				{ label: 'Welcome', slug: 'welcome' },
 				{
 					label: 'Custom pipeline',
 					items: [
