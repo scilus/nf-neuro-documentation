@@ -27,10 +27,10 @@ export default defineConfig({
 			sidebar: [
 				{ label: 'Welcome', slug: 'welcome' },
 				{
-					label: 'Custom pipeline',
+					label: 'Create your pipeline',
 					items: [
 						{ label: 'Setup your computer', slug: 'custom-pipeline/setup' },
-						{ label: 'Example Pipeline', slug: 'custom-pipeline/prototyping' },
+						{ label: 'Your pipeline from A to Z', slug: 'custom-pipeline/prototyping' },
 					],
 				},
 				{	
