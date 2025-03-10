@@ -17,6 +17,10 @@ export default defineConfig({
 			customCss: [
 				'./src/styles/custom.css',
 			],
+			components: {
+				// Override the default `SocialIcons` component.
+				Hero: './src/components/newHero.astro',
+			},
 			social: {
 				github: 'https://github.com/scilus/nf-neuro.git',
 			},
