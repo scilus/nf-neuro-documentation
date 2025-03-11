@@ -11,13 +11,12 @@
   },
   "dependencies": {
     "@astrojs/starlight": "^0.32.2",
-    "@astrojs/starlight-tailwind": "^3.0.0",
     "@iconify/json": "^2.2.315",
-    "@tailwindcss/vite": "^4.0.12",
-    "astro": "^5.4.2",
+    "@tailwindcss/vite": "^4.0.13",
+    "astro": "^5.4.3",
     "pnpm": "^10.6.2",
     "sharp": "^0.32.6",
-    "tailwindcss": "^4.0.12",
+    "tailwindcss": "^4.0.13",
     "uninstall": "^0.0.0",
     "unplugin-icons": "^22.1.0"
   }
