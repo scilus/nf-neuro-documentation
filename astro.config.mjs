@@ -3,14 +3,12 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import Icons from 'unplugin-icons/vite';
 import tailwindcss from '@tailwindcss/vite';
-import react from '@astrojs/react';
 
 // https://astro.build/config
 export default defineConfig({
     site: "https://scilus.github.io",
     base: "/nf-neuro",
     integrations: [
-		react(),
 		starlight({
 			title: 'nf-neuro',
 			logo: {
@@ -87,7 +85,6 @@ export default defineConfig({
     vite: {
         plugins: [
 			Icons({ compiler: 'astro' }),
-			react(),
 			tailwindcss()
 		],
 		server: {
