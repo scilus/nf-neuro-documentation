@@ -18,7 +18,7 @@ export default defineConfig({
 				'./src/styles/custom.css',
 			],
 			components: {
-				// Override the default `SocialIcons` component.
+				// Override the default `Hero` component.
 				Hero: './src/components/newHero.astro',
 			},
 			social: {
