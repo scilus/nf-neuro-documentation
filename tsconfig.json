@@ -11,7 +11,5 @@
     "types": [
       "unplugin-icons/type/astro"
     ],
-    "jsx": "react-jsx",
-    "jsxImportSource": "react"
   }
 }
