@@ -17,15 +17,20 @@ export default defineConfig({
 			customCss: [
 				'./src/styles/custom.css',
 			],
+			components: {
+				// Override the default `Hero` component.
+				Hero: './src/components/newHero.astro',
+			},
 			social: {
 				github: 'https://github.com/scilus/nf-neuro.git',
 			},
 			sidebar: [
+				{ label: 'Welcome', slug: 'welcome' },
 				{
-					label: 'Custom pipeline',
+					label: 'Create your pipeline',
 					items: [
 						{ label: 'Setup your computer', slug: 'custom-pipeline/setup' },
-						{ label: 'Example Pipeline', slug: 'custom-pipeline/prototyping' },
+						{ label: 'Your pipeline from A to Z', slug: 'custom-pipeline/prototyping' },
 					],
 				},
 				{	
