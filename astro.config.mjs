@@ -1,12 +1,16 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import Icons from 'unplugin-icons/vite';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@astrojs/react';
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://scilus.github.io",
-	base: "/nf-neuro",
-	integrations: [
+    site: "https://scilus.github.io",
+    base: "/nf-neuro",
+    integrations: [
+		react(),
 		starlight({
 			title: 'nf-neuro',
 			logo: {
@@ -16,6 +20,7 @@ export default defineConfig({
 			},
 			customCss: [
 				'./src/styles/custom.css',
+				'./src/styles/global.css'
 			],
 			components: {
 				// Override the default `Hero` component.
@@ -77,6 +82,21 @@ export default defineConfig({
 					collapsed: true,
 				},
 			],
-		}),
+    	})
 	],
+    vite: {
+        plugins: [
+			Icons({ compiler: 'astro' }),
+			react(),
+			tailwindcss()
+		],
+		server: {
+			watch: {
+			  	ignored: [
+					"**/.pnpm-store/**/*",
+					"**/node_modules/**/*"
+				],
+			},
+		},
+    },
 });

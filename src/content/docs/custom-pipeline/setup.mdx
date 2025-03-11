@@ -1,209 +1,137 @@
 ---
 title: Setting up your computer
-description: Setting up your computer for creating a custom pipeline.
+description: Setting up your computer to create a custom pipeline.
 ---
 
-## Prototype pipeline development container
+import CloneIcon from '~icons/codicon/source-control'
+import RemoteIcon from '~icons/codicon/remote'
+import ExtensionsIcon from '~icons/codicon/extensions'
+import CoffeeIcon from '~icons/codicon/coffee'
+import WaitIcon from '~icons/ic/round-access-time'
 
-## Requirements
+## Quick setup : VSCode and **devcontainers**
 
-- [VS Code](https://code.visualstudio.com) &geq; 1.95
-- [Docker](https://www.docker.com/get-started/) &geq; 24 (we recommend using [Docker Desktop](https://www.docker.com/products/docker-desktop))
+### Prerequisites
 
-### Configure Docker access
-
-The simplest way of installing everything Docker is to use [Docker Desktop](https://www.docker.com/products/docker-desktop).
-You can also go the [engine way](https://docs.docker.com/engine/install) and install Docker manually.
-
-Once installed, you need to configure some access rights to the Docker daemon. The easiest way to do this is to add your user
-to the `docker` group. This can be done with the following command :
+The fastest way to start coding is by installing [VSCode](https://code.visualstudio.com) (&geq; 1.95)
+and [Docker](https://www.docker.com/get-started/) (&geq; 24). Once done, open **VSCode**. If it opens
+in a project, close it or open a **new empty window** (`ctrl+shift+N`). Then, test that you have access
+to **docker**. In the `VSCode Terminal`, run :
 
 ```bash
-sudo groupadd docker
-sudo usermod -aG docker $USER
+docker run hello-world
 ```
 
-After running this command, you need to log out and log back in your terminal to apply the changes.
+![docker run hello-world](../../../assets/images/setup-test-docker.gif)
 
-## Usage
-
-First, create a `.devcontainer` directory at your project's root.
-```bash
-mkdir <project_dir>/.devcontainer
-```
-
-:::caution
-The `prototyping` environment definition is not meant to be run from the `nf-neuro` repository root. If you downloaded or
-cloned the `nf-neuro` repository, don't place your project at its root (we recommend putting your project outside its
-directory to prevent conflicts with `git`).
+:::tip[Can't connect to the daemon socket]
+If you get an error, either the **docker daemon** is not running or you need to
+setup some permissions to access it. Follow [these instructions](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user),
+then get back here !
 :::
 
-### Get the devcontainer configuration
+### Custom pipeline template
 
-If you downloaded or cloned `nf-neuro` locally :
+Next step is to `clone` the **custom pipeline template**. In you VSCode window, find
+<CloneIcon class="inline-icon text-blue-300" aria-hidden /> <span class="text-blue-300">Clone git repository</span>
+under the **Start** main menu. Clicking on it opens the **command palette** at the top of the window. There, select
+**Clone from Github** and login if asked.
 
-- Copy the `prototyping` directory and its content, located in `<nf-neuro root>/.devcontainer`, to the `.devcontainer`
-  directory in your project :
-  ```bash
-  cp -r <nf-neuro root>/.devcontainer/prototyping <project_dir>/.devcontainer/.
-  ```
+![open nf-neuro-tutorial in vscode](../../../assets/images/vscode-clone-tutorial.gif)
 
-If you don't have nf-neuro locally, download the **prototyping devcontainer archive** at
-[this link](https://github.com/scilus/nf-neuro/releases/download/latest/prototyping-devcontainer.zip) and extract it in
-your project's `.devcontainer` directory.
+The **command palette** now transforms to a search bar into repositories available on Github.
+**Search and select** `scilus/nf-neuro-tutorial`. Set a download location for the repository
+when asked, anywhere is fine. Wait for a prompt to **open** the cloned repository directory
+in the current VSCode window.
 
-### Launch your project in the devcontainer
+### Development container
 
-To open your project in the devcontainer, using VSCode :
-- Open your project with **VS CODE**
-  - create a new window with **File > New Window** or `ctrl+shift+N`, then use **File > Open Folder** to open your `<project_dir>`.
-- Click on the **box** in the lower left corner, to get a prompt to `Reopen in container`
-  - alternatively, open the **command palette** with `ctrl+shit+P` and start typing `Reopen in ...` to filter in
-    and select the command
+It will take only a few seconds for the editor to load up, but you don't have access to the
+**development environment** to its full extent yet. For that, you need the `devcontainer`.
+First thing, install the <span class="text-blue-300">Dev Containers</span> extension. You'll
+find it in the <ExtensionsIcon class="inline-icon text-blue-300" aria-hidden />
+<span class="text-blue-300">Extension Marketplace</span>, located in the navigation bar on the left.
 
-The procedure will start a docker build, wait for a few minutes and enjoy your fully configured development environment.
+![dev containers extension](../../../assets/images/dev-containers-extension.png)
 
-## Available in the container
-
-- `nf-core` accessible through the terminal, which is configured to access `nf-neuro` modules and subworkflows
-- `git`, `github-cli`
-- `curl`, `wget`, `apt-get`
-- `nextflow`, `docker`, `tmux`
-
-## Available in the VS Code IDE through extensions
-
-- Docker images and containers management
-- Nextflow execution environemnt
-- Python and C++ linting, building and debugging tools
-- Github Pull Requests management
-- Github flavored markdown previewing
-- Neuroimaging data viewer
-- Test Data introspection
-- Resource monitoring
-- Remote development
-- Live sharing with collaborators
-
-## Manual installation
-
-### Dependencies
-
-- Python &geq; 3.8, < 3.13
-- Docker &geq; 24 (we recommend using [Docker Desktop](https://www.docker.com/products/docker-desktop))
-- Java Runtime &geq; 11, &leq; 17
-  - On Ubuntu, install `openjdk-jre-<version>` packages
-- Nextflow &geq; 23.04.0
-- nf-test &geq; 0.9.0
-- Node &geq; 14, `Prettier` and `editorconfig` (see [below](#installing-prettier-and-editorconfig))
-
-:::caution
-Nextflow might not detect the right `Java virtual machine` by default, more so if
-multiple versions of the runtime are installed. If so, you need to set the environment
-variable `JAVA_HOME` to target the right one.
-
-- Linux : look in `/usr/lib/jvm` for
-  a folder named `java-<version>-openjdk-<platform>` and use it as `JAVA_HOME`.
-- MacOS : if the `Java jvm` is the preferential one, use `JAVA_HOME=$(/usr/libexec/java_home)`.
-  Else, look into `/Library/Java/JavaVirtualMachines` for the folder with the correct
-  runtime version (named `jdk<inner version>_1<runtime version>.jdk`) and use the
-  following : `/Library/Java/JavaVirtualMachines/jdk<inner version>_1<runtime version>.jdk/Contents/Home`.
-:::
-
-### Python environment
-
-The project uses _poetry_ to manage python dependencies. To install it using pipx,
-run the following commands :
-
-```bash
-pip install pipx
-pipx ensurepath
-pipx install poetry==1.8.*
-```
+Once installed, it adds the options we need in the <RemoteIcon class="inline-icon hover:bg-blue-400" aria-hidden />
+<span class="text-blue-300">Remote Window Menu</span>. You'll find it in the bottom
+left corner of the window. Clicking on it opens the **command palette**. The option
+you're looking for is <span class="text-blue-300">Reopen in Container</span>. Wait a few
+minutes for the container to build. <span class="hover:text-yellow-700">It's a good time
+for a hot drink <CoffeeIcon class="inline-icon" aria-hidden /></span>.
 
 :::note
-If the second command above fails, `pipx` cannot be found in the path. Prepend the
-second command with `$(which python) -m` and rerun the whole block.
+Once you get access to your files through the editor, you might want to wait a little longer.
+Some extensions may still be installing and some features of the development environment not
+available yet, indicated by a <WaitIcon class="inline-icon text-blue-300" aria-hidden />
+<span class="text-blue-300">wait icon</span> over the <ExtensionsIcon class="inline-icon" aria-hidden />
+**extension marketplace**.
 :::
 
-:::caution
-Poetry doesn't like when other python environments are activated around it. Make
-sure to deactivate any before calling `poetry` commands.
-:::
+## Working in the `devcontainer`
 
-Once done, install the project with :
+Once in the container, you'll notice that, well, not much has changed in fact ! You still have
+access to the content of the **custom pipeline template** in the <span class="text-blue-300">
+Explorer</span> area on the left. Clicking on content will open them in the **Editor** and you
+still have access to the **terminal** at the bottom of the window. You can access the **command
+palette** using the shortcut `ctrl+shit+P`, which is loaded with useful commands available in
+the **development environment**.
 
-```bash
-poetry install --no-root
-```
+### Sanity checks
 
-### Loading the project's environment
+About the **terminal**, open one (pulling on the window's footer or with the `` ctrl+shift+` ``
+shortcut, `` ` `` is on the left of the enter key). Let's verify that tools are available and
+working by running some quick and simple tests commands.
 
-:::caution
-Make sure no python environment is activated before running commands !
-:::
-
-The project scripts and dependencies can be accessed using :
+#### nf-core/tools
 
 ```bash
-poetry shell
+nf-core modules list remote
 ```
 
-which will activate the project's python environment in the current shell.
+Check the command's header, above the list of modules, you should see this info message :
+             
+> <span class="text-blue-300">INFO</span> **Modules available from** https://github.com/scilus/nf-neuro.git **(main)**
 
-:::note
-You will know the poetry environment is activated by looking at your shell. The
-input line should be prefixed by : `(nf-neuro-tools-py<version>)`, with `<version>`
-being the actual Python version used in the environment.
-:::
-
-To exit the environment, simply enter the `exit` command in the shell.
-
-:::caution
-Do not use traditional deactivation (calling `deactivate`), since it does not relinquish
-the environment gracefully, making it so you won't be able to reactivate it without
-exiting the shell.
-:::
-
-### Global environment
-
-Set the following environment variables in your `.bashrc` (or whatever is the equivalent for your shell) :
+#### Docker
 
 ```bash
-export NFCORE_MODULES_GIT_REMOTE=https://github.com/scilus/nf-neuro.git
-export NFCORE_MODULES_GIT_BRANCH=main
-export NFCORE_SUBWORKFLOWS_GIT_REMOTE=https://github.com/scilus/nf-neuro.git
-export NFCORE_SUBWORKFLOWS_GIT_BRANCH=main
+docker run hello-world
 ```
 
-This will make it so the `nf-core` commands target the right repository by default. Else, you'll need to
-add `--git-remote` and `--branch` options to pretty much all commands relating to `modules` and `subworkflows`.
+Check the command's output, it should be the same as when you run the command from outside the container.
 
-### Working with VS Code
-
-The `nf-neuro` project curates a bundle of useful extensions for Visual Studio Code, the `nf-neuro-extensions`
-package. You can find it easily on the [extension marketplace](https://marketplace.visualstudio.com/items?itemName=nf-neuro.nf-neuro-extensionpack).
-
-## Installing Prettier and editorconfig
-
-To install **Prettier** and **editorconfig** for the project, you need to have `node` and `npm` installed on
-your system to at least version 14. On Ubuntu, you can do it using snap :
+#### Nextflow
 
 ```bash
-sudo snap install node --classic
+nextflow run helloworld
 ```
 
-However, if you cannot install snap, or have another OS, refer to the [official documentation](https://nodejs.org/en/download/package-manager/)
-for the installation procedure.
+Verify the **nextflow-io/helloworld** pipeline is pulled successuflly. Check the command's output,
+you've been greeted in 4 different languages (english, french, italian, spanish) !
 
-Under the current configuration for the _Development Container_, for this project, we use the following procedure,
-considering `${NODE_MAJOR}` is at least 14 for Prettier :
+#### nf-test
 
 ```bash
-curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - &&\
-apt-get install -y nodejs
-
-npm install --save-dev --save-exact prettier
-npm install --save-dev --save-exact editorconfig-checker
-
-echo "function prettier() { npm exec prettier $@; }" >> ~/.bashrc
-echo "function editorconfig-checker() { npm exec editorconfig-checker $@; }" >> ~/.bashrc
+nf-test test modules/nf-neuro/reconst/dtimetrics -profile docker
 ```
+
+This test is longer, but quite effective at verifying all tools communicate well together. You'll
+have to wait around 5 minutes for it pull docker containers and run. <span class="hover:text-yellow-700">
+Enough time to finish your hot drink <CoffeeIcon class="inline-icon" aria-hidden /></span> !
+
+On completion, check the command output, it should end with <span class="text-emerald-400">SUCCESS</span>
+and all test cases labeled as <span class="text-emerald-400">PASSED</span>.
+
+### Nextflow language server
+
+In the `devcontainer`, you get access to all tools to get coding in **Nextflow** right away. The most
+important tool for development is the **Nextflow Language Server**, which is enabled in all parts of the
+VSCode editor by the container. In the <span class="text-blue-300">Explorer</span>, click on the `main.nf`
+file located at the root of the workspace.
+
+Once it opens in the <span class="text-blue-300">editor area</span>, hover above the various line of codes.
+When possible, tooltips will display, giving relevant information on the item hovered above. Tooltips for
+items from the **official nextflow language** will display an aditional <span class="text-blue-300">Read More</span>
+link its **online documentation**, useful to understand how they work.
