@@ -1,7 +1,24 @@
 ---
-title: Welcome to the nf-neuro user documentation!
+title: Welcome to the nf-neuro documentation
 description: Build efficient neuroimaging pipelines
 ---
+
+import CloneIcon from '~icons/codicon/source-control';
+import RemoteIcon from '~icons/codicon/remote';
+import ExtensionsIcon from '~icons/codicon/extensions';
+import CoffeeIcon from '~icons/codicon/coffee';
+import WaitIcon from '~icons/ic/round-access-time';
+import CommandOutputs from '../../components/CommandOutputs.astro';
+import { Steps } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+### Build efficient neuroimaging pipelines
+
+<b><i style="color:#24b064ff">nf-neuro</i></b> is an open-source initiative originally developed by the Sherbrooke Connectivity Imaging Lab (SCIL) 
+
+Our mission is to provide researchers with scalable, reproducible, and efficient pipelines for neuroimaging applications.
+
+### Why Choose nf-neuro?
 
 <b><i style="color:#24b064ff">nf-neuro</i></b> contains **thoroughly tested and validated** modules to built
 		efficient neuro-imaging pipeline ensuring **reproducible results**.
@@ -12,11 +29,31 @@ description: Build efficient neuroimaging pipelines
 <b><i style="color:#24b064ff">nf-neuro</i></b>  regroups multiple modules using **state-of-the-art tools** from
     popular libraries (e.g., FSL, ANTs, scilpy, etc.).
 
-Each components from nf-neuro have their **own container** (Docker or Singularity).
+Each components from <b><i style="color:#24b064ff">nf-neuro</i></b> have their **own container** (Docker or Singularity).
     Enabling an **easy use** on all architectures. 
 
+### Get started
 
-###  Getting help
+[Create Your Pipeline from A to Z](custom-pipeline/setup): Leverage our modules to build customized neuroimaging workflows.
 
-Quick overview
+[Contribute to nf-neuro](contribute/setup): Join our community and help advance the project.
 
+[API Documentation](api/categories): Access detailed information on our modules and subworkflows and their functionalities.
+
+Advanced tutorials: Go beyond and give superpowers to your pipeline ([Add BIDS input](bidsinput), setup [BIDS output](bidsoutput) or [automatic QC](advanced-tutorials/multiqc))
+
+### Join the Community
+
+ <b><i style="color:#24b064ff">nf-neuro</i></b> is an evolving project that thrives on contributions from the community. Whether you are a researcher, developer, or enthusiast, there are multiple ways to get involved:
+
+<Steps>
+
+1. Report issues or suggest new features.
+
+2. Contribute code, documentation, or new modules.
+
+3. Engage in discussions through forums and working groups such as [neurostars](http://neurostars.org/)
+
+</Steps>
+
+**By working together, we can push the boundaries of computational neuroscience and make powerful tools more accessible to all.**
