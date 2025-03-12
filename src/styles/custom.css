@@ -11,6 +11,9 @@
 	--sl-color-gray-5: #2e3d2f;
 	--sl-color-gray-6: #1d2b1e;
 	--sl-color-black: #141a14;
+	--sl-text-h2: var(--sl-text-3xl);
+	--sl-text-h3: var(--sl-text-2xl);
+	--sl-text-h4: var(--sl-text-1xl);
 }
 /* Light mode colors. */
 :root[data-theme='light'] {
@@ -26,6 +29,10 @@
 	--sl-color-gray-6: #e9f0e9;
 	--sl-color-gray-7: #f4f7f4;
 	--sl-color-black: #ffffff;
+}
+
+.sl-markdown-content .inline-icon {
+	display: inline;
 }
 
 :root {

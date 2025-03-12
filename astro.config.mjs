@@ -1,12 +1,14 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import Icons from 'unplugin-icons/vite';
+import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://scilus.github.io",
-	base: "/nf-neuro",
-	integrations: [
+    site: "https://scilus.github.io",
+    base: "/nf-neuro",
+    integrations: [
 		starlight({
 			title: 'nf-neuro',
 			logo: {
@@ -16,6 +18,7 @@ export default defineConfig({
 			},
 			customCss: [
 				'./src/styles/custom.css',
+				'./src/styles/global.css'
 			],
 			components: {
 				// Override the default `Hero` component.
@@ -36,8 +39,20 @@ export default defineConfig({
 				{	
 					label: 'How-to',
 					items: [
-						{ label: 'Top-5 Operators', slug: 'how-to/top-5-operators' },
-						{ label: 'Custom Subworkflows', slug: 'how-to/custom-subworkflows' },
+						{
+							label: "Nextflow",
+							items: [
+								{ label: 'Top-5 Operators', slug: 'how-to/nextflow/top-5-operators' },
+								{ label: 'Custom Subworkflows', slug: 'how-to/nextflow/custom-subworkflows' },
+							]
+						},
+						{
+							label: "VSCode",
+							items: [
+								{ label: 'Data in devcontainers', slug: 'how-to/vscode/devcontainer-manage-data' },
+								{ label: 'Nextflow support', slug: 'how-to/vscode/nextflow-language-support' }
+							]
+						}
 					],
 				},
 				{
@@ -77,6 +92,20 @@ export default defineConfig({
 					collapsed: true,
 				},
 			],
-		}),
+    	})
 	],
+    vite: {
+        plugins: [
+			Icons({ compiler: 'astro' }),
+			tailwindcss()
+		],
+		server: {
+			watch: {
+			  	ignored: [
+					"**/.pnpm-store/**/*",
+					"**/node_modules/**/*"
+				],
+			},
+		},
+    },
 });

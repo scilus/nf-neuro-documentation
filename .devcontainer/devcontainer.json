@@ -12,9 +12,6 @@
     },
     "postCreateCommand": "pnpm install",
     "waitFor": "postCreateCommand",
-    "postAttachCommand": {
-        "Server": "pnpm run dev"
-    },
     "customizations": {
         "codespaces": {
             "openFiles": ["src/contents/docs/index.mdx"]
