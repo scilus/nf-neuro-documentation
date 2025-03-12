@@ -3,63 +3,146 @@ title: Setting up your computer
 description: Setting up your computer to create a custom pipeline.
 ---
 
-import CloneIcon from '~icons/codicon/source-control'
-import RemoteIcon from '~icons/codicon/remote'
-import ExtensionsIcon from '~icons/codicon/extensions'
-import CoffeeIcon from '~icons/codicon/coffee'
-import WaitIcon from '~icons/ic/round-access-time'
+import CloneIcon from '~icons/codicon/source-control';
+import RemoteIcon from '~icons/codicon/remote';
+import ExtensionsIcon from '~icons/codicon/extensions';
+import CoffeeIcon from '~icons/codicon/coffee';
+import WaitIcon from '~icons/ic/round-access-time';
+import CommandOutputs from '../../../components/CommandOutputs.astro';
+import { Steps } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+:::tip[What to expect from this walkthrough]
+Once you complete this setup procedure, you will own a fully fledge environment
+in **VSCode**, configured with [nf-neuro](https://github.com/scilus/nf-neuro) and
+[nf-core](https://nf-co.re) tools suites, ready for quick pipeline development for
+**neuroimaging** in [Nextflow](https://nextflow.io).
+:::
 
 ## Quick setup : VSCode and **devcontainers**
 
-### Prerequisites
+The fastest way to start coding is with [VSCode](https://code.visualstudio.com) (&geq; 1.95)
+and [docker](https://www.docker.com/get-started/) (&geq; 24).
 
-The fastest way to start coding is by installing [VSCode](https://code.visualstudio.com) (&geq; 1.95)
-and [Docker](https://www.docker.com/get-started/) (&geq; 24). Once done, open **VSCode**. If it opens
-in a project, close it or open a **new empty window** (`ctrl+shift+N`). Then, test that you have access
-to **docker**. In the `VSCode Terminal`, run :
+<Steps>
 
-```bash
-docker run hello-world
-```
+1. If you don't have **VSCode** or **docker** installed yet, do it using the links provided above.
 
-![docker run hello-world](../../../assets/images/setup-test-docker.gif)
+2. Open **VSCode**. If it opens in a project, close it or open a **new empty window** (`ctrl+shift+N`).
 
-:::tip[Can't connect to the daemon socket]
-If you get an error, either the **docker daemon** is not running or you need to
-setup some permissions to access it. Follow [these instructions](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user),
-then get back here !
-:::
+3. Open the **VSCode terminal**. For that, you can either **pull on the VSCode window footer** or
+   use the `` ctrl+shift+` `` keyboard shortcut (you will find the `` ` `` key left to the `Enter` key).
 
-### Custom pipeline template
+   ![docker run hello-world](../../../assets/images/open-terminal-footer.gif)
 
-Next step is to `clone` the **custom pipeline template**. In you VSCode window, find
-<CloneIcon class="inline-icon text-blue-300" aria-hidden /> <span class="text-blue-300">Clone git repository</span>
-under the **Start** main menu. Clicking on it opens the **command palette** at the top of the window. There, select
-**Clone from Github** and login if asked.
+4. Test that you have access to **docker**. In the `VSCode Terminal`, run :
 
-![open nf-neuro-tutorial in vscode](../../../assets/images/vscode-clone-tutorial.gif)
+   <CommandOutputs>
+   <span slot="command">
+   ```bash
+   docker run hello-world
+   ```
+   </span>
+   <span slot="output">
+   ```
+   Unable to find image 'hello-world:latest' locally
+   latest: Pulling from library/hello-world
+   e6590344b1a5: Pull complete 
+   Digest: sha256:bfbb0cc14f13f9ed1ae86abc2b9f11181dc50d779807ed3a3c5e55a6936dbdd5
+   Status: Downloaded newer image for hello-world:latest
 
-The **command palette** now transforms to a search bar into repositories available on Github.
-**Search and select** `scilus/nf-neuro-tutorial`. Set a download location for the repository
-when asked, anywhere is fine. Wait for a prompt to **open** the cloned repository directory
-in the current VSCode window.
+   Hello from Docker!
+
+   This message shows that your installation appears to be working correctly.
+   To generate this message, Docker took the following steps:
+   1. The Docker client contacted the Docker daemon.
+   2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+       (amd64)
+   3. The Docker daemon created a new container from that image which runs the
+       executable that produces the output you are currently reading.
+   4. The Docker daemon streamed that output to the Docker client, which sent it
+       to your terminal.
+   To try something more ambitious, you can run an Ubuntu container with:
+
+   $ docker run -it ubuntu bash
+
+   Share images, automate workflows, and more with a free Docker ID:
+   https://hub.docker.com/
+   For more examples and ideas, visit:
+   https://docs.docker.com/get-started/
+   ```
+   </span>
+   </CommandOutputs>
+
+   :::tip[Can't connect to the daemon socket]
+   If you get an error, either the **docker daemon** is not running or you need to
+   setup some permissions to access it. Follow [these instructions](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user),
+   then get back here !
+   :::
+
+</Steps>
+
+### Install the pipeline template
+
+Next step is to **install the pipeline template** locally. 
+
+<Steps>
+
+1. In you VSCode window, find <CloneIcon class="inline-icon text-blue-300" aria-hidden />
+   <span class="text-blue-300">Clone git repository</span> under the **Start** main menu.
+   Clicking on it opens the **command palette** at the top of the window.
+
+   ![vscode clone github repository](../../../assets/images/vscode-clone-github.png)
+
+2. Select **Clone from Github** and login if asked.
+
+   :::tip
+   The **command palette** now transforms to a search bar into repositories available on Github.
+   :::
+
+3. **Search and select** `scilus/nf-neuro-tutorial`. Set a download location for the repository
+   when asked, anywhere is fine.
+
+   ![vscode find nf-neuro-tutorial](../../../assets/images/vscode-clone-selection.png)
+
+4. Wait for a prompt to **open** the cloned repository directory in the current VSCode window.
+
+</Steps>
 
 ### Development container
 
 It will take only a few seconds for the editor to load up, but you don't have access to the
 **development environment** to its full extent yet. For that, you need the `devcontainer`.
-First thing, install the <span class="text-blue-300">Dev Containers</span> extension. You'll
-find it in the <ExtensionsIcon class="inline-icon text-blue-300" aria-hidden />
-<span class="text-blue-300">Extension Marketplace</span>, located in the navigation bar on the left.
 
-![dev containers extension](../../../assets/images/dev-containers-extension.png)
+<Steps>
 
-Once installed, it adds the options we need in the <RemoteIcon class="inline-icon hover:bg-blue-400" aria-hidden />
-<span class="text-blue-300">Remote Window Menu</span>. You'll find it in the bottom
-left corner of the window. Clicking on it opens the **command palette**. The option
-you're looking for is <span class="text-blue-300">Reopen in Container</span>. Wait a few
-minutes for the container to build. <span class="hover:text-yellow-700">It's a good time
-for a hot drink <CoffeeIcon class="inline-icon" aria-hidden /></span>.
+1. Install the <span class="text-blue-300">Dev Containers</span> extension. You'll
+   find it in the <ExtensionsIcon class="inline-icon text-blue-300" aria-hidden />
+   <span class="text-blue-300">Extension Marketplace</span>, located in the navigation bar on the left.
+
+   ![dev containers extension](../../../assets/images/devcontainers-extension.png)
+   
+2. Locate and click on the <span class="text-blue-300">Remote Window Menu</span> icon
+   <RemoteIcon class="inline-icon hover:bg-blue-400" aria-hidden /> at the bottom left
+   corner of the **VSCode** window. The **command palette** at the trop of the window.
+
+   ![vscode remote window](../../../assets/images/open-remote-window.png)
+
+3. Find the <span class="text-blue-300">Reopen in Container</span> option and click it.
+
+   ![reopen in container](../../../assets/images/reopen-in-container.png)
+
+4. Wait a few minutes for the container to build. <span class="hover:text-yellow-700">It's
+   a good time for a hot drink <CoffeeIcon class="inline-icon" aria-hidden /></span>.
+
+   :::tip
+   It will appear as nothing much happens in the VSCode window. To show the container
+   build logs, click on the tooltip displayed at the bottom right corner of the screen.
+
+   ![devcontainer build log](../../../assets/images/devcontainer-build-log.png)
+   :::
+
+</Steps>
 
 :::note
 Once you get access to your files through the editor, you might want to wait a little longer.
@@ -71,116 +154,157 @@ available yet, indicated by a <WaitIcon class="inline-icon text-blue-300" aria-h
 
 ## Working in the `devcontainer`
 
-Once in the container, you'll notice that, well, not much has changed in fact ! You still have
-access to the content of the **custom pipeline template** in the <span class="text-blue-300">
-Explorer</span> area on the left. Clicking on content will open them in the **Editor** and you
-still have access to the **terminal** at the bottom of the window. You can access the **command
-palette** using the shortcut `ctrl+shit+P`, which is loaded with useful commands available in
-the **development environment**.
+Once in the container, you'll notice that, well, not much has changed in fact !
+
+<Tabs>
+<TabItem label="Explorer panel">
+The whole content of the **custom pipeline template** you cloned locally on your computer is accessible
+through the <span class="text-blue-300">Explorer panel</span> on the left.
+</TabItem>
+<TabItem label="Editor area">
+Clicking on any file in the <span class="text-blue-300">Explorer panel</span> will open it in the
+**Editor area**. Its content is the same locally and in the container. When you modify it inside the
+container and save the file (`ctrl+s`), changes apply instantly on your computer.
+</TabItem>
+<TabItem label="Terminal">
+The **terminal** is still located at the bottom of the window. Thugging at VSCode window's footer will
+open it, or you can use the `` ctrl+shift+` `` shortcut. There, you have access to tools installed **inside
+the container**, like <span class="text-blue-300">nextflow</span>, <span class="text-blue-300">nf-core</span>, 
+<span class="text-blue-300">nf-test</span> and <span class="text-blue-300">docker</span>.
+</TabItem>
+</Tabs>
 
 ### Sanity checks
 
-About the **terminal**, open one (pulling on the window's footer or with the `` ctrl+shift+` ``
-shortcut, `` ` `` is on the left of the enter key). Let's verify that tools are available and
-working by running some quick and simple tests commands.
+Let's verify that tools are available and working by running some quick and simple tests commands.
 
-#### nf-core/tools
+<Steps>
 
-```bash
-nf-core modules list remote
-```
+1. Open a **VSCode terminal** (pulling on the window's footer or with the `` ctrl+shift+` ``
+   shortcut, `` ` `` is on the left of the enter key). 
 
-Check the command's header, above the list of modules, you should see this info message :
+2. **nf-core/tools**
 
-```bash frame="none"      
-INFO    Modules available from https://github.com/scilus/nf-neuro.git (main)
-```
+   <CommandOutputs>
+   <span slot="command">
+   ```bash
+   nf-core modules list remote
+   ```
+   </span>
+   <span slot="output">
+   Check the command's header, above the list of modules, you should see this info message :
 
-#### Docker
+   ```bash frame="none"      
+   INFO    Modules available from https://github.com/scilus/nf-neuro.git (main)
+   ```
 
-```bash
-docker run hello-world
-```
+   Verify that the link you got is the same as above.
+   </span>
+   </CommandOutputs>
 
-Check the command's output, it should be the same as when you run the command from outside the container.
+3. **docker**
 
-#### Nextflow
+   <CommandOutputs>
+   <span slot="command">
+   ```bash
+   docker run hello-world
+   ```
+   </span>
+   <span slot="output">
+   ```
+   Unable to find image 'hello-world:latest' locally
+   latest: Pulling from library/hello-world
+   e6590344b1a5: Pull complete 
+   Digest: sha256:bfbb0cc14f13f9ed1ae86abc2b9f11181dc50d779807ed3a3c5e55a6936dbdd5
+   Status: Downloaded newer image for hello-world:latest
 
-```bash
-nextflow run helloworld
-```
+   Hello from Docker!
 
-Verify the **nextflow-io/helloworld** pipeline is pulled successuflly. Check the command's output,
-you've been greeted in 4 different languages (english, french, italian, spanish) !
+   This message shows that your installation appears to be working correctly.
+   To generate this message, Docker took the following steps:
+   1. The Docker client contacted the Docker daemon.
+   2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+       (amd64)
+   3. The Docker daemon created a new container from that image which runs the
+       executable that produces the output you are currently reading.
+   4. The Docker daemon streamed that output to the Docker client, which sent it
+       to your terminal.
+   To try something more ambitious, you can run an Ubuntu container with:
 
-#### nf-test
+   $ docker run -it ubuntu bash
 
-```bash
-nf-test test modules/nf-neuro/reconst/dtimetrics -profile docker
-```
+   Share images, automate workflows, and more with a free Docker ID:
+   https://hub.docker.com/
+   For more examples and ideas, visit:
+   https://docs.docker.com/get-started/
+   ```
+   </span>
+   </CommandOutputs>
 
-This test is longer, but quite effective at verifying all tools communicate well together. You'll
-have to wait around 5 minutes for it pull docker containers and run. <span class="hover:text-yellow-700">
-Enough time to finish your hot drink <CoffeeIcon class="inline-icon" aria-hidden /></span> !
+3. **Nextflow**
 
-On completion, check the command output, it should end with <span class="text-emerald-400">SUCCESS</span>
-and all test cases labeled as <span class="text-emerald-400">PASSED</span>.
+   <CommandOutputs>
+   <span slot="command">
+   ```bash
+   nextflow run helloworld
+   ```
+   </span>
+   <span slot="output">
+   Check the command's output, you've been greeted in 4 different languages
+   (english, french, italian, spanish) !
 
-### Nextflow language server
+   ```bash
+   N E X T F L O W   ~  version 24.10.4
 
-In the `devcontainer`, you get access to all tools to get coding in **Nextflow** right away. The most
-important tool for development is the **Nextflow Language Server**, which is enabled in all parts of the
-VSCode editor by the container. In the <span class="text-blue-300">Explorer</span>, click on the `main.nf`
-file located at the root of the workspace.
+   Pulling nextflow-io/helloworld ...
+   downloaded from https://github.com/nextflow-io/hello.git
+   Launching `https://github.com/nextflow-io/helloworld` [disturbed_mahavira] DSL2 - revision: afff16a9b4 [master]
 
-Once it opens in the <span class="text-blue-300">editor area</span>, hover above the various line of codes.
-When possible, tooltips will display, giving relevant information on the item hovered above. Tooltips for
-items from the **official nextflow language** will display an aditional <span class="text-blue-300">Read More</span>
-link its **online documentation**, useful to understand how they work.
+   executor >  local (4)
+   [59/71fa40] process > sayHello (4) [100%] 4 of 4 ✔
+   Bonjour world!
 
-### Accessing your data
+   Hello world!
 
-In the `devcontainer`, you have access to everything located **inside your workspace**. For you, this means
-everything that comes bundled in the `scilus/nf-neuro-tutorial` repository. You can call commands to look
-outside this directory, like `ls /` or `ls ~`, but you won't find what is on your computer. This is called
-**isolation** and is a core feature of containers. It does limit you, but it also means that
-you can break things (like deleting everything under `/`) without breaking your computer.
+   Ciao world!
 
-Good news though, there is ways to give access to your data to the container. If your dataset is small
-enough, the simpler way is to **copy it** in the nf-neuro-tutorial repository directory. When you launch
-the `devcontainer` from a directory, VSCode **automatically connects it the workspace in the container**.
-This way, any modifications made from your computer reflect instantly inside the container (and
-vice-versa). However, for larger dataset, this would be impractical. For that, there are 2 ways :
+   Hola world!
+   ```
+   </span>
+   </CommandOutputs>
 
-#### Mounting paths in the devcontainer
+4. **nf-test**
+   :::note
+   This test is longer, but quite effective at verifying all tools communicate well together. You'll
+   have to wait around 5 minutes, for it pull docker containers and run, maybe more depending on your
+   internet connection speed. <span class="hover:text-yellow-700">Enough time to finish your hot drink
+   <CoffeeIcon class="inline-icon" aria-hidden /></span> !
+   :::
 
-Instead of copying and duplicating data, you can define a **new mount point** in the devcontainer
-definition. You will find it in `.devcontainer/devcontainer.json`. Look for the **mounts** entry,
-near <span class="text-blue-300">line 15</span>. To define a mount point add the following in the
-mounts entry :
+   <CommandOutputs>
+   <span slot="command">
+   ```bash
+   nf-test test modules/nf-neuro/reconst/dtimetrics --profile docker
+   ```
+   </span>
+   <span slot="output">
+   ```
+   ? nf-test 0.9.2
+   https://www.nf-test.com
+   (c) 2021 - 2024 Lukas Forer and Sebastian Schoenherr
 
-```json
-{
-    "source": "<source>",
-    "target": "/workspaces/<target>",
-    "type": "bind"
-}
-```
+   Load .nf-test/plugins/nft-nifti/0.0.1/nft-nifti-0.0.1.jar
 
-Replace <span class="text-blue-300">\<source\></span> by the **absolute path** to the data
-on your computer and <span class="text-blue-300">\<target\></span> with the name of the directory
-you'd like your data to be placed inside the container, under `/workspaces`.
+   Test Process RECONST_DTIMETRICS
 
-:::caution
-Your **identity** changes inside the container. If the location of the data on your computer is **user
-restricted**, for instance a mounted share accessible with your username, you might not have access to
-it inside the container.
-:::
+   Test [98c90c05] 'reconst - dtimetrics' PASSED (135.975s)
+   Test [8dc8917f] 'reconst - dtimetrics_with_b0mask' PASSED (46.21s)
+   Test [4ab7ab0c] 'reconst - stub-run dtimetrics' PASSED (16.64s)
 
-#### Piggyback on Nextflow
 
-Note that there is also a way to not copy data on your computer. A great feature of Nextflow
-is that it handles **remote files** quite well. By that, we mean <span class="text-blue-300">HTTP
-links</span>, <span class="text-blue-300">amazon s3 buckets</span> and even <span class="text-blue-300">
-ftp links</span>. If possible, define your inputs using those, you'll find all the information needed
-in the [Nextflow documentation](https://nextflow.io/docs/latest/working-with-files.html#remote-files).
+   SUCCESS: Executed 3 tests in 198.85s
+   ```
+   </span>
+   </CommandOutputs>
+
+</Steps>

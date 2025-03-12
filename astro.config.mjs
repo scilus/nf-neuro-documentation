@@ -39,8 +39,20 @@ export default defineConfig({
 				{	
 					label: 'How-to',
 					items: [
-						{ label: 'Top-5 Operators', slug: 'how-to/top-5-operators' },
-						{ label: 'Custom Subworkflows', slug: 'how-to/custom-subworkflows' },
+						{
+							label: "Nextflow",
+							items: [
+								{ label: 'Top-5 Operators', slug: 'how-to/nextflow/top-5-operators' },
+								{ label: 'Custom Subworkflows', slug: 'how-to/nextflow/custom-subworkflows' },
+							]
+						},
+						{
+							label: "VSCode",
+							items: [
+								{ label: 'Data in devcontainers', slug: 'how-to/vscode/devcontainer-manage-data' },
+								{ label: 'Nextflow support', slug: 'how-to/vscode/nextflow-language-support' }
+							]
+						}
 					],
 				},
 				{
