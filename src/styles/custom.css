@@ -34,3 +34,8 @@
 .sl-markdown-content .inline-icon {
 	display: inline;
 }
+
+:root {
+	--sl-sidebar-width: 20rem;
+	--sl-content-width: 75rem;
+}
