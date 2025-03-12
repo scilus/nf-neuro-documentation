@@ -10,27 +10,35 @@ import CoffeeIcon from '~icons/codicon/coffee';
 import WaitIcon from '~icons/ic/round-access-time';
 import CommandOutputs from '../../components/CommandOutputs.astro';
 import { Steps } from '@astrojs/starlight/components';
+import { Card, CardGrid } from '@astrojs/starlight/components';
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 ### Build efficient neuroimaging pipelines
 
-<b><i style="color:#24b064ff">nf-neuro</i></b> is an open-source initiative originally developed by the Sherbrooke Connectivity Imaging Lab (SCIL) 
+<b><i style="color:#24b064ff">nf-neuro</i></b> is an open-source initiative originally developed by the [Sherbrooke Connectivity Imaging Lab](https://scil.usherbrooke.ca/) (SCIL) 
 
 Our mission is to provide researchers with scalable, reproducible, and efficient pipelines for neuroimaging applications.
 
 ### Why Choose nf-neuro?
 
-<b><i style="color:#24b064ff">nf-neuro</i></b> contains **thoroughly tested and validated** modules to built
+<CardGrid stagger>
+	<Card title="Reproducibility" icon="rocket">
+		**nf-neuro** contains **thoroughly tested and validated** modules to built
 		efficient neuro-imaging pipeline ensuring **reproducible results**.
-
-<b><i style="color:#24b064ff">nf-neuro</i></b> is built against the **`nf-core` guidelines**, which promotes
+	</Card>
+	<Card title="Development guidelines" icon="document">
+		`nf-neuro` is built against the **`nf-core` guidelines**, which promotes
     high coding standards and good practice.
-
-<b><i style="color:#24b064ff">nf-neuro</i></b>  regroups multiple modules using **state-of-the-art tools** from
+	</Card>
+  <Card title="State-of-the-art neuro-imaging tools" icon="seti:powershell">
+    `nf-neuro` regroups multiple modules using **state-of-the-art tools** from
     popular libraries (e.g., FSL, ANTs, scilpy, etc.).
-
-Each components from <b><i style="color:#24b064ff">nf-neuro</i></b> have their **own container** (Docker or Singularity).
+  </Card>
+	<Card title="Portability" icon="cloud-download">
+		Each components from nf-neuro have their **own container** (Docker or Singularity).
     Enabling an **easy use** on all architectures. 
+	</Card>
+</CardGrid>
 
 ### Get started
 
