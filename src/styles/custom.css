@@ -27,3 +27,8 @@
 	--sl-color-gray-7: #f4f7f4;
 	--sl-color-black: #ffffff;
 }
+
+:root {
+	--sl-sidebar-width: 20rem;
+	--sl-content-width: 75rem;
+}
