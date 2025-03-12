@@ -37,5 +37,13 @@
 
 :root {
 	--sl-sidebar-width: 20rem;
-	--sl-content-width: 75rem;
+	--sl-content-width: 65rem;
+}
+
+img {
+	display: block;
+    float: none;
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
 }
