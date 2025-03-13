@@ -38,6 +38,7 @@
 :root {
 	--sl-sidebar-width: 20rem;
 	--sl-content-width: 65rem;
+	--sl-text-6xl: 3rem;
 }
 
 img {
