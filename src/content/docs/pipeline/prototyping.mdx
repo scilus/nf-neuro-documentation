@@ -12,7 +12,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 In this tutorial, you'll learn how to setup your pipeline environment and create your
 main pipeline workflow, using components from `nf-neuro`. 
 
-The material to follow the tutorial is available here: https://github.com/scilus/nf-neuro-tutorial. 
+The material to follow the tutorial is available [here](https://github.com/scilus/nf-neuro-tutorial).
 
 ```bash
 git clone git@github.com:yourgithubID/nf-neuro-tutorial.git
@@ -138,12 +138,6 @@ workflow {
 }
 ```
 
-This workflow, named `get_data`, is designed to fetch input files from a specified directory.
-It's a generic and simple data loading step that's often used at the beginning of a larger pipeline.
-
-The use of channels is key here; they allow for efficient, asynchronous data flow through the pipeline.
-The fromFilePairs method is particularly useful for handling paired-end sequencing data, though in this case it's being used more generally to group related files.
-
 ### Data
 
 To keep things simple, we'll consider you want to process a dataset that contains for one subject and session a DWI and a T1 image, as follows :
@@ -171,8 +165,15 @@ data
 ### Step 1: Visualize input data
 
 Open the main.nf file in the VScode viewer. 
-The `main.nf` is pre-filled with a worflow name `get_data` to fetch data from the data folder and a worflow 
-to visualize the data. Run the nextflow pipeline using the following command : 
+The `main.nf` is pre-filled with a worflow name `get_data` and a worflow to visualize the data. 
+Th `get_data` workflow is designed to fetch input files from a specified directory.
+It's a generic and simple data loading step that's often used at the beginning of a larger pipeline.
+
+The use of `Channel` is key here; they allow for efficient, asynchronous data flow through the pipeline.
+The `fromFilePairs()` method is particularly useful for handling paired-end sequencing data,
+though in this case it's being used more generally to group related files.
+
+Run the nextflow pipeline using the following command : 
 
    <CommandOutputs>
    <span slot="command">
@@ -250,7 +251,6 @@ Replace the provided `get_data` workflow with the one below and re-execute the n
     ```bash
     nextflow run main.nf --input data -profile docker
     ```
-
    </span>
    <span slot="output">
    You should see this output:
@@ -268,7 +268,6 @@ Replace the provided `get_data` workflow with the one below and re-execute the n
     ```bash
     [subject_session_id, /path/to/subject1/ses-01/dwi/*dwi.nii.gz, /path/to/subject1/ses-01/dwi/*dwi.bval, /path/to/subject1/ses-01/dwi/*dwi.bvec]
     ```
-
    </span>
    <span slot="explain">
     Let's explain it step by step:
@@ -341,10 +340,8 @@ using the following structure and `it` :
    </CommandOutputs>
 
 
-
 Finally, by default, files are sorted alphabetically, so you need to reorder them to get a specific file order. 
 To do this, you use the `map` function, as follows:
-
 
    <CommandOutputs>
    <span slot="command">
@@ -355,7 +352,6 @@ To do this, you use the `map` function, as follows:
                { it.parent.parent.parent.name + "_" + it.parent.parent.name}
                .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
     ```
-
    </span>
    <span slot="output">
    You should see this output:
@@ -363,7 +359,6 @@ To do this, you use the `map` function, as follows:
    ```bash frame="none"      
     [[id:sub-003_ses-01], /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.nii.gz, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bval, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bvec]
    ```
-
    </span>
    <span slot="explain">
     Let's explain it:
@@ -383,7 +378,6 @@ To do this, you use the `map` function, as follows:
 
    </span>
    </CommandOutputs>
-
 
 You have now created a file structure that is designed to be easily used in subsequent pipeline processes, 
 with the subject ID and session clearly labeled and the files required for DWI processing 
