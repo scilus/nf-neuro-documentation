@@ -332,8 +332,8 @@ using the following structure and `it` :
 Finally, by default, files are sorted alphabetically, so you need to reorder them to get a specific file order. 
 To do this, you use the `map` function, as follows:
 
-   <CommandOutputs>
-   <span slot="command">
+<Tabs>
+<TabItem label="Command">
     ```nextflow
            input = file(params.input)
            // ** Loading all files. ** //
@@ -341,14 +341,15 @@ To do this, you use the `map` function, as follows:
                { it.parent.parent.parent.name + "_" + it.parent.parent.name}
                .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
     ```
-   </span>
-   <span slot="output">
+</TabItem>
+<TabItem label="Expected output">
    You should see this output:
 
    ```bash frame="none"      
     [[id:sub-003_ses-01], /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.nii.gz, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bval, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bvec]
    ```
-
+</TabItem>
+<TabItem label="Explanation/Details">
     Let's explain it:
 
     `.map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] }`
@@ -357,12 +358,16 @@ To do this, you use the `map` function, as follows:
     It takes the sid (sample ID), bvals, bvecs, and dwi files and reorganizes them into a new structure.
 
     The output is a channel where each element is a tuple containing:
-       [id: sid] corresponds to [id:sub-003_ses-01]
-       dwi corresponds to the dwi.nii.gz file
-       bvals corresponds to the .bval file
-       bvecs corresponds to the .bvec file
-   </span>
-   </CommandOutputs>
+
+        - [id: sid] corresponds to [id:sub-003_ses-01]
+        - dwi corresponds to the dwi.nii.gz file
+        - bvals corresponds to the .bval file
+        - bvecs corresponds to the .bvec file
+
+</TabItem>
+</Tabs>
+
+
 
 You have now created a file structure that is designed to be easily used in subsequent pipeline processes, 
 with the subject ID and session clearly labeled and the files required for DWI processing 
