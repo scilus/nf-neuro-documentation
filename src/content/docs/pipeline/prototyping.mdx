@@ -12,15 +12,9 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 In this tutorial, you'll learn how to setup your pipeline environment and create your
 main pipeline workflow, using components from `nf-neuro`. 
 
-This tutorial is aimed at anyone wishing to use nf-neuro 
-and/or develop their own pipeline. The tutorial is designed to be used as 
-a free resource; you can follow the different steps at any time. 
-
 The material to follow the tutorial is available here: https://github.com/scilus/nf-neuro-tutorial. 
-You can get it using :
 
 ```bash
-
 git clone git@github.com:yourgithubID/nf-neuro-tutorial.git
 cd nf-neuro-tutorial
 ```
@@ -34,16 +28,16 @@ To get setup fast, we recommend using **VS Code** and the `development container
 
 ## Tutorial overview
 
-The aim of this tutorial is to create a simple pipeline using nf-neuro components to process a 
-diffusion image and a T1 image, and to extract mean diffusivity (MD) and fractional anisotropy (FA) 
-values from the white matter, grey matter and cerebrospinal fluid (CSF) maps.
+In this tutorial you will create a simple pipeline using `nf-neuro` components to process a 
+diffusion image and a T1 image to extract mean diffusivity (MD) and fractional anisotropy (FA) 
+values from the white matter (WM), grey matter (GM) and cerebrospinal fluid (CSF) maps.
 
 The tutorial consists of 11 sequential steps, described below, which will enable you to complete 
-the pre-filled main.nf and nextflow.config files to obtain a complete workflow.
+the pre-filled `main.nf` and `nextflow.config` files to obtain a complete workflow.
 
 The tutorial folder is pre-configured so that you can easily follow the different steps. 
-The config, tests, modules and subworkflows folders contain the pre-installed nf-neuro components, 
-while the data folder contains the data provided for the tutorial.
+The **config**, **tests**, **modules** and **subworkflows** folders contain the pre-installed nf-neuro components, 
+while the **data** folder contains the data provided for the tutorial.
 
 ```
 nf-neuro-tutorial
@@ -144,10 +138,10 @@ workflow {
 }
 ```
 
-This workflow, named get_data, is designed to fetch input files from a specified directory.
+This workflow, named `get_data`, is designed to fetch input files from a specified directory.
 It's a generic and simple data loading step that's often used at the beginning of a larger pipeline.
 
-The use of channels is key here - they allow for efficient, asynchronous data flow through the pipeline.
+The use of channels is key here; they allow for efficient, asynchronous data flow through the pipeline.
 The fromFilePairs method is particularly useful for handling paired-end sequencing data, though in this case it's being used more generally to group related files.
 
 ### Data
@@ -159,24 +153,24 @@ data
     |--dataset_description.json
     |--participants.json
     |--participants.tsv
-    ├-- sub-003
-        |-- ses-01
+    └-- sub-003
+        └-- ses-01
             |-- anat
             |   |-- sub-003_ses-01_T1w.json
             |   |-- sub-003_ses-01_T1w.nii.gz
-            |-- dwi
+            └-- dwi
                 |-- sub-003_ses-01_dir-AP_dwi.bval
                 |-- sub-003_ses-01_dir-AP_dwi.bvec
                 |-- sub-003_ses-01_dir-AP_dwi.json
-                |-- sub-003_ses-01_dir-AP_dwi.nii.gz
+                └-- sub-003_ses-01_dir-AP_dwi.nii.gz
 
 ```
 
-## Start to play with the tutorial
+## Start to play with the tutorial/Follow the tutorial steps
 
-### Step 1: Visualize input data (main branch)
+### Step 1: Visualize input data
 
-Open the main.nf file int the VScode viewer. 
+Open the main.nf file in the VScode viewer. 
 The `main.nf` is pre-filled with a worflow name `get_data` to fetch data from the data folder and a worflow 
 to visualize the data. Run the nextflow pipeline using the following command : 
 
@@ -189,7 +183,7 @@ to visualize the data. Run the nextflow pipeline using the following command :
    <span slot="output">
    You should see this output :
 
-   ```bash frame="none"      
+   ```bash     
       [participants_files, /workspaces/nf-neuro-tutorial_test/data/participants.json, 
    /workspaces/nf-neuro-tutorial_test/data/participants.tsv]
    ```
@@ -261,7 +255,7 @@ Replace the provided `get_data` workflow with the one below and re-execute the n
    <span slot="output">
    You should see this output:
 
-   ```bash frame="none"      
+   ```bash    
    [sub-003_ses-01_dir-AP, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bval, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bvec, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.nii.gz]
    ```
     The output is a channel where each element is a tuple containing:
@@ -271,7 +265,7 @@ Replace the provided `get_data` workflow with the one below and re-execute the n
     The matching .bval file
     The matching .bvec file
 
-    ```bash frame="none"
+    ```bash
     [subject_session_id, /path/to/subject1/ses-01/dwi/*dwi.nii.gz, /path/to/subject1/ses-01/dwi/*dwi.bval, /path/to/subject1/ses-01/dwi/*dwi.bvec]
     ```
 
@@ -374,7 +368,7 @@ To do this, you use the `map` function, as follows:
    <span slot="explain">
     Let's explain it:
 
-    ```bash frame="none" 
+    ```nextflow 
     .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] }
     ```
     This is a map operation that reorganizes the emitted data. 
