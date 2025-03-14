@@ -1,6 +1,75 @@
 ---
-title: MultiQC
+title: Integrating MultiQC in your pipeline
 description: Integrating MultiQC report in your pipeline.
 ---
 
-Section to come.
+import CloneIcon from '~icons/codicon/source-control';
+import RemoteIcon from '~icons/codicon/remote';
+import ExtensionsIcon from '~icons/codicon/extensions';
+import CoffeeIcon from '~icons/codicon/coffee';
+import WaitIcon from '~icons/ic/round-access-time';
+import CommandOutputs from '../../../components/CommandOutputs.astro';
+import { Steps } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+:::tip[What to expect from this walkthrough]
+Once you complete this tutorial, you will be able to integrate
+quality control reports into your own pipeline using the powerful
+[MultiQC](https://docs.seqera.io/multiqc) tool! Users will then be able
+to evaluate the results coming out from your work!
+:::
+
+Quality control in neuroimaging is an essential step to ensure good and
+reproducible results, but it is often painful and requires a lot of manual
+manipulation of final results. Pipelines developed within the [`nf-core`](https://nf-co.re/)
+or `nf-neuro` ecosystem have access to a powerful tool to aggregate processing
+results within interactive html reports: [MultiQC](https://docs.seqera.io/multiqc).
+This integration allows for an easy evaluation of key processing steps for every
+subjects and/or a more global evaluation (population-level) using quantitative
+metrics. In this tutorial, you will see an overview of how MultiQC can integrate
+your data into a clean report, and to implement it in your own pipeline.
+
+## Prerequisites
+
+<Steps>
+
+1. Pipeline following the `nf-core` convention (similar to the one you
+created in the [Your pipeline from A to Z](../pipeline/prototyping))
+
+2. Access to the [`nf-core` tools command](https://nf-co.re/docs/nf-core-tools/)
+
+</Steps>
+
+## Installation
+
+`nf-core` have already developed a dedicated module that runs MultiQC and create
+the html report containing your data. However, we first need to install it
+within your pipeline, to do so, run the following command:
+
+<CommandOutputs>
+<span slot="command">
+```bash
+nf-core modules --git-remote https://github.com/nf-core/modules.git -b master install multiqc
+```
+</span>
+<span slot="output">
+```bash
+
+
+                                          ,--./,-.
+          ___     __   __   __   ___     /,-._.--~\ 
+    |\ | |__  __ /  ` /  \ |__) |__         }  {
+    | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                          `._,._,'
+
+    nf-core/tools version 3.2.0 - https://nf-co.re
+
+
+INFO     Installing 'multiqc'                                                                                                                                                                                                                                                                                 
+INFO     Use the following statement to include this module:                                                                                                                                                                                                                                                  
+                                                                                                                                                                                                                                                                                                              
+ include { MULTIQC } from '../modules/nf-core/multiqc/main'                                                                                                                                                                                                                                                   
+
+```
+</span>
+</CommandOutputs>
