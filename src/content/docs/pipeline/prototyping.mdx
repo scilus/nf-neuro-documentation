@@ -25,7 +25,6 @@ To get setup fast, we recommend using **VS Code** and the `development container
 [documentation](/nf-neuro/custom-pipeline/setup) to do so. You can also use
 [those instructions](/nf-neuro/custom-pipeline/setup#manual-installation) to setup yourself manually.
 
-
 ## Tutorial overview
 
 In this tutorial you will create a simple pipeline using `nf-neuro` components to process a 
@@ -87,6 +86,7 @@ manifest {
 }
 ```
 
+
 The parameters defined with `params.` can be changed at execution by another `nextflow.config` file or
 by supplying them as arguments when calling the pipeline using `nextflow run` :
 
@@ -99,6 +99,7 @@ If using a version of `nextflow` prior to `22.03.0-edge` (or `22.04.0` if using 
 you need to add `-dsl2` to the `nextflow run` command to enable the DSL2 syntax in which your
 pipeline and `nf-neuro` are written.
 :::
+
 
 ### `main.nf`
 
@@ -142,7 +143,7 @@ workflow {
 
 To keep things simple, we'll consider you want to process a dataset that contains for one subject and session a DWI and a T1 image, as follows :
 
-```
+```bash
 data
     |--dataset_description.json
     |--participants.json
@@ -150,14 +151,13 @@ data
     └-- sub-003
         └-- ses-01
             |-- anat
-            |   |-- sub-003_ses-01_T1w.json
-            |   |-- sub-003_ses-01_T1w.nii.gz
+            |   |-- "sub-003_ses-01_T1w.json"
+            |   |-- "sub-003_ses-01_T1w.nii.gz"
             └-- dwi
                 |-- sub-003_ses-01_dir-AP_dwi.bval
                 |-- sub-003_ses-01_dir-AP_dwi.bvec
                 |-- sub-003_ses-01_dir-AP_dwi.json
-                └-- sub-003_ses-01_dir-AP_dwi.nii.gz
-
+                └-- "sub-003_ses-01_dir-AP_dwi.nii.gz"
 ```
 
 ## Start to play with the tutorial/Follow the tutorial steps
@@ -166,7 +166,7 @@ data
 
 Open the main.nf file in the VScode viewer. 
 The `main.nf` is pre-filled with a worflow name `get_data` and a worflow to visualize the data. 
-Th `get_data` workflow is designed to fetch input files from a specified directory.
+The `get_data` workflow is designed to fetch input files from a specified directory.
 It's a generic and simple data loading step that's often used at the beginning of a larger pipeline.
 
 The use of `Channel` is key here; they allow for efficient, asynchronous data flow through the pipeline.
@@ -177,23 +177,21 @@ Run the nextflow pipeline using the following command :
 
    <CommandOutputs>
    <span slot="command">
-   ```bash
-   nextflow run main.nf --input data -profile docker
-   ```
+    ```bash
+    nextflow run main.nf --input data -profile docker
+    ```
    </span>
    <span slot="output">
-   You should see this output :
+   You should see this output:
 
-   ```bash     
-      [participants_files, /workspaces/nf-neuro-tutorial_test/data/participants.json, 
-   /workspaces/nf-neuro-tutorial_test/data/participants.tsv]
-   ```
+    ```bash
+    [participants_files, /workspaces/nf-neuro-tutorial_test/data/participants.json, /workspaces/nf-neuro-tutorial_test/data/participants.tsv]
+    ```   
    </span>
    </CommandOutputs>
 
-
-### Step 2: Create input structure for DTI module
-
+### Step 2: Create input structure
+#### Update data structure
 Now, let's modify the `get_data` workflow to fetch the test data. 
 Replace the provided `get_data` workflow with the one below and re-execute the nextflow.
 
@@ -247,10 +245,6 @@ Replace the provided `get_data` workflow with the one below and re-execute the n
         data.dwi.view() // Contains your DWI data: [meta, dwi, bval, bvec]
     }
     ```
-
-    ```bash
-    nextflow run main.nf --input data -profile docker
-    ```
    </span>
    <span slot="output">
    You should see this output:
@@ -268,24 +262,23 @@ Replace the provided `get_data` workflow with the one below and re-execute the n
     ```bash
     [subject_session_id, /path/to/subject1/ses-01/dwi/*dwi.nii.gz, /path/to/subject1/ses-01/dwi/*dwi.bval, /path/to/subject1/ses-01/dwi/*dwi.bvec]
     ```
-   </span>
-   <span slot="explain">
+
     Let's explain it step by step:
 
-    1. "$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}": This is the glob pattern used to match files. 
+    `$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}`: This is the glob pattern used to match files. 
     It's looking for files in any subdirectory of $input parameter that are in a dwi folder and have 
     names ending with dwi.nii.gz, dwi.bval, or dwi.bvec.
 
-    2. size: 3: This option specifies that each emitted item should contain 3 files 
+    `size`: 3: This option specifies that each emitted item should contain 3 files 
     (in this case, the dwi.nii.gz, dwi.bval, and dwi.bvec files).
 
-    3. flat: true: This option flattens the output, so instead of emitting a list of files,
+    `flat`: true: This option flattens the output, so instead of emitting a list of files,
     it emits the files as separate elements in the tuple.
-   
    </span>
    </CommandOutputs>
 
 
+#### Set correctly the Subject and session ID
 Now let's modify the input structure to make `sub-003_ses-01_dir-AP` become `sub-003_ses-01` 
 using the following structure and `it` :  
 
@@ -297,7 +290,6 @@ using the following structure and `it` :
             dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
                 { it.parent.parent.parent.name + "_" + it.parent.parent.name}
     ```
-
    </span>
    <span slot="output">
    You should see this output:
@@ -312,12 +304,9 @@ using the following structure and `it` :
     The matching .bval file
     The matching .bvec file
 
-
-   </span>
-   <span slot="explain">
     Let's explain it step by step:
 
-    { it.parent.parent.parent.name + "_" + it.parent.parent.name}
+    `{ it.parent.parent.parent.name + "_" + it.parent.parent.name}`
     
     This is a closure that defines how to create the grouping key for the file pairs. 
     It's using the names of the parent directories to create a unique identifier, 
@@ -328,18 +317,18 @@ using the following structure and `it` :
       .parent > `sub-003`
         .parent > ses-01
           .parent > dwi
-            .name > sub-003_ses-01_dir-AP_dwi.bval
+            .name > `sub-003_ses-01_dir-AP_dwi.bval`
 
     To get sessionNumber `ses-01`
     it
       .parent > `ses-01`
         .parent > dwi
-          .name > sub-003_ses-01_dir-AP_dwi.bval
-   
+          .name > `sub-003_ses-01_dir-AP_dwi.bval`
    </span>
    </CommandOutputs>
 
 
+#### Reorganize data structure
 Finally, by default, files are sorted alphabetically, so you need to reorder them to get a specific file order. 
 To do this, you use the `map` function, as follows:
 
@@ -359,29 +348,28 @@ To do this, you use the `map` function, as follows:
    ```bash frame="none"      
     [[id:sub-003_ses-01], /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.nii.gz, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bval, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bvec]
    ```
-   </span>
-   <span slot="explain">
+
     Let's explain it:
 
-    ```nextflow 
-    .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] }
-    ```
+    `.map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] }`
+
     This is a map operation that reorganizes the emitted data. 
     It takes the sid (sample ID), bvals, bvecs, and dwi files and reorganizes them into a new structure.
 
     The output is a channel where each element is a tuple containing:
-
        [id: sid] corresponds to [id:sub-003_ses-01]
        dwi corresponds to the dwi.nii.gz file
        bvals corresponds to the .bval file
        bvecs corresponds to the .bvec file
-
    </span>
    </CommandOutputs>
 
 You have now created a file structure that is designed to be easily used in subsequent pipeline processes, 
 with the subject ID and session clearly labeled and the files required for DWI processing 
 (the image file, b-values, and b-vectors).
+
+
+
 
 
 
