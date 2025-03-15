@@ -29,6 +29,14 @@ subjects and/or a more global evaluation (population-level) using quantitative
 metrics. In this tutorial, you will see an overview of how MultiQC can integrate
 your data into a clean report, and to implement it in your own pipeline.
 
+:::note[If you use MultiQC in your work]
+Please cite their original paper:
+Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results
+for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 
+1;32(19):3047-8. doi: [10.1093/bioinformatics/btw354](https://doi.org/10.1093/bioinformatics/btw354).
+Epub 2016 Jun 16. PMID: 27312411; PMCID: PMC5039924.
+:::
+
 ## Prerequisites
 
 <Steps>
@@ -73,3 +81,95 @@ INFO     Use the following statement to include this module:
 ```
 </span>
 </CommandOutputs>
+
+## Set up MultiQC in your pipeline
+
+Once your module is installed, you need to import it within
+the `main.nf` file of your pipeline.
+
+```groovy
+import { MULTIQC } from "path/to/the/installed/module"
+```
+
+### MultiQC inputs
+
+MultiQC was originally designed to perform quality control
+on genomic data on a population level. In the neuroimaging
+field, quality control is mostly done a per-subject basis
+(with sometimes a general report summarizing quantitative
+data across the studied population). In this tutorial, we
+will go over the two methods to create:
+
+<Steps>
+
+1. A **global report** for quantitative metrics across a population.
+
+2. A **subject-specific report** allowing QC of key processing steps using
+figures (e.g., registration, segmentation, etc.).
+
+</Steps>
+
+Creating the global report is natively supported by MultiQC.
+However, we will need to tweak the existing inputs to create the
+subject-specific reports. First, let's go over the original
+inputs:
+
+```groovy
+input:
+    path  multiqc_files, stageAs: "?/*" // Contains the files to extract data from.
+    path(multiqc_config) // Configuration file for MultiQC.
+    path(extra_multiqc_config) // Additional configuration file for MultiQC.
+    path(multiqc_logo) // Custom logo to include in report.
+    path(replace_names) // Option to replace some samples, not relevant to our case.
+    path(sample_names) // Option to change sample name.
+```
+
+As you can see, there is no metadata field that map the data to a
+single subject. This will make the module run only once and generate
+a single report for all of your subject. To solve this issue,
+we will add new input containing a subject-specific metadata field:
+
+```groovy
+input:
+    tuple val(meta), path(qc_images) // Added input with subject meta field.
+    path  multiqc_files
+    path(multiqc_config)
+    path(extra_multiqc_config)
+    path(multiqc_logo)
+    path(replace_names)
+    path(sample_names)
+```
+
+Now that we have a meta field that identifies our subjects, let's use it
+to name our resulting report. To do that, we need to modify how the
+`prefix` variable is defined at the beginning of the script section.
+Copy this new line and replace the existing `def prefix...` in your
+multiqc module.
+
+<Tabs>
+<TabItem label="New prefix">
+```groovy
+def prefix = "${meta.id}"
+```
+</TabItem>
+<TabItem label="Old prefix">
+```groovy
+def prefix = task.ext.prefix ? "--filename ${task.ext.prefix}.html" : ''
+```
+</TabItem>
+</Tabs>
+
+Your MultiQC module is now up-and-running for our neuroimaging needs!
+
+### Generating and collecting QC files
+
+:::note[If you do not already have QC within your modules]
+The instructions for how to create QC files within your modules have
+been deeply covered in the [create your own module tutorial](/nf-neuro/contribute/create-your-module/main/#including-quality-control-qc-steps-within-your-module).
+The current section will assume QC is already available within your
+modules, and will cover how to generate and collect QC files during
+pipeline execution. 
+:::
+
+
+
