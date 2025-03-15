@@ -368,17 +368,347 @@ To do this, you use the `map` function, as follows:
 </Tabs>
 
 
-
-You have now created a file structure that is designed to be easily used in subsequent pipeline processes, 
+You have now created an input structure that is designed to be easily used in subsequent pipeline processes, 
 with the subject ID and session clearly labeled and the files required for DWI processing 
 (the image file, b-values, and b-vectors).
 
 
 
 
+### Step 3: How to use and configure a nf-neuro module in the workflow
 
 
-## Install new module (stop here)
+In this step, we'll **import, bind and configure** a nf-neuro module for processing DWI images. 
+We'll use a pre-installed module as an example: **RECONST_DTIMETRICS**. 
+
+#### Import the module 
+To add the module to your project, insert the following command at the beginning of the `main.nf` file: 
+
+<Tabs>
+<TabItem label="Command to add">
+```nextflow 
+#!/usr/bin/env nextflow
+
+include { RECONST_DTIMETRICS } from './modules/nf-neuro/reconst/dtimetrics/main'
+
+workflow get_data
+``` 
+</TabItem>
+</Tabs>
+
+#### Bind the module to the workflow 
+Once imported, add the module to your workflow by defining it as follows: 
+
+<Tabs>
+<TabItem label="Command to add">
+    ```nextflow
+        workflow {
+            inputs = get_data() // Get the data into the worflow
+
+            RECONST_DTIMETRICS( input_dti_metric )
+
+        }
+    ```
+</TabItem>
+</Tabs>
+
+
+
+#### Define input data 
+Before using the `RECONST_DTIMETRICS` module, it's essential to understand the file types it expects as input. 
+For this, please refer to the API Documentation: [RECONST_DTIMETRICS](https://scilus.github.io/nf-neuro/api/modules/reconst/dtimetrics/)  
+
+The `Inputs` section module shows that 4 input files are required (excluding meta):
+
+**Mandatory**: 
+- **DWI**  
+- **BVAL**  
+- **BVEC**  
+
+**Optionnel** :  
+- **Mask** 
+
+:::caution
+`meta` is a special variable, defined in every **module**, a map that gets passed around with the data, into which you can
+put information. Beware however, as it is also used to **join channels together** by looking at there whole content.
+:::
+
+We're now going to prepare the input data using Nextflow's **channel operators**, 
+and more specifically the `map` operator. 
+In our case, the channel `inputs` already contains the data **dwi**, **bval** and **bvec**. 
+As the mask is optional, we'll simply assign it an **empty list**.
+
+<Tabs>
+<TabItem label="Command to add">
+    ```nextflow
+        workflow {
+            inputs = get_data()
+
+            input_dti_metric = inputs
+                                .map{ it + [[]] }
+
+            RECONST_DTIMETRICS( input_dti_metric )
+
+        }
+    ```
+</TabItem>
+<TabItem label="Explanation/Details">
+    Let's explain it:
+
+    `.map{ it + [[]] }`: This is applying a mapping operation to each item in the inputs channel.
+
+    `it` refers to the current item being processed and `+ [[]]` is appending an empty list `[]`
+wrapped in another list `[[]]` to each item.
+</TabItem>
+</Tabs>
+
+
+:::note
+Nextflow does not directly support optional entries for processes or modules. 
+Providing an empty list ([]) instead of a file as a module input is a workaround for this 
+limitation; and indicates that an optional input is not provided.
+:::
+
+
+####  Check the input channel   
+To ensure that the new `input_dti_metric` channel is correctly configured, 
+comment the module (using `//`) and use the `.view()` operator, which will display the results directly 
+in the **terminal**, very useful for **debugging** and data validation.
+
+   <CommandOutputs>
+   <span slot="command">
+        ```nextflow
+        workflow {
+            inputs = get_data()
+
+            input_dti_metric = inputs.map{ it + [[]] }
+            input_dti_metric.view()
+
+            //RECONST_DTIMETRICS( input_dti_metric )
+
+        }
+        ```
+    And run : 
+    ```bash
+    nextflow run main.nf --input data -profile docker
+    ```
+   </span>
+   <span slot="output">
+   You should see this output:
+        ```
+        [[id:sub-003_ses-01], /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.nii.gz, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bval, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bvec, []]
+        ```
+   </span>
+   </CommandOutputs>
+
+You have now configured and checked that the inputs respects the **RECONST_DTIMETRICS** module's expectations, 
+taking into account the management of an optional file. The next step is to configure the module parameters.
+
+
+#### Define module parameters
+
+Now, we need to determine whether the module we're using requires any specific parameters. 
+To find out which **parameters** are built into modules as well as their **default value**, 
+please refer to the `Arguments` section of the module supplied by 
+API Documentation [here](https://scilus.github.io/nf-neuro/api/modules/reconst/dtimetrics/)  .
+
+
+To bind your parameters to the specific module they are meant for use the **process selector** (`withName`), that
+links the `ext.` parameter to the `params.` parameter :
+
+```nextflow
+process {
+    withName: 'YOUR_MODULE' {
+        ext.option1 = params.option1
+        ext.args1 = boolean/value/str
+    }
+}
+```
+:::note
+`process { ... }`: This block is used to define default process settings that will apply to all 
+                    processes and module in the pipeline unless overridden.
+:::
+
+The `RECONST_DTIMETRICS` module requires a set of parameters to be added to the 
+`nextflow.config` file after `manifest` part, as follows:
+
+```
+process {
+
+    withName: "RECONST_DTIMETRICS" {
+        ext.ad = false
+        ext.evecs = false
+        ext.evals = false
+        ext.fa = true
+        ext.ga = false
+        ext.rgb = false
+        ext.md = true
+        ext.mode = false
+        ext.norm = false
+        ext.rd = false
+        ext.tensor = false
+        ext.nonphysical = false
+        ext.pulsation = false
+        ext.residual = false
+        ext.b0_thr_extract_b0 = 10
+        ext.dwi_shell_tolerance = 50
+        ext.max_dti_shell_value = 1200
+        ext.run_qc = false
+    }
+}
+```
+
+
+#### Fetching outputs from the modules
+
+Last but not least, you now have a working `main.nf' file. You could run the pipeline, 
+but the output would be hard to access. Let's define the `publishDir' where the output 
+files will be placed using the `nextflow.config' file and the `output' parameter already defined:
+
+
+<Tabs>
+<TabItem label="Command to add">
+    ```nextflow
+
+    params.input      = false
+    params.output     = 'result'
+
+    process {
+        publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }
+    }
+    ```
+</TabItem>
+<TabItem label="Explanation/Details">
+    Let's explain it:
+
+        `publishDir` is a tools that dynamically generates the output directory path.
+        `${params.output}`: This refers to a parameter called output that should be defined 
+                elsewhere in the pipeline, likely in a params section or passed as a command-line argument. 
+                It serves as the base output directory.
+
+        `$meta.id`: This suggests that processes are expected to receive a meta object as input, 
+                    which has an id field. This could be used to create subdirectories for each sample or dataset.
+
+        `${task.process.replaceAll(':', '-')}`: This uses the name of the current process (`task.process`) 
+            but replaces any colons : with hyphens `-`. 
+            This is likely done because colons are not valid characters in directory names on many file systems.
+</TabItem>
+</Tabs>
+
+
+
+That's it! Your `nextflow.config` should look something like this:
+
+```
+profiles {
+    docker {
+        docker.enabled          = true
+        conda.enabled           = false
+        singularity.enabled     = false
+        podman.enabled          = false
+        shifter.enabled         = false
+        charliecloud.enabled    = false
+        apptainer.enabled       = false
+        docker.runOptions       = '-u $(id -u):$(id -g)'
+    }
+}
+
+manifest {
+    name            = 'scilus/nf-neuro-tutorial'
+    description     = """nf-neuro-tutorial is a Nextflow pipeline for processing neuroimaging data."""
+    version         = '0.1dev'
+}
+
+params.input      = false
+params.output     = 'result'
+
+process {
+
+    publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }
+
+    withName: "RECONST_DTIMETRICS" {
+        ext.ad = false
+        ext.evecs = false
+        ext.evals = false
+        ext.fa = true
+        ext.ga = false
+        ext.rgb = false
+        ext.md = true
+        ext.mode = false
+        ext.norm = false
+        ext.rd = false
+        ext.tensor = false
+        ext.nonphysical = false
+        ext.pulsation = false
+        ext.residual = false
+        ext.b0_thr_extract_b0 = 10
+        ext.dwi_shell_tolerance = 50
+        ext.max_dti_shell_value = 1200
+        ext.run_qc = false
+    }
+}
+```
+
+You can now uncomment the `RECONST_DTIMETRICS` module in `main.nf` 
+and run the pipeline using the following command:
+
+   <CommandOutputs>
+   <span slot="command">
+    ```bash
+    nextflow run main.nf --input data -profile docker
+    ```
+   </span>
+   <span slot="output">
+   You should see this output:
+        ```
+            executor >  local (1)
+            executor >  local (1)
+            [work_folder_id/id_subfloder] process > RECONST_DTIMETRICS (sub-003_ses-01) [100%] 1 of 1 ✔
+
+            Completed at: Date hour
+            Duration    : Xm Ys
+            CPU hours   : (a few seconds)
+            Succeeded   : 1
+        ```
+        Depending on whether or not you have commented `input_dti_metric.view()`, you will also see the list of files.
+   </span>
+   </CommandOutputs>
+
+
+#### Visualize data in result folder
+
+You can check the module's output files with the following command, 
+or use the VSCode interface to display FA and MD images via the NiiVue extension (pre-installed).
+
+   <CommandOutputs>
+   <span slot="command">
+    ```bash
+        ls ./result/sub-003_ses-01/RECONST_DTIMETRICS/
+    ```
+   </span>
+   <span slot="output">
+   You should see this output:
+        ```
+        sub-003_ses-01__fa.nii.gz  sub-003_ses-01__md.nii.gz  versions.yml
+        ```
+   </span>
+   </CommandOutputs>
+
+
+
+
+### Step 4 : Install a new nf-neuro module (stop here)
+
+Coming soon
+
+
+To play with channel : 
+For example, you might have one process that only needs the dwi file, another that needs the bval and bvec files,
+and a third that needs all of them. This multiMap operation allows you to easily provide the right data to each of these processes without duplicating the data in your workflow.
+
+
+
+## Install new module 
 
 Now, you can install the modules you want to include in your pipeline. Let's import the `denoising/nlmeans` module
 for T1 denoising. To do so, first open a terminal using the **VS Code** interface, either using the main menu
@@ -491,27 +821,9 @@ Here, `meta` is a special variable, defined in every **module**, a map that gets
 put information. Beware however, as it is also used to **join channels together** by looking at there whole content.
 :::
 
-### Defining modules parameters
 
-Once this is done, you might want to supply parameters for some of your modules that could be modified when calling the pipeline.
-To know which parameters are accepted in your modules, refer to the `main.nf` of the specific `nf-neuro` module and look for parameters
-that are prefixed with `ext.`, placed just before its **bash script**. `denoising/nlmeans` takes 1 possible parameter, `number_of_coils`,
-that we add to the `nextflow.config` file :
 
-```nextflow
-params.number_of_coils = 1
-```
 
-The last step is to bind your parameters to the specific module they are meant for. This is done using a **process selector** (`withName`), that
-links the `ext.` parameter to the `params.` parameter :
-
-```nextflow
-process {
-    withName: 'DENOISING_NLMEANS' {
-        ext.number_of_coils = params.number_of_coils
-    }
-}
-```
 
 That's it! Your `nextflow.config` should look something like this:
 
