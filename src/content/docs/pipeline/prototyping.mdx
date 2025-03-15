@@ -7,7 +7,7 @@ import CommandOutputs from '../../../components/CommandOutputs.astro';
 import { Steps } from '@astrojs/starlight/components';
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-## Welcome to the nf-neuro tutorial!
+# Welcome to the nf-neuro tutorial!
 
 In this tutorial, you'll learn how to setup your pipeline environment and create your
 main pipeline workflow, using components from `nf-neuro`. 
@@ -19,13 +19,13 @@ git clone git@github.com:yourgithubID/nf-neuro-tutorial.git
 cd nf-neuro-tutorial
 ```
 
-## Environment configuration
+# Environment configuration
 
 To get setup fast, we recommend using **VS Code** and the `development container`. Follow the
 [documentation](/nf-neuro/custom-pipeline/setup) to do so. You can also use
 [those instructions](/nf-neuro/custom-pipeline/setup#manual-installation) to setup yourself manually.
 
-## Tutorial overview
+# Tutorial overview
 
 In this tutorial you will create a simple pipeline using `nf-neuro` components to process a 
 diffusion image and a T1 image to extract mean diffusivity (MD) and fractional anisotropy (FA) 
@@ -157,9 +157,9 @@ data
                 └-- sub-003_ses-01_dir-AP_dwi.nii.gz
 ```
 
-## Start to play with the tutorial/Follow the tutorial steps
+# Start to play with the tutorial/Follow the tutorial steps
 
-### Step 1: Visualize input data
+## Step 1: Visualize input data
 
 Open the main.nf file in the VScode viewer. 
 The `main.nf` is pre-filled with a worflow name `get_data` and a worflow to visualize the data. 
@@ -187,8 +187,8 @@ Run the nextflow pipeline using the following command :
    </span>
    </CommandOutputs>
 
-### Step 2: Create input structure
-#### Update data structure
+## Step 2: Create input structure
+### Update data structure
 Now, let's modify the `get_data` workflow to fetch the test data. 
 Replace the provided `get_data` workflow with the one below and re-execute the nextflow.
 
@@ -275,7 +275,7 @@ Replace the provided `get_data` workflow with the one below and re-execute the n
    </CommandOutputs>
 
 
-#### Set correctly the Subject and session ID
+### Set correctly the Subject and session ID
 Now let's modify the input structure to make `sub-003_ses-01_dir-AP` become `sub-003_ses-01` 
 using the following structure and `it` :  
 
@@ -321,7 +321,7 @@ using the following structure and `it` :
    </CommandOutputs>
 
 
-#### Reorganize data structure
+### Reorganize data structure
 
 Finally, by default, files are sorted alphabetically, so you need to reorder them to get a specific file order. 
 To do this, you use the `map` function, as follows:
@@ -369,13 +369,12 @@ with the subject ID and session clearly labeled and the files required for DWI p
 
 
 
-### Step 3: How to use and configure a nf-neuro module in the workflow
+## Step 3: How to use and configure an nf-neuro module in the workflow
 
-
-In this step, we'll **import, bind and configure** a nf-neuro module for processing DWI images. 
+In this step, we'll **import, bind, define inputs and configure** an nf-neuro module for processing DWI images. 
 We'll use a pre-installed module as an example: **RECONST_DTIMETRICS**. 
 
-#### Import the module 
+### Import the module 
 To add the module to your project, insert the `include {}` command at the beginning of the `main.nf` file: 
 
 <Tabs>
@@ -389,7 +388,7 @@ include { RECONST_DTIMETRICS } from './modules/nf-neuro/reconst/dtimetrics/main'
 </TabItem>
 </Tabs>
 
-#### Bind the module to the workflow 
+### Bind the module to the workflow 
 Once imported, bind the module to your workflow by defining it as follows: 
 
 <Tabs>
@@ -406,8 +405,10 @@ Once imported, bind the module to your workflow by defining it as follows:
 </Tabs>
 
 
+### Define input data 
 
-#### Define input data 
+#### Input(s) required for module
+
 Before using the `RECONST_DTIMETRICS` module, it's essential to understand the file types it expects as input. 
 For this, please refer to the API Documentation: [RECONST_DTIMETRICS](https://scilus.github.io/nf-neuro/api/modules/reconst/dtimetrics/)  
 
@@ -464,6 +465,7 @@ limitation; and indicates that an optional input is not provided.
 
 
 ####  Check the input channel   
+
 To ensure that the new `input_dti_metric` channel is correctly configured, 
 comment the module (using `//`) and use the `.view()` operator, which will display the results directly 
 in the **terminal**, very useful for **debugging** and data validation.
@@ -498,13 +500,14 @@ You have now configured and checked that the inputs respects the **RECONST_DTIME
 taking into account the management of an optional file. The next step is to configure the module parameters.
 
 
+### Configure a module
+
 #### Define module parameters
 
 Now, we need to determine whether the module we're using requires any specific parameters. 
 To find out which **parameters** are built into modules as well as their **default value**, 
 please refer to the `Arguments` section of the module supplied by 
 API Documentation [here](https://scilus.github.io/nf-neuro/api/modules/reconst/dtimetrics/)  .
-
 
 To bind your parameters to the specific module they are meant for, use the **process selector** (`withName`), that
 links the `ext.` parameter to the `params.` parameter :
