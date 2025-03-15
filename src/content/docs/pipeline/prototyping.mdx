@@ -63,9 +63,6 @@ The `nextflow.config` file contains **parameters** that users can change when ca
 `nextflow.config` file :
 
 ```nextflow
-params.input      = false
-params.output     = 'result'
-
 profiles {
     docker {
         docker.enabled          = true
@@ -151,13 +148,13 @@ data
     └-- sub-003
         └-- ses-01
             |-- anat
-            |   |-- "sub-003_ses-01_T1w.json"
-            |   |-- "sub-003_ses-01_T1w.nii.gz"
+            |   |-- sub-003_ses-01_T1w.json
+            |   |-- sub-003_ses-01_T1w.nii.gz
             └-- dwi
                 |-- sub-003_ses-01_dir-AP_dwi.bval
                 |-- sub-003_ses-01_dir-AP_dwi.bvec
                 |-- sub-003_ses-01_dir-AP_dwi.json
-                └-- "sub-003_ses-01_dir-AP_dwi.nii.gz"
+                └-- sub-003_ses-01_dir-AP_dwi.nii.gz
 ```
 
 ## Start to play with the tutorial/Follow the tutorial steps
@@ -199,8 +196,6 @@ Replace the provided `get_data` workflow with the one below and re-execute the n
    <span slot="command">
     ```nextflow
     #!/usr/bin/env nextflow
-
-    // include { RECONST_DTIMETRICS } from './modules/nf-neuro/reconst/dtimetrics/main'
 
     workflow get_data {
         main:
@@ -254,10 +249,12 @@ Replace the provided `get_data` workflow with the one below and re-execute the n
    ```
     The output is a channel where each element is a tuple containing:
 
-    A key (likely the base name of the files)
-    The matching .nii.gz file (the DWI image)
-    The matching .bval file
-    The matching .bvec file
+     - A key (likely the base name of the files)
+     - The matching .nii.gz file (the DWI image)
+     - The matching .bval file
+     - The matching .bvec file
+
+    And following this format : 
 
     ```bash
     [subject_session_id, /path/to/subject1/ses-01/dwi/*dwi.nii.gz, /path/to/subject1/ses-01/dwi/*dwi.bval, /path/to/subject1/ses-01/dwi/*dwi.bvec]
@@ -297,12 +294,6 @@ using the following structure and `it` :
    ```bash frame="none"      
     [sub-003_ses-01, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bval, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bvec, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.nii.gz]
    ```
-    The output is a channel where each element is a tuple containing:
-
-    A key (likely the base name of the files)
-    The matching .nii.gz file (the DWI image)
-    The matching .bval file
-    The matching .bvec file
 
     Let's explain it step by step:
 
@@ -313,22 +304,25 @@ using the following structure and `it` :
     so you need to add as many "parent" as necessary to fit your data structure.
 
     To get subjectID `sub-003` : 
+
     it
       .parent > `sub-003`
-        .parent > ses-01
-          .parent > dwi
+        .parent > `ses-01`
+          .parent > `dwi`
             .name > `sub-003_ses-01_dir-AP_dwi.bval`
 
-    To get sessionNumber `ses-01`
+    To get sessionNumber `ses-01`:
+
     it
       .parent > `ses-01`
-        .parent > dwi
+        .parent > `dwi`
           .name > `sub-003_ses-01_dir-AP_dwi.bval`
    </span>
    </CommandOutputs>
 
 
 #### Reorganize data structure
+
 Finally, by default, files are sorted alphabetically, so you need to reorder them to get a specific file order. 
 To do this, you use the `map` function, as follows:
 
@@ -382,7 +376,7 @@ In this step, we'll **import, bind and configure** a nf-neuro module for process
 We'll use a pre-installed module as an example: **RECONST_DTIMETRICS**. 
 
 #### Import the module 
-To add the module to your project, insert the following command at the beginning of the `main.nf` file: 
+To add the module to your project, insert the `include {}` command at the beginning of the `main.nf` file: 
 
 <Tabs>
 <TabItem label="Command to add">
@@ -391,13 +385,12 @@ To add the module to your project, insert the following command at the beginning
 
 include { RECONST_DTIMETRICS } from './modules/nf-neuro/reconst/dtimetrics/main'
 
-workflow get_data
 ``` 
 </TabItem>
 </Tabs>
 
 #### Bind the module to the workflow 
-Once imported, add the module to your workflow by defining it as follows: 
+Once imported, bind the module to your workflow by defining it as follows: 
 
 <Tabs>
 <TabItem label="Command to add">
@@ -513,7 +506,7 @@ please refer to the `Arguments` section of the module supplied by
 API Documentation [here](https://scilus.github.io/nf-neuro/api/modules/reconst/dtimetrics/)  .
 
 
-To bind your parameters to the specific module they are meant for use the **process selector** (`withName`), that
+To bind your parameters to the specific module they are meant for, use the **process selector** (`withName`), that
 links the `ext.` parameter to the `params.` parameter :
 
 ```nextflow
@@ -557,17 +550,19 @@ process {
     }
 }
 ```
-
+:::note
+For ease of use and speed, we've set most outputs except FA and MD to ‘false’.
+:::
 
 #### Fetching outputs from the modules
 
-Last but not least, you now have a working `main.nf' file. You could run the pipeline, 
-but the output would be hard to access. Let's define the `publishDir' where the output 
-files will be placed using the `nextflow.config' file and the `output' parameter already defined:
+Last but not least, you now have a working `main.nf` file. You could run the pipeline, 
+but the output would be hard to access. Let's define the `publishDir` where the output 
+files will be placed using the `nextflow.config` file and the `output` parameter defined as follows:
 
 
 <Tabs>
-<TabItem label="Command to add">
+<TabItem label="Add to nextflow.config">
     ```nextflow
 
     params.input      = false
@@ -670,7 +665,9 @@ and run the pipeline using the following command:
             CPU hours   : (a few seconds)
             Succeeded   : 1
         ```
+        :::note
         Depending on whether or not you have commented `input_dti_metric.view()`, you will also see the list of files.
+        :::
    </span>
    </CommandOutputs>
 
