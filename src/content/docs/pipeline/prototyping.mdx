@@ -2611,10 +2611,289 @@ in your Nextflow pipeline! **Test it out !**
 
 ## Step 8 : Reorganize output in result folder ( BIDS like format - Optional )
 
-coming soon
+In this step, we will guide you through the process of configuring the output 
+of your Nextflow pipeline to follow a BIDS-like structure. 
 
-Publishing outputs using the new workflow publish syntax
-Customizing output directories in the output block
+### Example for one module
+
+We will integrate specific configurations, including the use of `publishDir`, `saveAs`, and `path` 
+in the `nextflow.config` file to handle the output of the process `BETCROP_SYNTHBET`.
+(This configuration **must be applied to each module** in your pipeline to ensure all outputs are properly organized.)
+
+
+Here is an example of the structure output :
+
+<Tabs>
+<TabItem label="Example of BIDS-like output format">
+
+```nextflow
+
+    // Add those parameters after the params.output
+
+    // Publish BIDS-like configuration
+    params.lean_output = true
+    params.publish_dir_mode = 'copy'
+
+    // In process {} part
+
+    withName: "BETCROP_SYNTHBET" {
+        memory = "4G"
+        ext.nocsf = false
+        publishDir = [
+            mode: params.publish_dir_mode,
+            saveAs: {
+                filename ->
+                def ses = meta.session ? "_${meta.session}" : ""
+                if ( filename.contains("bet_image.nii.gz") ) { "${meta.id}_${ses}_desc-t1_bet.nii.gz" }
+                else if ( filename.contains("brain_mask.nii.gz") ) { "${meta.id}_${ses}_desc-t1_mask.nii.gz" }
+                else if ( filename.contains("versions.yml") ) { null }
+                else { params.lean_output ? null : filename }
+            },
+            path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/anat/" : "${params.output}/${meta.id}/anat/" },
+            enabled: params.lean_output ? false : true
+        ]
+    }
+```
+
+</TabItem>
+<TabItem label="Let's break it down">
+
+<Steps>
+1. `publishDir` : Specify directory
+
+    The `publishDir` directive in Nextflow specifies where the output files from a process 
+    should be saved. To match the BIDS format, we need to use dynamic paths that follow the BIDS directory structure.
+
+    ```nextflow
+    /<directory>/<subject>/<session>/<datatype>/<file>
+    ```
+
+    Where:
+
+    **subject** is the identifier for the participant.
+
+    **session** is the identifier for the session (if applicable).
+
+    **datatype** refers to the type of data (e.g., `anat`, `func`).
+
+    **file** is the actual output file (e.g., T1-weighted MRI image, functional MRI data).
+
+2. `mode` : Mode of publishing
+
+    The `mode` of publishing is set by a parameter, allowing flexibility in how files are published (e.g., copy, symlink, etc.).
+    Define here with `params.publish_dir_mode`.
+
+3. `SaveAs` : Name convention.
+
+    The `saveAs` function allows you to rename or reorganize output files as they are published. 
+    This is particularly helpful when you need to ensure that your output files have BIDS-compliant filenames.
+
+    It uses the following logic:
+
+    `def ses = meta.session ? "_${meta.session}" : ""` : It **checks** if there's a session in the metadata and creates a session string accordingly.
+
+    `if ( filename.contains("bet_image.nii.gz") ) { "${meta.id}_${ses}_desc-t1_bet.nii.gz" }` : For specific file types (bet_image.nii.gz and brain_mask.nii.gz), it **renames** them with a structured naming convention including metadata.
+
+    `if ( filename.contains("versions.yml") ) { null }` : It **excludes the versions.yml** file from being published.
+
+    For other files, it either publishes them **as-is** or **excludes** them based on the `params.lean_output` setting.
+
+4. path: Directory structure
+
+    This defines the directory structure for publishing outputs. 
+    The subject and session might be derived from the filenames or passed as inputs.
+
+    It includes the subject (`meta.id`), session (`meta.session`), and output (`params.output`).
+
+    Using `meta.session ? "path_with_meta_session" : "path_without_meta_session"` if no session is provided, the path will omit the session and just use the subject ID.
+
+5. enabled: 
+
+    This enables or disables the publishing of outputs based on the `params.lean_output` parameter. 
+    If lean_output is true, publishing is disable : `params.lean_output ? false : true`
+
+</Steps>
+
+This configuration allows for fine-grained control over how files are renamed, where they are stored, 
+and whether they are published based on specific parameters such as lean_output.
+
+</TabItem>
+</Tabs>
+
+Make sure to apply this structure to every process in your pipeline that produces output to ensure that all data is 
+organized consistently, making it easier to integrate with other BIDS-compliant tools and workflows.Additionally, 
+by defining the appropriate metadata and passing the required parameters, you can easily reorganize 
+your output files and make them ready for further analysis.
+
+### Run with BIDS-like format nextflow.config
+
+Copy and paste this nextflow.config or write it yourself for each module and run your nextflow pipeline again.
+
+```bash
+nextflow run --input data -profile docker -resume
+```
+
+```nextflow
+    profiles {
+        docker {
+            docker.enabled          = true
+            conda.enabled           = false
+            singularity.enabled     = false
+            podman.enabled          = false
+            shifter.enabled         = false
+            charliecloud.enabled    = false
+            apptainer.enabled       = false
+            docker.runOptions       = '-u $(id -u):$(id -g)'
+        }
+    }
+
+    manifest {
+        name            = 'scilus/nf-neuro-tutorial'
+        description     = """nf-neuro-tutorial is a Nextflow pipeline for processing neuroimaging data."""
+        version         = '0.1dev'
+    }
+
+    params.input      = false
+    params.output     = 'result'
+
+    // Publish BIDS-like configuration
+    params.lean_output = true
+    params.publish_dir_mode = 'copy'
+
+    // ** Subworflow PREPROC_DIFF **
+    params.preproc_dwi_run_denoising = true
+
+    // ** Subworkflow PREPROC T1 **
+    params.preproc_t1_run_denoising = true
+    params.preproc_t1_run_N4 = false
+    params.preproc_t1_run_resampling = false
+    params.preproc_t1_run_ants_bet = false
+    params.preproc_t1_run_synthbet = true
+    params.preproc_t1_run_crop = false
+
+
+    process {
+
+        //publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }
+
+        withName: "DENOISING_MPPCA" {
+            ext.extent = 3
+            publishDir = [
+                mode: params.publish_dir_mode,
+                saveAs: {
+                    filename ->
+                    def ses = meta.session ? "_${meta.session}" : ""
+                    if ( filename.contains("denoised.nii.gz") ) { "${meta.id}_desc-denoised_dwi.nii.gz" }
+                    else if ( filename.contains("versions.yml") ) { null }
+                },
+                path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/dwi/" : "${params.output}/${meta.id}/dwi/" }
+            ]
+        }
+
+        withName: "BETCROP_SYNTHBET" {
+            memory = "4G"
+            ext.nocsf = false
+            publishDir = [
+                mode: params.publish_dir_mode,
+                saveAs: {
+                    filename ->
+                    def ses = meta.session ? "_${meta.session}" : ""
+                    if ( filename.contains("bet_image.nii.gz") ) { "${meta.id}_${ses}_desc-t1_bet.nii.gz" }
+                    else if ( filename.contains("brain_mask.nii.gz") ) { "${meta.id}_${ses}_desc-t1_mask.nii.gz" }
+                    else if ( filename.contains("versions.yml") ) { null }
+                    else { params.lean_output ? null : filename }
+                },
+                path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/anat/" : "${params.output}/${meta.id}/anat/" },
+                enabled: params.lean_output ? false : true
+            ]
+        }
+
+        withName: "RECONST_DTIMETRICS" {
+            ext.ad = false
+            ext.evecs = false
+            ext.evals = false
+            ext.fa = true
+            ext.ga = false
+            ext.rgb = false
+            ext.md = true
+            ext.mode = false
+            ext.norm = false
+            ext.rd = false
+            ext.tensor = false
+            ext.nonphysical = false
+            ext.pulsation = false
+            ext.residual = false
+            ext.b0_thr_extract_b0 = 10
+            ext.dwi_shell_tolerance = 50
+            ext.max_dti_shell_value = 1200
+            ext.run_qc = false
+            publishDir = [
+                mode: params.publish_dir_mode,
+                saveAs: {
+                    filename ->
+                    def ses = meta.session ? "_${meta.session}" : ""
+                    if ( filename.contains("md.nii.gz") ) { "${meta.id}_${ses}_desc-md.nii.gz" }
+                    else if ( filename.contains("fa.nii.gz") ) { "${meta.id}_${ses}_desc-fa.nii.gz" }
+                    else if ( filename.contains("versions.yml") ) { null }
+                    else { params.lean_output ? null : filename }
+                },
+                path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/dwi/" : "${params.output}/${meta.id}/dwi/" }
+            ]
+        }
+
+        // Here is an example where you want to store output with two different datatypes (stats + dwi)
+        withName: "STATS_METRICSINROI" {
+            ext.bin = true
+            ext.normalize_weights = false
+            publishDir = [
+            [
+                mode: params.publish_dir_mode,
+                saveAs: {
+                    filename ->
+                    def ses = meta.session ? "_${meta.session}" : ""
+                    if ( filename.contains("stats.json") ) { "${meta.id}_${ses}_desc-dti_stats.json" }
+                    else { params.lean_output ? null : filename }
+                },
+                path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/stats/" : "${params.output}/${meta.id}/stats/" }
+            ],
+            [
+                mode: params.publish_dir_mode,
+                saveAs: {
+                    filename ->
+                    def ses = meta.session ? "_${meta.session}" : ""
+                    if ( filename.contains("map_csf.nii.gz") ) { "${meta.id}_${ses}_desc-t1_map_csf.nii.gz" }
+                    else if ( filename.contains("map_wm.nii.gz") ) { "${meta.id}_${ses}_desc-t1_map_wm.nii.gz" }
+                    else if ( filename.contains("map_gm.nii.gz") ) { "${meta.id}_${ses}_desc-t1_map_gm.nii.gz" }
+                    else if ( filename.contains("mask_csf.nii.gz") ) { "${meta.id}_${ses}_desc-t1_mask_csf.nii.gz" }
+                    else if ( filename.contains("mask_wm.nii.gz") ) { "${meta.id}_${ses}_desc-t1_mask_wm.nii.gz" }
+                    else if ( filename.contains("mask_gm.nii.gz") ) { "${meta.id}_${ses}_desc-t1_mask_gm.nii.gz" }
+                    else { params.lean_output ? null : filename }
+                },
+                path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/anat/" : "${params.output}/${meta.id}/anat/" }
+            ]
+            ]
+        }
+    }
+```
+
+```bash
+nextflow run --input data -profile docker -resume
+```
+
+:::note
+Note that once the pipeline has run, you can experiment with different `publishDir` options by using the 
+resume feature and changing the `params.output` parameter to `result_2` or another directory. 
+Nextflow will simply copy the images from the work directory to the new output folder, following the output definitions you have set.
+:::
+
+
+
+:::caution
+Do cannot set both a `global` publishDir (`publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }`)
+and a publishDir for each individual module at the same time. 
+(Is it useful ???) 
+:::
+
 
 ## Dataset 
 
