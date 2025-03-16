@@ -188,12 +188,14 @@ Run the nextflow pipeline using the following command :
    </CommandOutputs>
 
 ## Step 2: Create input structure
+
 ### Update data structure
+
 Now, let's modify the `get_data` workflow to fetch the test data. 
 Replace the provided `get_data` workflow with the one below and re-execute the nextflow.
 
-   <CommandOutputs>
-   <span slot="command">
+<Tabs>
+<TabItem label="Command">
     ```nextflow
     #!/usr/bin/env nextflow
 
@@ -240,39 +242,38 @@ Replace the provided `get_data` workflow with the one below and re-execute the n
         data.dwi.view() // Contains your DWI data: [meta, dwi, bval, bvec]
     }
     ```
-   </span>
-   <span slot="output">
-   You should see this output:
-
+</TabItem>
+<TabItem label="Expected output">
    ```bash    
    [sub-003_ses-01_dir-AP, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bval, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bvec, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.nii.gz]
    ```
-    The output is a channel where each element is a tuple containing:
+   The output is a channel where each element is a tuple containing:
 
-     - A key (likely the base name of the files)
-     - The matching .nii.gz file (the DWI image)
-     - The matching .bval file
-     - The matching .bvec file
+    - A key (likely the base name of the files)
+    - The matching .nii.gz file (the DWI image)
+    - The matching .bval file
+    - The matching .bvec file
 
     And following this format : 
 
     ```bash
     [subject_session_id, /path/to/subject1/ses-01/dwi/*dwi.nii.gz, /path/to/subject1/ses-01/dwi/*dwi.bval, /path/to/subject1/ses-01/dwi/*dwi.bvec]
     ```
+</TabItem>
+<TabItem label=" Let's break it down">
 
-    Let's explain it step by step:
+<Steps>
 
-    `$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}`: This is the glob pattern used to match files. 
+1. `$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}`: This is the glob pattern used to match files. 
     It's looking for files in any subdirectory of $input parameter that are in a dwi folder and have 
     names ending with dwi.nii.gz, dwi.bval, or dwi.bvec.
 
-    `size`: 3: This option specifies that each emitted item should contain 3 files 
-    (in this case, the dwi.nii.gz, dwi.bval, and dwi.bvec files).
+2. `size`: 3: This option specifies that each emitted item should contain 3 files (in this case, the dwi.nii.gz, dwi.bval, and dwi.bvec files).
 
-    `flat`: true: This option flattens the output, so instead of emitting a list of files,
-    it emits the files as separate elements in the tuple.
-   </span>
-   </CommandOutputs>
+3. `flat`: true: This option flattens the output, so instead of emitting a list of files, it emits the files as separate elements in the tuple.
+</Steps>
+</TabItem>
+</Tabs>
 
 
 ### Set correctly the Subject and session ID
@@ -343,8 +344,7 @@ To do this, you use the `map` function, as follows:
     [[id:sub-003_ses-01], /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.nii.gz, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bval, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bvec]
    ```
 </TabItem>
-<TabItem label="Explanation/Details">
-    Let's explain it:
+<TabItem label="Let's break it down">
 
     `.map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] }`
 
@@ -371,10 +371,22 @@ with the subject ID and session clearly labeled and the files required for DWI p
 
 ## Step 3: How to use and configure an nf-neuro module in the workflow
 
-In this step, we'll **import, bind, define inputs and configure** an nf-neuro module for processing DWI images. 
-We'll use a pre-installed module as an example: **RECONST_DTIMETRICS**. 
+In this step, we'll add an nf-neuro module for processing DWI images, and use a pre-installed module as an example: **RECONST_DTIMETRICS**.
+To do this, we will go through 4 successive sub-steps:
 
-### Import the module 
+<Steps>
+
+1. Include the module in the main `workflow`.
+
+2. Bind the module in the main `workflow`.
+
+3. Define the input data structure for the module.
+
+4. Configure the module in the `nextflow.config` using **API Documentation**.
+</Steps>
+
+
+### Include the module 
 To add the module to your project, insert the `include {}` command at the beginning of the `main.nf` file: 
 
 <Tabs>
@@ -412,24 +424,24 @@ Once imported, bind the module to your workflow by defining it as follows:
 Before using the `RECONST_DTIMETRICS` module, it's essential to understand the file types it expects as input. 
 For this, please refer to the API Documentation: [RECONST_DTIMETRICS](https://scilus.github.io/nf-neuro/api/modules/reconst/dtimetrics/)  
 
-The `Inputs` section module shows that 4 input files are required (excluding meta):
+The `Inputs` section module shows that 4 input files are required (excluding meta): (add a screenshot ?)
 
-**Mandatory**: 
-- **DWI**  
-- **BVAL**  
-- **BVEC**  
-
-**Optionnel** :  
-- **Mask** 
+**Mandatory**: DWI, BVAL, BVEC  
+**Optionnel** : Mask 
 
 :::caution
 `meta` is a special variable, defined in every **module**, a map that gets passed around with the data, into which you can
 put information. Beware however, as it is also used to **join channels together** by looking at there whole content.
 :::
 
+:::note
+Another way to get quick help on how a module works is to use the `nf-core modules info category/tool` 
+command. This displays the module's command-line documentation. 
+Be careful, though: you won't have access to the module's parameters or default values.
+:::
+
 We're now going to prepare the input data using Nextflow's **channel operators**, 
-and more specifically the `map` operator. 
-In our case, the channel `inputs` already contains the data **dwi**, **bval** and **bvec**. 
+and more specifically the `map` operator. In our case, the channel `inputs` already contains the data **dwi**, **bval** and **bvec**. 
 As the mask is optional, we'll simply assign it an **empty list**.
 
 <Tabs>
@@ -467,8 +479,8 @@ limitation; and indicates that an optional input is not provided.
 ####  Check the input channel   
 
 To ensure that the new `input_dti_metric` channel is correctly configured, 
-comment the module (using `//`) and use the `.view()` operator, which will display the results directly 
-in the **terminal**, very useful for **debugging** and data validation.
+comment the module (using `//`) and use the [`.view()`](https://www.nextflow.io/docs/latest/reference/operator.html#view)
+operator, which will display the results directly in the **terminal**, very useful for **debugging** and data validation.
 
    <CommandOutputs>
    <span slot="command">
@@ -696,27 +708,91 @@ or use the VSCode interface to display FA and MD images via the NiiVue extension
 
 
 
+## Step 4 : Install and use a new nf-neuro module
 
-### Step 4 : Install a new nf-neuro module (stop here)
+The nf-core modules list command provides the subcommands `remote` and `local` for listing modules installed 
+in a remote repository and in the `local` pipeline respectively. Both subcommands allow to use a pattern 
+for filtering the modules by keywords eg: nf-core modules list `category/tool`. 
+To list all modules available on nf-neuro/modules, you can use `nf-core modules list remote`, 
+which will print all available modules to the terminal.
 
-Coming soon
+   <CommandOutputs>
+   <span slot="command">
+    ```bash
+       nf-core modules list remote
+    ```
+   </span>
+   <span slot="output">
+   You should see this output:
+        ```
 
+        INFO     Modules available from https://github.com/scilus/nf-neuro.git (main):                                                                                                 
+                                                                                                                                                                                    
+        ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+        ┃ Module Name                      ┃
+        ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+        │ betcrop/antsbet                  │
+        │ betcrop/fslbetcrop               │
+        │ betcrop/synthbet                 │
+        │ bundle/centroid                  │
+        │ bundle/coloring                  │
+        │ bundle/fixelafd                  │
+        │ bundle/labelmap                  │
+        │ bundle/recognize                 │
+        │ bundle/stats                     │
+        │ bundle/uniformize                │
+        │ connectivity/afdfixel            │
+        │ connectivity/decompose           │
+        │ connectivity/visualize           │
+        │ denoising/mppca                  │
+        │ denoising/nlmeans                │
+        │ image/applymask                  │
+        │ image/burnvoxels                 │
+        │ image/convert                    │
+        │ image/cropvolume                 │
+        │ image/powderaverage              │
+        │ image/resample                   │
+        │ io/nii2dcm                       │
+        │ io/readbids                      │
+        │ preproc/eddy                     │
+        │ preproc/gibbs                    │
+        │ preproc/n4                       │
+        │ preproc/normalize                │
+        │ preproc/topup                    │
+        │ reconst/diffusivitypriors        │
+        │ reconst/dtimetrics               │
+        │ reconst/fodf                     │
+        │ reconst/freewater                │
+        │ reconst/frf                      │
+        │ reconst/ihmt                     │
+        │ reconst/meanfrf                  │
+        │ reconst/noddi                    │
+        │ reconst/shmetrics                │
+        │ reconst/shsignal                 │
+        │ registration/anattodwi           │
+        │ registration/ants                │
+        │ registration/antsapplytransforms │
+        │ registration/convert             │
+        │ registration/easyreg             │
+        │ registration/synthregistration   │
+        │ registration/tractogram          │
+        │ segmentation/fastseg             │
+        │ segmentation/fastsurfer          │
+        │ segmentation/freesurferseg       │
+        │ segmentation/fsreconall          │
+        │ segmentation/synthseg            │
+        │ stats/metricsinroi               │
+        │ tracking/localtracking           │
+        │ tracking/pfttracking             │
+        │ tractogram/densitymap            │
+        │ tractogram/removeinvalid         │
+        │ tractogram/resample              │
+        │ utils/extractb0                  │
+        └──────────────────────────────────┘
+        ```
+   </span>
+   </CommandOutputs>
 
-To play with channel : 
-For example, you might have one process that only needs the dwi file, another that needs the bval and bvec files,
-and a third that needs all of them. This multiMap operation allows you to easily provide the right data to each of these processes without duplicating the data in your workflow.
-
-
-
-## Install new module 
-
-Now, you can install the modules you want to include in your pipeline. Let's import the `denoising/nlmeans` module
-for T1 denoising. To do so, first open a terminal using the **VS Code** interface, either using the main menu
-`Terminal > New Terminal` or the shortcut ``ctrl+shit+` ``. Then, use the `nf-core modules install` command.
-
-```bash
-nf-core modules install denoising/nlmeans
-```
 
 :::note
 On a first run of the commands, you may get prompted to configure some aspects of `nf-core`. You can accept every
@@ -730,126 +806,1198 @@ command `poetry shell`, then running `nf-core modules install` again. If this do
 issue](https://github.com/scilus/nf-neuro/issues/new?template=bug_report.md) on the `nf-neuro` repository.
 :::
 
-To use it in your pipeline, you need to import it at the top of your `main.nf` file. You can do it using the
-`include { DENOISING_NLMEANS } from ./modules/nf-neuro/denoising/nlmeans/main.nf` statement. Once done, you can
-use `DENOISING_NLMEANS` in your pipeline and feed your inputs to it! To have a look at which files are required to
-run the module, use the `nf-core modules info denoising/nlmeans` command (if you are using **VS Code**, install the
-`nextflow` extension, that gives you hints on modules and subworkflows intputs).
+Now, you can install the modules you want to include in your pipeline. Let's install the `denoising/nlmeans` module
+for DWI denoising. You can install modules using `nf-core modules install` command.
+The new module will be installed to the `./modules/nf-neuro/modules/` directory.
 
-## Complete `main.nf` example
 
-A complete example (e.g., fetching the inputs, importing the module, and supplying the inputs to the modules)
-is given below:
+   <CommandOutputs>
+   <span slot="command">
+    ```bash
+        nf-core modules install denoising/nlmeans
+    ```
+   </span>
+   <span slot="output">
+   You should see this output:
+    ```
+                                          ,--./,-.
+          ___     __   __   __   ___     /,-._.--~\
+    |\ | |__  __ /  ` /  \ |__) |__         }  {
+    | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                          `._,._,'
 
-```nextflow
-#!/usr/bin/env nextflow
+    nf-core/tools version 2.14.1 - https://nf-co.re
+    There is a new version of nf-core/tools available! (3.2.0)
 
-include { DENOISING_NLMEANS } from './modules/nf-neuro/denoising/nlmeans/main.nf'
 
-workflow get_data {
-    main:
-        if ( !params.input ) {
-            log.info "You must provide an input directory containing all images using:"
-            log.info ""
-            log.info "    --input=/path/to/[input]   Input directory containing your subjects"
-            log.info "                        |"
-            log.info "                        ├-- S1"
-            log.info "                        |    ├-- *dwi.nii.gz"
-            log.info "                        |    ├-- *dwi.bval"
-            log.info "                        |    ├-- *dwi.bvec"
-            log.info "                        |    ├-- *revb0.nii.gz"
-            log.info "                        |    └-- *t1.nii.gz"
-            log.info "                        └-- S2"
-            log.info "                             ├-- *dwi.nii.gz"
-            log.info "                             ├-- *bval"
-            log.info "                             ├-- *bvec"
-            log.info "                             ├-- *revb0.nii.gz"
-            log.info "                             └-- *t1.nii.gz"
-            log.info ""
-            error "Please resubmit your command with the previous file structure."
+    INFO     Installing 'denoising/nlmeans'                                                                                                                                        
+    INFO     Use the following statement to include this module:                                                                                                                   
+                                                                                                                                                                                
+    include { DENOISING_NLMEANS } from '../modules/nf-neuro/denoising/nlmeans/main'  
+    ```
+
+    :::note
+    By default nf-core prints the include command with a `../modules/[...]`.
+    In this tutorial, you need to delete a directory, like this `./modules/[...]`.
+    :::
+   </span>
+   </CommandOutputs>
+
+
+The purpose of adding this module is to denoise the DWI image before computing the DTI metrics.
+To do this, simply repeat the sequence of sub-steps seen in 
+**Step 3: How to use and configure an nf-neuro module in the workflow**.
+
+<Steps>
+
+1. Include the module at the beginning of `main.nf`.
+
+2. Bind the module in your `workflow`.
+
+3. Define the input data structure for denoising module.
+
+    Unlike the DTI module, for which input data could be given directly to the module, 
+    the MPPCA denoising module requires only the dwi image and an optional mask. 
+
+    The challenge here is to work with the NextFlow tools to redesign the input data and 
+    make it easier to manipulate. The aim is to be able to easily fetch just the DWI or BVEC and BVAL files.
+    To do this, we'll use NextFlow's [multiMap](https://www.nextflow.io/docs/latest/reference/operator.html#multimap)
+    operator to create multiple output channels from a single input channel, as follows:
+
+    <Tabs>
+    <TabItem label="Command to add">
+    ```nextflow
+    ch_dwi_bvalbvec = inputs.dwi
+        .multiMap { meta, dwi, bval, bvec ->
+            dwi:            [ meta, dwi ]
+            bvs_files:      [ meta, bval, bvec ]
+            dwi_bval_bvec:  [ meta, dwi, bval, bvec ]
+        }
+    ```
+    </TabItem>
+    <TabItem label="Let's break it down">
+    <Steps>
+
+    1. `inputs.dwi` is the input channel from `get_data` containing : meta, dwi, bval, and bvec.
+
+    2. The [multiMap](https://www.nextflow.io/docs/latest/reference/operator.html#multimap) 
+        operator is applied to this channel. For each entry in the input channel, 
+        it creates three new entries in different output channels:
+
+            a. dwi: This output contains the meta information and the dwi file. 
+            
+            b. bvs_files: This output contains the meta information, bval file, and bvec file. 
+            
+            c. dwi_bval_bvec: This output contains all four elements from the input.
+
+    3. The result of this operation is assigned to ch_dwi_bvalbvec, which becomes a multi-channel object. 
+        After this operation, you can access these channels like this:
+
+        ch_dwi_bvalbvec.dwi : [meta, dwi]
+
+        ch_dwi_bvalbvec.bvs_files : [meta, bval, bvec]
+
+        ch_dwi_bvalbvec.dwi_bval_bvec : [meta, dwi, bval, bvec]
+
+    </Steps>
+
+    </TabItem>
+    </Tabs>
+
+    This pattern is commonly used in Nextflow workflows when you need to process the same data 
+    in different ways or when different parts of your workflow require different combinations of your input data.
+
+    As in this tutorial, you might have one process that only needs the dwi file, another that needs the bval 
+    and bvec files, and a third that needs all of them. This multiMap operation allows you to easily provide 
+    the right data to each of these processes without duplicating the data in your workflow.
+
+4. Configure the denosing module in the `nextflow.config` using API Documentation [here](https://scilus.github.io/nf-neuro/api/modules/denoising/mppca/)
+
+5. Adapt the input for the `RECONST_DTIMETRICS` module to add the denoised DWI.
+
+    <Tabs>
+    <TabItem label="Command to add in workflow">
+    ```nextflow
+    // Add this command just after the DENOISING_MPPCA module
+    ch_dwi_denoised = DENOISING_MPPCA.out.image
+
+    // You can now reuse the outputs and supply them to another module!
+    // Update the input for RECONST_DTIMETRIC with DWI denoised output
+    input_dti_denoised = ch_dwi_denoised
+            .join(ch_dwi_bvalbvec.bvs_files)
+            .map{ it + [[]] }
+
+    // Update input name
+    RECONST_DTIMETRICS( input_dti_denoised )
+    ```
+    </TabItem>
+    <TabItem label="Let's break it down">
+    <Steps>
+
+    1. `DENOISING_MPPCA.out.image` is a way to assign the output from DENOISING_MPPCA 
+        to a new channel named `ch_dwi_denoised`. Specifically, it's taking the `image` output.
+        The **name** of a module's **output(s)** can be determined via the API Documentation in the `Outputs` section.
+
+    2. `.join(ch_dwi_bvalbvec.bvs_files)`: The [join](https://www.nextflow.io/docs/latest/reference/operator.html#join)
+        operator is used here to combine the items from `ch_dwi_denoised` with items from another channel `ch_dwi_bvalbvec.bvs_files`.
+        The join operation matches items from both channels based on a common key (by default, the first element of each item).
+
+    3. `.map{ it + [[]] }`: After joining, we use map to transforms each item in the channel, and adding an empty list [[]], 
+        for the optional mask input. The map operation is similar to the one we did for the DTI module in **Step 2**.
+
+    </Steps>
+
+    </TabItem>
+    </Tabs>
+
+
+
+6. Check your pipeline : 
+
+    <Tabs>
+    <TabItem label="Check if it works">
+
+    ```bash
+    nextflow run main.nf --input data -profile docker
+    ```
+    </TabItem>
+    <TabItem label="Expected output">
+
+    ```bash
+    N E X T F L O W   ~  version 24.10.4
+
+    Launching `main.nf` [astonishing_borg] DSL2 - revision: d69b63f305
+
+    executor >  local (2)
+    [ec/62dd72] process > DENOISING_MPPCA (sub-003_ses-01)    [100%] 1 of 1 ✔
+    [6e/837a31] process > RECONST_DTIMETRICS (sub-003_ses-01) [100%] 1 of 1 ✔
+    Completed at: Date Hour
+    Duration    : 1m 19s
+    CPU hours   : (a few seconds)
+    Succeeded   : 2
+    ```
+
+    Check your resulting images in the results folder!
+
+    </TabItem>
+    <TabItem label="Expected main.nf">
+    ```nextflow
+    #!/usr/bin/env nextflow
+
+    include { RECONST_DTIMETRICS } from './modules/nf-neuro/reconst/dtimetrics/main'
+    include { DENOISING_MPPCA } from './modules/nf-neuro/denoising/mppca/main'
+
+    workflow get_data {
+        main:
+            if ( !params.input ) {
+                log.info "You must provide an input directory containing all images using:"
+                log.info ""
+                log.info "    --input=/path/to/[input]   Input directory containing your subjects"
+                log.info "                        |"
+                log.info "                        ├-- S1"
+                log.info "                        |    └-- ses-01"
+                log.info "                        |    |    ├-- anat"
+                log.info "                        |    |    |   |--*t1.nii.gz"
+                log.info "                        |    |    |--dwi"
+                log.info "                        |    |    |   |--*dwi.nii.gz"
+                log.info "                        |    |    |   ├-- *dwi.bval"
+                log.info "                        |    |    |   └-- *dwi.bvec"
+                log.info "                        |    └-- ses-02"            
+                log.info "                        └-- S2"
+                log.info "                             └-- ses-01"
+                log.info "                             |     ├-- anat"
+                log.info "                             |    |   |--*t1.nii.gz"
+                log.info "                             |    |--dwi"
+                log.info "                             |    |   |--*dwi.nii.gz"
+                log.info "                             |    |   ├-- *dwi.bval"
+                log.info "                             |    |   └-- *dwi.bvec"
+                log.info "                             └-- ses-02" 
+                log.info ""
+                error "Please resubmit your command with the previous file structure."
+            }
+
+            input = file(params.input)
+            // ** Loading all files. ** //
+            dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+                { it.parent.parent.parent.name + "_" + it.parent.parent.name}
+                .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] }
+        emit:
+            dwi = dwi_channel
+    }
+
+    workflow {
+        inputs = get_data()
+
+        // Use Multimap to split the tuple into multi inputs structure
+        ch_dwi_bvalbvec = inputs.dwi
+            .multiMap { meta, dwi, bval, bvec ->
+                dwi:            [ meta, dwi ]
+                bvs_files:      [ meta, bval, bvec ]
+                dwi_bval_bvec:  [ meta, dwi, bval, bvec ]
+            }
+
+        // Denoising DWI
+        input_dwi_denoise = ch_dwi_bvalbvec.dwi
+                        .map{ it + [[]] }
+
+        DENOISING_MPPCA( input_dwi_denoise )
+
+        // Fetch specific output
+        ch_dwi_denoised = DENOISING_MPPCA.out.image
+
+        // Input DTI update with DWI denoised output
+        input_dti_denoised = ch_dwi_denoised
+                .join(ch_dwi_bvalbvec.bvs_files)
+                .map{ it + [[]] }
+
+        RECONST_DTIMETRICS( input_dti_denoised )
+
+    }
+    ```
+
+    </TabItem>
+    <TabItem label="Expected nextflow.config">
+    ```nextflow
+    profiles {
+        docker {
+            docker.enabled          = true
+            conda.enabled           = false
+            singularity.enabled     = false
+            podman.enabled          = false
+            shifter.enabled         = false
+            charliecloud.enabled    = false
+            apptainer.enabled       = false
+            docker.runOptions       = '-u $(id -u):$(id -g)'
+        }
+    }
+
+    manifest {
+        name            = 'scilus/nf-neuro-tutorial'
+        description     = """nf-neuro-tutorial is a Nextflow pipeline for processing neuroimaging data."""
+        version         = '0.1dev'
+    }
+
+    params.input      = false
+    params.output     = 'result'
+
+    process {
+
+        publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }
+
+        withName: "DENOISING_MPPCA" {
+            ext.extent = 3
         }
 
-        input = file(params.input)
-        // ** Loading all files. ** //
-        dwi_channel = Channel.fromFilePairs("$input/**/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
-            { it.parent.name }
-            .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
-        rev_channel = Channel.fromFilePairs("$input/**/*revb0.nii.gz", size: 1, flat: true)
-            { it.parent.name }
-            .map{ sid, rev -> [ [id: sid], rev ] }
-        anat_channel = Channel.fromFilePairs("$input/**/*t1.nii.gz", size: 1, flat: true)
-            { it.parent.name }
-            .map{ sid, t1 -> [ [id: sid], t1 ] }
-    emit: // Those three lines below define your named output, use those labels to select which file you want.
-        dwi = dwi_channel
-        rev = rev_channel
-        anat = anat_channel
-}
+        withName: "RECONST_DTIMETRICS" {
+            ext.ad = false
+            ext.evecs = false
+            ext.evals = false
+            ext.fa = true
+            ext.ga = false
+            ext.rgb = false
+            ext.md = true
+            ext.mode = false
+            ext.norm = false
+            ext.rd = false
+            ext.tensor = false
+            ext.nonphysical = false
+            ext.pulsation = false
+            ext.residual = false
+            ext.b0_thr_extract_b0 = 10
+            ext.dwi_shell_tolerance = 50
+            ext.max_dti_shell_value = 1200
+            ext.run_qc = false
+        }
+    }
+    ```
+    </TabItem>
+    </Tabs>
 
-workflow {
-    inputs = get_data()
-    // ** Create the input channel for nlmeans. ** //
-    // **  - Note that it also can take a mask as input, but it is not required. ** //
-    // **  - Replacing it by an empty list here. ** //
-    ch_denoising = inputs.anat
-        .map{ it + [[]] } // This add one empty list to the channel, since we do not have a mask.
 
-    // ** Run DENOISING_NLMEANS ** //
-    DENOISING_NLMEANS( ch_denoising )
-    DENOISING_NLMEANS.out.image.view() // This will show the output of the module.
+</Steps>
 
-    // ** You can then reuse the outputs and supply them to another module/subworkflow! ** //
-    //ch_nextmodule = DENOISING_NLMEANS.out.image
-    //  .join(ch_another_file)
-    // NEXT_MODULE( ch_nextmodule )
-}
-```
 
-### Fetching outputs from the modules
 
-You now have a working `main.nf` file. You could execute the pipeline, but the outputs would be hard to access. Let's define the
-`publishDir` into which to place them using the `nextflow.config` file and the `output` parameter we defined earlier :
+## Step 5 : Install and use an nf-neuro subworkflow
+
+### Install nf-neuro subworkflow
+
+As with modules, the `nf-core subworkflows list` command allows you 
+to list the subworkflows available in a remote repository and installed in the local pipeline.
+To list all subworkflows available, you can use `nf-core modules list remote`, 
+which will print all available modules to the terminal.
+
+   <CommandOutputs>
+   <span slot="command">
+    ```bash
+       nf-core subworkflows list remote
+    ```
+   </span>
+   <span slot="output">
+   You should see this output:
+    ```bash
+
+                                            ,--./,-.
+              ___     __   __   __   ___   /,-._.--~\
+        |\ | |__  __ /  ` /  \ |__) |__       }  {
+        | \| |       \__, \__/ |  \ |___   \`-._,-`-,
+                                            `._,._,'
+
+        nf-core/tools version 2.14.1 - https://nf-co.re
+        There is a new version of nf-core/tools available! (3.2.0)
+
+
+    INFO     Subworkflows available from https://github.com/scilus/nf-neuro.git (main):                                                                                                          
+                                                                                                                                                                                                
+    ┏━━━━━━━━━━━━━━━━━━━━━━━━━┓
+    ┃ Subworkflow Name        ┃
+    ┡━━━━━━━━━━━━━━━━━━━━━━━━━┩
+    │ anatomical_segmentation │
+    │ bundle_seg              │
+    │ io_bids                 │
+    │ load_test_data          │
+    │ preproc_dwi             │
+    │ preproc_t1              │
+    │ registration            │
+    │ topup_eddy              │
+    │ tractoflow              │
+    └─────────────────────────┘
+    ```
+
+   </span>
+   </CommandOutputs>
+
+
+You can now install the subworkflows to include in your pipeline. 
+Let's install the `PREPROC_T1` subworkflow designed to preprocess T1-weighted MRI data. 
+You can install the subworkflow using the `nf-core subworkflows install` command. 
+The subworkflow will be installed in the `./subworkflows/nf-neuro/` directory.
+
+   <CommandOutputs>
+   <span slot="command">
+    ```bash
+       nf-core subworkflows install preproc_T1
+    ```
+   </span>
+   <span slot="output">
+   You should see this output:
+    ```bash
+
+                                            ,--./,-.
+            ___     __   __   __   ___     /,-._.--~\
+        |\ | |__  __ /  ` /  \ |__) |__         }  {
+        | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                            `._,._,'
+
+        nf-core/tools version 2.14.1 - https://nf-co.re
+        There is a new version of nf-core/tools available! (3.2.0)
+
+
+    INFO     Installing 'preproc_t1'                                                                                                                                                             
+    INFO     Use the following statement to include this subworkflow:                                                                                                                            
+                                                                                                                                                                                                
+    include { PREPROC_T1 } from '../subworkflows/nf-neuro/preproc_t1/main' 
+    ```
+
+   </span>
+   </CommandOutputs>
+
+
+### Add new data in the input pipeline structure
+
+Based on what we saw in **Step 2** for adding DWI images to the pipeline 
+input structure, add the necessary commands to include a T1 image. 
+
+    <Tabs>
+    <TabItem label="Tasks">
+    <Steps>
+
+    1. Add T1 image path to `get_data` input structure.
+
+    2. `emit` a new output channel called `anat`.
+
+    3. Include the T1 channel data in the worflow and visualize it.
+
+    4. Run the pipeline using `nextflow run main.nf --input data -profile docker`.
+
+    </Steps>
+
+    </TabItem>
+    <TabItem label="Expected main.nf">
+    ```nextflow
+        #!/usr/bin/env nextflow
+
+        include { RECONST_DTIMETRICS } from './modules/nf-neuro/reconst/dtimetrics/main'
+        include { DENOISING_MPPCA } from './modules/nf-neuro/denoising/mppca/main'
+        include { PREPROC_T1 } from './subworkflows/nf-neuro/preproc_t1/main'
+
+        workflow get_data {
+            main:
+                if ( !params.input ) {
+                    log.info "You must provide an input directory containing all images using:"
+                    log.info ""
+                    log.info "    --input=/path/to/[input]   Input directory containing your subjects"
+                    log.info "                        |"
+                    log.info "                        ├-- S1"
+                    log.info "                        |    ├-- *dwi.nii.gz"
+                    log.info "                        |    ├-- *dwi.bval"
+                    log.info "                        |    ├-- *dwi.bvec"
+                    log.info "                        |    └-- *t1.nii.gz"
+                    log.info "                        └-- S2"
+                    log.info "                             ├-- *dwi.nii.gz"
+                    log.info "                             ├-- *bval"
+                    log.info "                             ├-- *bvec"
+                    log.info "                             └-- *t1.nii.gz"
+                    log.info ""
+                    error "Please resubmit your command with the previous file structure."
+                }
+
+                input = file(params.input)
+                // ** Loading DWI files. ** //
+                dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+                    { it.parent.parent.parent.name + "_" + it.parent.parent.name} // Set the subject filename as subjectID + '_' + session.
+                    .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
+                // ** Loading T1 file. ** //
+                t1_channel = Channel.fromFilePairs("$input/**/**/anat/*T1w.nii.gz", size: 1, flat: true)
+                    { it.parent.parent.parent.name + "_" + it.parent.parent.name } // Set the subject filename as subjectID + '_' + session.
+                    .map{ sid, t1 -> [ [id: sid], t1 ] }
+            emit:
+                dwi = dwi_channel 
+                anat = t1_channel
+        }
+
+        workflow {
+            inputs = get_data()
+
+            // Use Multimap to split the tuple into multi inputs structure
+            ch_dwi_bvalbvec = inputs.dwi
+                .multiMap { meta, dwi, bval, bvec ->
+                    dwi:            [ meta, dwi ]
+                    bvs_files:      [ meta, bval, bvec ]
+                    dwi_bval_bvec:  [ meta, dwi, bval, bvec ]
+                }
+
+            // Denoising DWI
+            input_dwi_denoise = ch_dwi_bvalbvec.dwi
+                            .map{ it + [[]] }
+            DENOISING_MPPCA( input_dwi_denoise )
+
+            // Fetch specific output
+            ch_dwi_denoised = DENOISING_MPPCA.out.image
+
+            // Input DTI update with DWI denoised output
+            input_dti_denoised = ch_dwi_denoised
+                    .join(ch_dwi_bvalbvec.bvs_files)
+                    .map{ it + [[]] }
+
+            // DTI-derived metrics
+            RECONST_DTIMETRICS( input_dti_denoised )
+
+            // Preprocessing T1 images
+            inputs.anat.view()
+
+        }
+    ```
+    </TabItem>
+    <TabItem label="Expected output">
+    ```bash
+    Launching `main.nf` [evil_noether] DSL2 - revision: f131ccc34c
+
+    executor >  local (2)
+    [c8/fa8ee7] process > DENOISING_MPPCA (sub-003_ses-01)    [100%] 1 of 1 ✔
+    [e9/6b32bf] process > RECONST_DTIMETRICS (sub-003_ses-01) [100%] 1 of 1 ✔
+
+    [[id:sub-003_ses-01], /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/anat/sub-003_ses-01_T1w.nii.gz]
+    ```
+    </TabItem>
+    </Tabs>
+
+
+### Bind the subworkflow and define the input structure.
+
+ <Steps>
+
+ 1. Here again bind the subworkflow is similar to the module.
+
+    ```nextflow
+    PREPROC_T1( input_channel(s) )
+    ```
+
+ 2. Define structure input for subworkflow. 
+
+    As with modules, the API documentation also lists **subworkflows**, 
+    providing information on **Inputs**, **Outputs**, and the module list used in the 
+    **Components** section:  [PREPROC_T1](https://scilus.github.io/nf-neuro/api/subworkflows/preproc_t1/).
+
+    The PREPROC_T1 process has 7 input channels defined, but only the first (ch_image) 
+    is mandatory here; the 6 others are optional.
+    Just like using an empty list for modules, using an empty channel allows the 
+    process to run without optional inputs.
+
+        - ch_image (Mandatory)
+        - ch_template (Optional)
+        - ch_probability_map (Optional)
+        - ch_mask_nlmeans (Optional)
+        - ch_ref_n4 (Optional)
+        - ch_ref_resample (Optional)
+        - ch_weights (Optional)
+
+    <Tabs>
+    <TabItem label="Tasks">
+
+    Using the Nextflow's `Channel.empty()` function, try to define the input structure for PREPROC_T1.
+
+    </TabItem>
+    <TabItem label="Expected command">
+    ```nextflow
+
+        PREPROC_T1(
+            inputs.anat,
+            Channel.empty(),
+            Channel.empty(),
+            Channel.empty(),
+            Channel.empty(),
+            Channel.empty(),
+            Channel.empty()
+        )
+    ```
+    </TabItem>
+    </Tabs>
+
+ </Steps>
+
+
+### Configure your subworkflow
+
+Configuring a subworkflow can be more complex as it requires knowledge of the modules 
+used as well as the subworkflow parameters.
+
+The API documentation [PREPROC_T1](https://scilus.github.io/nf-neuro/api/subworkflows/preproc_t1/) 
+provides a list of modules included in the nf-neuro subworkflow 
+in the **Components** section : 
+
+        - denoising/nlmeans
+        - preproc/n4
+        - image/resample
+        - betcrop/antsbet
+        - betcrop/synthbet
+        - image/cropvolume
+
+However, it does not yet provide a list of the parameters associated with the subworkflows. 
+These parameters can be found in : 
+
+    The file `./subworkflow/nf-neuro/subworkflow/main.nf` 
+
+    The file(s) nextflow.config located in the subfolder tests of the subworkflow:
+         `./subworkflow/nf-neuro/subworkflow/tests/nextflow.config` 
+
+You can now complete the `nextflow.config` file by adding the specific options for the 
+subworkflow modules in the process section. Only the modules that are actually used **should be defined** in this file.
+
+For simplicity's sake, we will only use the `denoising` and `synthbet` option (`true`) and disable other options 
+such as N4, crop and resample (`false`). 
+To do this we will add the following command in the `nextflow.config` : `params.subworkflow_param_1 = boolean/value/str`
 
 ```nextflow
-process {
-    publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }
-}
-```
+    // Add those line after params.output = 'result'
 
-:::caution
-Here, `meta` is a special variable, defined in every **module**, a map that gets passed around with the data, into which you can
-put information. Beware however, as it is also used to **join channels together** by looking at there whole content.
-:::
+    // ** Subworkflow PREPROC T1 **
+    params.preproc_t1_run_denoising = true
+    params.preproc_t1_run_N4 = true
+    params.preproc_t1_run_resampling = false
+    params.preproc_t1_run_ants_bet = false
+    params.preproc_t1_run_synthbet = true
+    params.preproc_t1_run_crop = false
 
+    // Add those line in the process {} after DENOISING_MPPCA :
 
-
-
-
-That's it! Your `nextflow.config` should look something like this:
-
-```
-params.input      = false
-params.output     = 'output'
-
-params.number_of_coils = 1
-
-docker.enabled    = true
-docker.runOptions = '-u $(id -u):$(id -g)'
-
-process {
-    publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }
-
-    withName: 'DENOISING_NLMEANS' {
-        ext.number_of_coils = params.number_of_coils
+    withName: "BETCROP_SYNTHBET" {
+        memory = "8G"
+        ext.nocsf = false
     }
-}
 ```
 
-:::note
-Once your pipeline is built, or when you want to test it, run :
+Now you can check your pipeline:
+
+<Tabs>
+<TabItem label="Check if it works">
+
+nextflow run main.nf --input data -profile docker
+
+</TabItem>
+<TabItem label="Expected main.nf">
+```nextflow
+    #!/usr/bin/env nextflow
+
+    include { RECONST_DTIMETRICS } from './modules/nf-neuro/reconst/dtimetrics/main'
+    include { DENOISING_MPPCA } from './modules/nf-neuro/denoising/mppca/main'
+    include { PREPROC_T1 } from './subworkflows/nf-neuro/preproc_t1/main'
+
+    workflow get_data {
+        main:
+            if ( !params.input ) {
+                log.info "You must provide an input directory containing all images using:"
+                log.info ""
+                log.info "    --input=/path/to/[input]   Input directory containing your subjects"
+                log.info "                        |"
+                log.info "                        ├-- S1"
+                log.info "                        |    ├-- *dwi.nii.gz"
+                log.info "                        |    ├-- *dwi.bval"
+                log.info "                        |    ├-- *dwi.bvec"
+                log.info "                        |    └-- *t1.nii.gz"
+                log.info "                        └-- S2"
+                log.info "                             ├-- *dwi.nii.gz"
+                log.info "                             ├-- *bval"
+                log.info "                             ├-- *bvec"
+                log.info "                             └-- *t1.nii.gz"
+                log.info ""
+                error "Please resubmit your command with the previous file structure."
+            }
+
+            input = file(params.input)
+            // ** Loading DWI files. ** //
+            dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+                { it.parent.parent.parent.name + "_" + it.parent.parent.name} // Set the subject filename as subjectID + '_' + session.
+                .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
+            // ** Loading T1 file. ** //
+            t1_channel = Channel.fromFilePairs("$input/**/**/anat/*T1w.nii.gz", size: 1, flat: true)
+                { it.parent.parent.parent.name + "_" + it.parent.parent.name } // Set the subject filename as subjectID + '_' + session.
+                .map{ sid, t1 -> [ [id: sid], t1 ] }
+        emit:
+            dwi = dwi_channel 
+            anat = t1_channel
+    }
+
+    workflow {
+        inputs = get_data()
+
+        // Use Multimap to split the tuple into multi inputs structure
+        ch_dwi_bvalbvec = inputs.dwi
+            .multiMap { meta, dwi, bval, bvec ->
+                dwi:            [ meta, dwi ]
+                bvs_files:      [ meta, bval, bvec ]
+                dwi_bval_bvec:  [ meta, dwi, bval, bvec ]
+            }
+
+        // Denoising DWI
+        input_dwi_denoise = ch_dwi_bvalbvec.dwi
+                        .map{ it + [[]] }
+        DENOISING_MPPCA( input_dwi_denoise )
+
+        // Fetch specific output
+        ch_dwi_denoised = DENOISING_MPPCA.out.image
+
+        // Input DTI update with DWI denoised output
+        input_dti_denoised = ch_dwi_denoised
+                .join(ch_dwi_bvalbvec.bvs_files)
+                .map{ it + [[]] }
+
+        // DTI-derived metrics
+        RECONST_DTIMETRICS( input_dti_denoised )
+
+        // Preprocessing T1 images
+        //inputs.anat.view()
+        
+        PREPROC_T1(
+            input_t1,
+            Channel.empty(),
+            Channel.empty(),
+            Channel.empty(),
+            Channel.empty(),
+            Channel.empty(),
+            Channel.empty()
+        )
+
+    }
 ```
-nextflow run main.nf --input <directory>
-```
+</TabItem>
+<TabItem label="Expected nextflow.config">
+```nextflow
+    profiles {
+        docker {
+            docker.enabled          = true
+            conda.enabled           = false
+            singularity.enabled     = false
+            podman.enabled          = false
+            shifter.enabled         = false
+            charliecloud.enabled    = false
+            apptainer.enabled       = false
+            docker.runOptions       = '-u $(id -u):$(id -g)'
+        }
+    }
+
+    manifest {
+        name            = 'scilus/nf-neuro-tutorial'
+        description     = """nf-neuro-tutorial is a Nextflow pipeline for processing neuroimaging data."""
+        version         = '0.1dev'
+    }
+
+    params.input      = false
+    params.output     = 'result'
+
+    // ** Subworkflow PREPROC T1 **
+    params.preproc_t1_run_denoising = true
+    params.preproc_t1_run_N4 = false
+    params.preproc_t1_run_resampling = false
+    params.preproc_t1_run_ants_bet = false
+    params.preproc_t1_run_synthbet = true
+    params.preproc_t1_run_crop = false
+
+
+    process {
+
+        publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }
+
+        withName: "DENOISING_MPPCA" {
+            ext.extent = 3
+        }
+
+        withName: "BETCROP_SYNTHBET" {
+            memory = "8G"
+            ext.nocsf = false
+        }
+
+        withName: "RECONST_DTIMETRICS" {
+            ext.ad = false
+            ext.evecs = false
+            ext.evals = false
+            ext.fa = true
+            ext.ga = false
+            ext.rgb = false
+            ext.md = true
+            ext.mode = false
+            ext.norm = false
+            ext.rd = false
+            ext.tensor = false
+            ext.nonphysical = false
+            ext.pulsation = false
+            ext.residual = false
+            ext.b0_thr_extract_b0 = 10
+            ext.dwi_shell_tolerance = 50
+            ext.max_dti_shell_value = 1200
+            ext.run_qc = false
+        }
+    }
+    ```
+</TabItem>
+</Tabs>
+
+
+
+## Step 6 : Create your own local module
+
+Nextflow allows modularizing a pipeline by dividing processes into reusable modules. 
+These modules can be local or remote (stored in a Git repository, for example). 
+Here, we will create a local module.
+
+Here, we will create a local module called `METRICSINROI` in `STATS` category 
+for segmenting a T1-weighted (T1w) image and extracting metrics from white 
+matter (WM), gray matter (GM), and cerebrospinal fluid (CSF) masks.
+
+### Structure to create the local module
+
+    Create two folders local a file main.nf inside modules/local/stats/metricsinrois:
+
+    ```
+    nf-neuro-tutorial/
+    ├── ...
+    ├── modules/
+    │   ├── local/
+    │   │   ├── stats/metricsinrois/main.nf
+    │   ├── nf-neuro/
+    |   |   |--categories/modules
+    └── subworkflows/
+    ```
+
+### Creating a Local Module
+
+A Nextflow module is simply a file containing one or more processes, 
+with a structure should look like this:
+
+    <Tabs>
+    <TabItem label="Example of module">
+
+    ```
+    process CATEGORY_MODULE {
+        tag "$meta.id"
+        label 'process_single'
+
+        container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+            'https://scil.usherbrooke.ca/containers/scilus_latest.sif':
+            'scilus/scilus:latest' }"
+
+        input:
+        tuple val(meta), path(input_file)
+        
+        output:
+        tuple val(meta), path("output.txt") , emit: outputname
+        
+        script:
+        def prefix = task.ext.prefix ?: "${meta.id}"
+        def optionName = task.ext.option ? "${task.ext.option}" : "default_value"
+        """
+        cat ${input_file} > output.txt
+        """
+    }
+    ```
+
+    </TabItem>
+    <TabItem label="Let's break it down">
+    <Steps>
+    1. `tag "$meta.id"`
+        This adds a tag to the process using the 'id' field from the 'meta' map. 
+        Tags are useful for logging and tracking purposes.
+
+    2. `label 'process_single'`
+        This assigns a label to the process, which can be used for 
+        resource allocation or other configuration purposes.
+
+    3. `container`
+        This specifies the container to use for the process. It uses a 
+        conditional statement to choose between a Singularity container and 
+        a Docker container based on the workflow configuration.
+
+    4. `Input`
+        This defines the input for the process as a tuple containing 
+        metadata (meta) and an input file path.
+
+    5. `Output`
+        This defines the output of the process as a tuple containing 
+        the input metadata and a file named "output.txt". 
+        The output is emitted to a channel named "outputname".
+
+    6. `script`
+        This is the script that will be executed by the process. 
+        It defines some option a `prefix` variable using a `task` extension or the meta id.
+        Defines an 'optionName' variable using a task extension or a default value.
+
+        Uses a simple command to copy the contents of the input file to output.txt.
+    </Steps>
+
+    In summary, this process takes an input file, copies its contents to an output file,
+     and provides some flexibility in naming and options through the use of metadata and task extensions. 
+     The process can run in either a Singularity or Docker container, depending on the workflow configuration.
+
+    </TabItem>
+    <TabItem label="Tasks">
+
+    Here, the goal of this local module is to use `fast` to segment a T1-weighted (T1w) image 
+    and extract metrics from white matter (WM), gray matter (GM), and cerebrospinal fluid 
+    (CSF) masks using `scil_volume_stats_in_ROI.py`.
+
+    <Steps>
+    
+    1. Modify `input` to include T1 and metrics
+        ```nextflow
+        tuple val(meta), path(t1), path(metrics)
+        ```
+
+    2. Update `output` to add the output files for segmentation maps and masks, as well as the json output from silpy script
+        ```nextflow
+            output:
+            tuple val(meta), path("*.json")                         , emit: stats
+            tuple val(meta), path("*mask_wm.nii.gz")                , emit: wm_mask
+            tuple val(meta), path("*map_wm.nii.gz")                 , emit: wm_map
+
+        ```
+
+    3. Include some task.ext as follows:
+        ```nextflow
+            script:
+            def prefix = task.ext.prefix ?: "${meta.id}"
+            def bin = task.ext.bin ? "--bin " : ""
+            def normalize_weights = task.ext.normalize_weights ? "--normalize_weights " : ""
+        ```
+
+    4. Modify the `script`
+        <Steps>
+            1. Update the script to include segmentation using fast from T1w
+
+            2. Generate binary mask from for each pve tissue segmentation.
+                You can use scil_volume_math.py script or other
+            
+            3. Rename pve output from fast to map_*.nii.gz
+
+            4. Extract metrics from binary masks using `scil_volume_stats_in_ROI.py` or other.
+        </Steps>
+
+    </Steps>
+
+    In summary, this process takes an input file, copies its contents to an output file,
+    and provides some flexibility in naming and options through the use of metadata and task extensions. 
+    The process can run in either a Singularity or Docker container, depending on the workflow configuration.
+
+    </TabItem>
+    <TabItem label="Expected module">
+    ```nextflow
+        process STATS_METRICSINROI {
+            tag "$meta.id"
+            label 'process_single'
+
+            container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+                'https://scil.usherbrooke.ca/containers/scilus_latest.sif':
+                'scilus/scilus:latest' }"
+
+            input:
+            tuple val(meta), path(t1), path(metrics)
+
+            output:
+            tuple val(meta), path("*.json")                         , emit: stats
+            tuple val(meta), path("*mask_wm.nii.gz")                , emit: wm_mask
+            tuple val(meta), path("*mask_gm.nii.gz")                , emit: gm_mask
+            tuple val(meta), path("*mask_csf.nii.gz")               , emit: csf_mask
+            tuple val(meta), path("*map_wm.nii.gz")                 , emit: wm_map
+            tuple val(meta), path("*map_gm.nii.gz")                 , emit: gm_map
+            tuple val(meta), path("*map_csf.nii.gz")                , emit: csf_map
+
+            script:
+            def prefix = task.ext.prefix ?: "${meta.id}"
+            def bin = task.ext.bin ? "--bin " : ""
+            def normalize_weights = task.ext.normalize_weights ? "--normalize_weights " : ""
+            """
+            export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1
+            export OMP_NUM_THREADS=1
+            export OPENBLAS_NUM_THREADS=1
+
+            fast -t 1 -n 3\
+                -H 0.1 -I 4 -l 20.0 -g -o t1.nii.gz $t1
+            scil_volume_math.py convert t1_seg_2.nii.gz ${prefix}__mask_wm.nii.gz --data_type uint8
+            scil_volume_math.py convert t1_seg_1.nii.gz ${prefix}__mask_gm.nii.gz --data_type uint8
+            scil_volume_math.py convert t1_seg_0.nii.gz ${prefix}__mask_csf.nii.gz --data_type uint8
+            mv t1_pve_2.nii.gz ${prefix}__map_wm.nii.gz
+            mv t1_pve_1.nii.gz ${prefix}__map_gm.nii.gz
+            mv t1_pve_0.nii.gz ${prefix}__map_csf.nii.gz
+
+            scil_volume_stats_in_ROI.py ${prefix}__mask*.nii.gz  \
+                --metrics $metrics \
+                --sort_keys \
+                $bin $normalize_weights > ${prefix}__stats.json
+
+            """
+        }
+    ```
+    </TabItem>
+    </Tabs>
+
+
+### Bind and define input structure of the local module in the Pipeline
+#### Bind your local module
+We can now include and link the local module to the workflow using as we saw in the previous steps:
+
+```nextflow
+// Add this line on the top of the main.nf
+ include { STATS_METRICSINROI } from './modules/local/stats/metricsinrois/main'
+
+ // Add the local module in the workflow
+ STATS_METRICSINROI( input_channel )
+
+ ```
+
+#### Define the input channel for your local module
+
+### Configure your local module
+
+coming soon
+
+
+You now have a working local module in your Nextflow pipeline! 
+
+    <Tabs>
+    <TabItem label="Check if it works">
+
+    ```bash
+    nextflow run main.nf --input data -profile docker
+    ```
+
+    </TabItem>
+    <TabItem label="Expected output">
+
+
+    </TabItem>
+    <TabItem label="Expected main.nf">
+    ```nextflow
+        #!/usr/bin/env nextflow
+
+        include { RECONST_DTIMETRICS } from './modules/nf-neuro/reconst/dtimetrics/main'
+        include { DENOISING_MPPCA } from './modules/nf-neuro/denoising/mppca/main'
+        include { PREPROC_T1 } from './subworkflows/nf-neuro/preproc_t1/main'
+        include { STATS_METRICSINROI } from './modules/local/stats/metricsinrois/main'
+
+        workflow get_data {
+            main:
+                if ( !params.input ) {
+                    log.info "You must provide an input directory containing all images using:"
+                    log.info ""
+                    log.info "    --input=/path/to/[input]   Input directory containing your subjects"
+                    log.info "                        |"
+                    log.info "                        ├-- S1"
+                    log.info "                        |    ├-- *dwi.nii.gz"
+                    log.info "                        |    ├-- *dwi.bval"
+                    log.info "                        |    ├-- *dwi.bvec"
+                    log.info "                        |    └-- *t1.nii.gz"
+                    log.info "                        └-- S2"
+                    log.info "                             ├-- *dwi.nii.gz"
+                    log.info "                             ├-- *bval"
+                    log.info "                             ├-- *bvec"
+                    log.info "                             └-- *t1.nii.gz"
+                    log.info ""
+                    error "Please resubmit your command with the previous file structure."
+                }
+
+                input = file(params.input)
+                // ** Loading DWI files. ** //
+                dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+                    { it.parent.parent.parent.name + "_" + it.parent.parent.name} // Set the subject filename as subjectID + '_' + session.
+                    .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
+                // ** Loading T1 file. ** //
+                t1_channel = Channel.fromFilePairs("$input/**/**/anat/*T1w.nii.gz", size: 1, flat: true)
+                    { it.parent.parent.parent.name + "_" + it.parent.parent.name } // Set the subject filename as subjectID + '_' + session.
+                    .map{ sid, t1 -> [ [id: sid], t1 ] }
+            emit:
+                dwi = dwi_channel 
+                anat = t1_channel
+        }
+
+        workflow {
+            inputs = get_data()
+
+            // Use Multimap to split the tuple into multi inputs structure
+            ch_dwi_bvalbvec = inputs.dwi
+                .multiMap { meta, dwi, bval, bvec ->
+                    dwi:            [ meta, dwi ]
+                    bvs_files:      [ meta, bval, bvec ]
+                    dwi_bval_bvec:  [ meta, dwi, bval, bvec ]
+                }
+
+            // Denoising DWI
+            input_dwi_denoise = ch_dwi_bvalbvec.dwi
+                            .map{ it + [[]] }
+            DENOISING_MPPCA( input_dwi_denoise )
+
+            // Fetch specific output
+            ch_dwi_denoised = DENOISING_MPPCA.out.image
+
+            // Input DTI update with DWI denoised output
+            input_dti_denoised = ch_dwi_denoised
+                    .join(ch_dwi_bvalbvec.bvs_files)
+                    .map{ it + [[]] }
+
+            // DTI-derived metrics
+            RECONST_DTIMETRICS( input_dti_denoised )
+
+            // Preprocessing T1 images
+            //inputs.anat.view()
+
+            PREPROC_T1(
+                inputs.anat,
+                Channel.empty(),
+                Channel.empty(),
+                Channel.empty(),
+                Channel.empty(),
+                Channel.empty(),
+                Channel.empty()
+            )
+
+            // Extract FA value 
+            input_extract_metric = PREPROC_T1.out.image_bet
+                    .join(RECONST_DTIMETRICS.out.fa)
+                    .map{ it }
+            
+            STATS_METRICSINROI( input_extract_metric )
+
+        }
+    ```
+
+    </TabItem>
+    <TabItem label="Expected nextflow.config">
+    ```nextflow
+        profiles {
+            docker {
+                docker.enabled          = true
+                conda.enabled           = false
+                singularity.enabled     = false
+                podman.enabled          = false
+                shifter.enabled         = false
+                charliecloud.enabled    = false
+                apptainer.enabled       = false
+                docker.runOptions       = '-u $(id -u):$(id -g)'
+            }
+        }
+
+        manifest {
+            name            = 'scilus/nf-neuro-tutorial'
+            description     = """nf-neuro-tutorial is a Nextflow pipeline for processing neuroimaging data."""
+            version         = '0.1dev'
+        }
+
+        params.input      = false
+        params.output     = 'result'
+
+        // ** Subworkflow PREPROC T1 **
+        params.preproc_t1_run_denoising = true
+        params.preproc_t1_run_N4 = false
+        params.preproc_t1_run_resampling = false
+        params.preproc_t1_run_ants_bet = false
+        params.preproc_t1_run_synthbet = true
+        params.preproc_t1_run_crop = false
+
+
+        process {
+
+            publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }
+
+            withName: "DENOISING_MPPCA" {
+                ext.extent = 3
+            }
+
+            withName: "BETCROP_SYNTHBET" {
+                memory = "8G"
+                ext.nocsf = false
+            }
+
+            withName: "RECONST_DTIMETRICS" {
+                ext.ad = false
+                ext.evecs = false
+                ext.evals = false
+                ext.fa = true
+                ext.ga = false
+                ext.rgb = false
+                ext.md = true
+                ext.mode = false
+                ext.norm = false
+                ext.rd = false
+                ext.tensor = false
+                ext.nonphysical = false
+                ext.pulsation = false
+                ext.residual = false
+                ext.b0_thr_extract_b0 = 10
+                ext.dwi_shell_tolerance = 50
+                ext.max_dti_shell_value = 1200
+                ext.run_qc = false
+            }
+
+            withName: "STATS_METRICSINROI" {
+                publishDir = { "${params.outdir}/${task.process.tokenize(':')[-1].tokenize('_')[0].toLowerCase()}" }
+                ext.bin = true
+                ext.normalize_weights = false
+            }
+        }
+    ```
+    </TabItem>
+    </Tabs>
+
+
+
+## Step 7 : Reorganize modules in subworkflow
+
+Like modules, subworkflows are reusable modular components that allow you to organize/group **at least two** or more modules.
+
+
+## Step 8 : Reorganize output in result folder (BIDS like format)
+
+coming soon
+
+## Dataset 
 
 You can find example **input data** [here](https://openneuro.org/datasets/ds004513/versions/1.0.4). Take
 note that the dataset is very large, consider using a **data management system** like datalab
