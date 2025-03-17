@@ -497,7 +497,7 @@ limitation; and indicates that an optional input is not provided.
 
 #### Validate Input Data 
 
-To ensure that the new `input_dti_metric` channel is correctly correctly structured,
+To ensure that the new `input_dti_metric` channel is correctly structured,
 comment the module (using `//`) and use the [`.view()`](https://www.nextflow.io/docs/latest/reference/operator.html#view)
 operator, which will display the results directly in the **terminal**, very useful for **debugging**.
 
@@ -958,7 +958,7 @@ To do this, simply repeat the sequence of sub-steps seen in
     ch_dwi_denoised = DENOISING_MPPCA.out.image
 
     // You can now reuse the outputs and supply them to another module!
-    // Update the input for RECONST_DTIMETRIC with DWI denoised output
+    // Update the input for RECONST_DTIMETRICS with DWI denoised output
     input_dti_denoised = ch_dwi_denoised
             .join(ch_dwi_bvalbvec.bvs_files)
             .map{ it + [[]] }
@@ -1355,7 +1355,7 @@ The necessary steps are:
     </Tabs>
 
 
-### Bind the Subworkflow and Prepare the Input subworflow Structure
+### Bind the Subworkflow and Prepare the Input subworkflow Structure
 
  <Steps>
 
@@ -1423,7 +1423,7 @@ lists the modules included in the subworkflow in the **Components** section :
         - image/cropvolume
 
 However, it does not yet provide a list of the parameters associated with the subworkflows. 
-You can find the parameters for the subworflow in the `./subworkflow/nf-neuro/preproc_t1/main.nf` 
+You can find the parameters for the subworkflow in the `./subworkflow/nf-neuro/preproc_t1/main.nf` 
 file or the `nextflow.config` file within the **tests** folder (`./subworkflow/nf-neuro/preproc_t1/tests/nextflow.config`).
 
 For simplicity's sake, we will enable the `denoising` and `synthbet` options (set to `true`) and 
@@ -2140,14 +2140,14 @@ You now have a working local module in your Nextflow pipeline!
 In this step, we will create a local subworkflow called `PREPROC_DIFF` which include 
 the two first modules used in your pipeline: DENOISING_MPPCA and RECONST_DTIMETRICS.
 
-### Creating a Local subworflow structure
+### Creating a Local subworkflow structure
 
-    Create the following local directory structure, including a main.nf file inside the subworflow folder:
+    Create the following local directory structure, including a main.nf file inside the subworkflow folder:
 
     ```
     nf-neuro-tutorial/
     ├── ...
-    ├── subworflows/
+    ├── subworkflows/
     │   ├── local/
     │   │   ├── preproc_diff/main.nf
     │   ├── nf-neuro/
@@ -2156,12 +2156,12 @@ the two first modules used in your pipeline: DENOISING_MPPCA and RECONST_DTIMETR
     └── ...
     ```
 
-### Write the subworflow module
+### Write the subworkflow module
 
 (faire le lien avec contribute ?, je dirais non, a voir)
 
-A Nextflow subworflow is a file containing at least two modules. 
-The structure of a subworflow should look like this:
+A Nextflow subworkflow is a file containing at least two modules. 
+The structure of a subworkflow should look like this:
 
     <Tabs>
     <TabItem label="Example of module">
@@ -2381,7 +2381,7 @@ The structure of a subworflow should look like this:
 
 ### Bind and Prepare the Input Structure of the Local subworkflow in the Pipeline
 
-You can now include and bind your local subworflow to the workflow, as shown in the previous steps::
+You can now include and bind your local subworkflow to the workflow, as shown in the previous steps::
 
 ```nextflow
 
@@ -2416,7 +2416,7 @@ Finally, all that's left is to add the parameters defined in the subworkflow to 
 
 ```nextflow
 
-    // ** Subworflow PREPROC_DIFF **
+    // ** subworkflow PREPROC_DIFF **
     params.preproc_dwi_run_denoising = true
 ```
 
@@ -2551,7 +2551,7 @@ in your Nextflow pipeline! **Test it out !**
         params.input      = false
         params.output     = 'result'
 
-        // ** Subworflow PREPROC_DIFF **
+        // ** subworkflow PREPROC_DIFF **
         params.preproc_dwi_run_denoising = true
 
         // ** Subworkflow PREPROC T1 **
@@ -2760,7 +2760,7 @@ nextflow run --input data -profile docker -resume
     params.lean_output = true
     params.publish_dir_mode = 'copy'
 
-    // ** Subworflow PREPROC_DIFF **
+    // ** subworkflow PREPROC_DIFF **
     params.preproc_dwi_run_denoising = true
 
     // ** Subworkflow PREPROC T1 **
