@@ -107,7 +107,7 @@ dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", 
 <html>
 <li>File Matching Pattern: `$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}`</li>
 This is the glob pattern used to match files. 
-It searches for files in any subdirectory of $input inside dwi/, matching .nii.gz, .bval, or .bvec files.
+It searches for files in any subdirectory of `$input` inside `dwi/`, matching `.nii.gz`, `.bval`, or `.bvec` files.
 
 <li>Number of files: `size: 3`</li>
 This option specifies that each emitted item should contain 3 files (in this case, the dwi.nii.gz, .bval, and .bvec files).
