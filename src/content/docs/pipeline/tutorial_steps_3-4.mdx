@@ -1,57 +1,19 @@
 ---
-title: Steps 1 to 4
+title: "Tutorial: steps 1 to 4"
 description: Learn how to build a simple pipeline using nf-neuro components
 ---
 
+import RunIcon from '~icons/codicon/run-all';
 import CommandOutputs from '../../../components/CommandOutputs.astro';
 import { Steps } from '@astrojs/starlight/components';
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 import { FileTree } from '@astrojs/starlight/components';
 import { Code } from '@astrojs/starlight/components';
+import { Card } from '@astrojs/starlight/components';
 import Runtime from "@mdx-js/runtime";
 
-## Tutorial
-
-The tutorial consists of 11 sequential steps, described below, which will enable you to complete 
-the pre-filled `main.nf` and `nextflow.config` files to obtain a complete workflow.
-
-
-### Step 1: Visualize input data
-
-Open the main.nf file in VS Code. This file is pre-filled with a workflow named get_data, 
-which is responsible for fetching input files from a specified directory.
-This step serves as a generic data-loading process commonly used at the start of a pipeline.
-
-A key concept here is the use of `Channel`, which enables efficient, asynchronous data flow. 
-The `fromFilePairs()` method is particularly useful for handling paired-end sequencing data, 
-but in this case, it helps group related files.
-
-To run the Nextflow pipeline, use the following command: : 
-
-   <CommandOutputs>
-   <span slot="command">
-    ```bash
-    nextflow run main.nf --input data -profile docker
-    ```
-   </span>
-   <span slot="output">
-    ```bash
-    [participants_files, /workspaces/nf-neuro-tutorial_test/data/participants.json, /workspaces/nf-neuro-tutorial_test/data/participants.tsv]
-    ```
-   </span>
-   </CommandOutputs>
-
-### Step 2: Create input structure
-
-#### Update data structure
-
-Now, let's modify the get_data and the main workflow to fetch the test data.
-Replace the existing main.nf file with the following.
-
-<Tabs>
-<TabItem label="New main.nf">
-    ```nextflow
-    #!/usr/bin/env nextflow
+export const main=`
+#!/usr/bin/env nextflow
 
     workflow get_data {
         main:
@@ -95,35 +57,72 @@ Replace the existing main.nf file with the following.
         data = get_data()
         data.dwi.view() // Contains your DWI data: [meta, dwi, bval, bvec]
     }
+`;
+
+
+:::tip[What to expect from this walkthrough]
+In this tutorial, you'll learn how to create a basic pipeline workflow, using components from `nf-neuro`. 
+
+By following steps 1 to 4, you will learn the input structure and how to install and use your first nf-neuro module.
+:::
+
+## Step 1: Visualize input data
+
+Open the main.nf file in VS Code. This file is pre-filled with a workflow named get_data, 
+which is responsible for fetching input files from a specified directory.
+This step serves as a generic data-loading process commonly used at the start of a pipeline.
+
+A key concept here is the use of `Channel`, which enables efficient, asynchronous data flow. 
+The `fromFilePairs()` method is particularly useful for handling paired-end sequencing data, 
+but in this case, it helps group related files.
+
+To run the Nextflow pipeline, use the following command:
+
+   <CommandOutputs>
+   <span slot="command">
+    ```bash
+    nextflow run main.nf --input data -profile docker
     ```
-</TabItem>
-<TabItem label=" Let's break it down">
+   </span>
+   <span slot="output">
+    ```bash
+    [participants_files, /workspaces/nf-neuro-tutorial_test/data/participants.json, /workspaces/nf-neuro-tutorial_test/data/participants.tsv]
+    ```
+   </span>
+   </CommandOutputs>
 
-<Steps>
+## Step 2: Create input structure
 
-1. File Matching Pattern
+### 1. Update data structure
 
-    `$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}`
+Now, let's modify the get_data and the main workflow to fetch the test data.
+Replace the existing main.nf file with the following.
 
-        This is the glob pattern used to match files. 
-        It searches for files in any subdirectory of $input inside dwi/, matching .nii.gz, .bval, or .bvec files.
+<Code code={main} lang="bash" title="main.nf"/>
 
-2. Number of file
+:::tip[Let's break down these changes]
+```
+dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+```
+<html>
+<li>File Matching Pattern: `$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}`</li>
+This is the glob pattern used to match files. 
+It searches for files in any subdirectory of $input inside dwi/, matching .nii.gz, .bval, or .bvec files.
 
-    `size`: 3
-    
-    This option specifies that each emitted item should contain 3 files (in this case, the dwi.nii.gz, .bval, and .bvec files).
+<li>Number of files: `size: 3`</li>
+This option specifies that each emitted item should contain 3 files (in this case, the dwi.nii.gz, .bval, and .bvec files).
 
-3. Format 
+<li>Format: `flat: true`</li>
+Flattens the output to emit file groups as tuples rather than nested lists.
+</html>
+:::
 
-    `flat`: true
-    
-    Flattens the output to emit file groups as tuples rather than nested lists.
-</Steps>
-</TabItem>
-</Tabs>
 
-You can now run nextflow.
+:::note
+You can get more information about this method using through nextflow [API](https://www.nextflow.io/docs/latest/reference/channel.html#fromfilepairs)
+:::
+
+<RunIcon class="inline-icon text-blue-300" aria-hidden /> **You can now run nextflow.**
 
    <CommandOutputs>
    <span slot="command">
@@ -140,95 +139,128 @@ You can now run nextflow.
 
    Each element in the output channel is a tuple containing:
 
-<html>
-  <li>A unique key identifier (subject/session)</li>
-  <li>The matching .nii.gz file (DWI image)</li>
-  <li>The matching .bval file</li>
-  <li>The matching .bvec file</li>
-</html>
+    <html>
+        <li>A unique key identifier (subject/session)</li>
+        <li>The matching .bval file</li>
+        <li>The matching .bvec file</li>
+        <li>The matching .nii.gz file (DWI image)</li>
+    </html>
   
-  
-  
-
     And following this format : 
 
     ```bash
-    [subject_session_id, /path/to/subject1/ses-01/dwi/*dwi.nii.gz, /path/to/subject1/ses-01/dwi/*dwi.bval, /path/to/subject1/ses-01/dwi/*dwi.bvec]
+    [ subject_session_id,
+      /path/to/subject/session/dwi/*dwi.bval,
+      /path/to/subject/session/dwi/*dwi.bvec ,
+      /path/to/subject/session/dwi/*dwi.nii.gz]
     ```
 
-#### Set correctly the Subject and session ID
+### 2. Set correctly the Subject and session ID
 Now let's modify the input structure to make `sub-003_ses-01_dir-AP` become `sub-003_ses-01` 
-using the following structure and `it` :  
+using the following structure and `it`. Replace the fromFilePairs call.
+
+<Tabs>
+  <TabItem label="Before">
+    ```nextflow
+        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true);
+    ```
+   </TabItem>
+  <TabItem label="After">
+    ```nextflow
+        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+                 { it.parent.parent.parent.name + "_" + it.parent.parent.name}`;
+    ```
+  </TabItem>
+</Tabs>
+
+<RunIcon class="inline-icon text-blue-300" aria-hidden /> **You can now run nextflow.**
 
    <CommandOutputs>
    <span slot="command">
-    ```nextflow
-            input = file(params.input)
-            // ** Loading all files. ** //
-            dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
-                { it.parent.parent.parent.name + "_" + it.parent.parent.name}
+    ```bash
+    nextflow run main.nf --input data -profile docker
     ```
    </span>
    <span slot="output">
-   You should see this output:
-
-   ```bash frame="none"      
+    ```bash
     [sub-003_ses-01, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bval, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bvec, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.nii.gz]
-   ```
-
-    Let's explain it step by step:
-
-    `{ it.parent.parent.parent.name + "_" + it.parent.parent.name}`
-    
-    This is a closure that defines how to create the grouping key for the file pairs. 
-    It's using the names of the parent directories to create a unique identifier, 
-    so you need to add as many "parent" as necessary to fit your data structure.
-
-    To get subjectID `sub-003` : 
-
-    it
-      .parent > `sub-003`
-        .parent > `ses-01`
-          .parent > `dwi`
-            .name > `sub-003_ses-01_dir-AP_dwi.bval`
-
-    To get sessionNumber `ses-01`:
-
-    it
-      .parent > `ses-01`
-        .parent > `dwi`
-          .name > `sub-003_ses-01_dir-AP_dwi.bval`
+    ```
    </span>
    </CommandOutputs>
 
 
-#### Organizing Data for Processing
+:::tip[Let's break down these changes]
+```
+{ it.parent.parent.parent.name + "_" + it.parent.parent.name}
+```
+    This is a closure that defines how to create the grouping key for the file pairs. 
+    It's using the names of the parent directories to create a unique identifier, 
+    so you need to add as many "parent" as necessary to fit your data structure.
+
+    <html>
+    <li>`it` corresponds to the file name (here: /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bval).</li>
+    <li>`.parent` corresponds to the parent folder.</li>
+    </html>
+
+    To get subjectID `sub-003` from `it`: 
+     <html>
+    <li>`sub-003_ses-01_dir-AP_dwi.bval` `.parent`-> dwi</li>
+    <li>`dwi` `.parent`-> ses-01</li>
+    <li>`ses-01` `.parent`-> sub-003</li>
+    </html>
+      
+    it.parent.parent.parent.name -> `sub-003`
+
+    To get ses-name `ses-01` from `it`: 
+    <html>
+    <li>`sub-003_ses-01_dir-AP_dwi.bval` `.parent`-> dwi</li>
+    <li>`dwi` `.parent`-> ses-01</li>
+    </html>
+
+    it.parent.parent.name -> `ses-01`
+:::
+
+### 3. Organizing Data for Processing
 
 By default, files are sorted alphabetically, so you need to reorder them to get a specific file order. 
-To do this, you use the `map` function, as follows:
+To do this, you use the `map` function and change the main.nf as follows:
 
 <Tabs>
-<TabItem label="Command">
+  <TabItem label="Before">
     ```nextflow
-           input = file(params.input)
-           // ** Loading all files. ** //
-           dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
-               { it.parent.parent.parent.name + "_" + it.parent.parent.name}
-               .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
+        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+                 { it.parent.parent.parent.name + "_" + it.parent.parent.name}`;
     ```
-</TabItem>
-<TabItem label="Expected output">
-   You should see this output:
+   </TabItem>
+  <TabItem label="After">
+    ```nextflow
+        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+            { it.parent.parent.parent.name + "_" + it.parent.parent.name}
+            .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
+    ```
+  </TabItem>
+</Tabs>
 
-   ```bash frame="none"      
+<RunIcon class="inline-icon text-blue-300" aria-hidden /> **You can now run nextflow.**
+
+   <CommandOutputs>
+   <span slot="command">
+    ```bash
+    nextflow run main.nf --input data -profile docker
+    ```
+   </span>
+   <span slot="output">
+    ```bash frame="none"      
     [[id:sub-003_ses-01], /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.nii.gz, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bval, /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bvec]
    ```
-</TabItem>
-<TabItem label="Let's break it down">
+   </span>
+   </CommandOutputs>
 
+
+:::tip[Let's break down these changes]
     `.map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] }`
 
-    This is a map operation that reorganizes the emitted data. 
+    This is a map operation that reorganizes the emitted data.
     It takes the sid (sample ID), bvals, bvecs, and dwi files and reorganizes them into a new structure.
 
     The output is a channel where each element is a tuple containing:
@@ -237,19 +269,15 @@ To do this, you use the `map` function, as follows:
         - dwi corresponds to the dwi.nii.gz file
         - bvals corresponds to the .bval file
         - bvecs corresponds to the .bvec file
-
-</TabItem>
-</Tabs>
+:::
 
 Now, your input pipeline data is well-structured, facilitating seamless processing in subsequent pipeline stages. 
 Each dataset includes a clearly labeled subject ID and session, along with all necessary files for DWI 
 processing — such as the DWI file, b-values, and b-vectors.
 
+## Step 3: Using and Configuring an nf-neuro Module
 
-
-### Step 3: Using and Configuring an nf-neuro Module
-
-In this step, we'll add an `nf-neuro` module for processing DWI images, 
+In this step, we'll add a `nf-neuro` module for processing DWI images, 
 and use a pre-installed module to Computes diffusion tensor imaging (DTI) metrics
 as an example: **RECONST_DTIMETRICS**.
 To do this, we will go through 4 successive sub-steps:
@@ -266,7 +294,7 @@ To do this, we will go through 4 successive sub-steps:
 </Steps>
 
 
-#### Include the module 
+### 1. Include the module 
 To add the module to your project, insert the `include {}` command at the top of the `main.nf` file: 
 
 <Tabs>
@@ -279,7 +307,7 @@ include { RECONST_DTIMETRICS } from './modules/nf-neuro/reconst/dtimetrics/main'
 </TabItem>
 </Tabs>
 
-##### Bind the module within the workflow 
+### 2. Bind the module within the workflow 
 
 After importing the module, bind it to your workflow as follows: 
 
@@ -297,9 +325,7 @@ After importing the module, bind it to your workflow as follows:
 </Tabs>
 
 
-#### Prepare input data for the module 
-
-#### Understanding Required Input(s)
+### 3. Prepare input data for the module
 
 Before using the `RECONST_DTIMETRICS` module, it's essential to understand the file types it expects as input. 
 For this, please refer to the API Documentation: [RECONST_DTIMETRICS](https://scilus.github.io/nf-neuro/api/modules/reconst/dtimetrics/)  
@@ -358,7 +384,7 @@ limitation; and indicates that an optional input is not provided.
 :::
 
 
-#### Validate Input Data 
+### Validate Input Data 
 
 To ensure that the new `input_dti_metric` channel is correctly structured,
 comment the module (using `//`) and use the [`.view()`](https://www.nextflow.io/docs/latest/reference/operator.html#view)
@@ -396,9 +422,9 @@ You have now configured and checked that the inputs respects the **RECONST_DTIME
 taking into account the management of an optional file. The next step is to configure the module parameters.
 
 
-#### Configuring the Module
+### 4. Configuring the Module
 
-#### Define module parameters
+### Define module parameters
 
 Each module may require specific parameters. 
 To find the required **parameters** and their **default values**, check the `Arguments` section of the module supplied by 
@@ -452,7 +478,7 @@ process {
 Here, only FA and MD outputs are enabled (`true`) for efficiency.
 :::
 
-#### Fetching outputs from the modules
+### Fetching outputs from the modules
 
 Last but not least, you now have a working `main.nf` file. You could run the pipeline, 
 but the output would be hard to access. To ensure easy access to results, define an 
@@ -573,7 +599,7 @@ and run the pipeline using the following command:
    </CommandOutputs>
 
 
-#### Visualize data in result folder
+### Visualize data in result folder
 
 You can check the module's output files with the following command, 
 or use the VSCode interface to display FA and MD images via the NiiVue extension (pre-installed).
@@ -594,9 +620,9 @@ or use the VSCode interface to display FA and MD images via the NiiVue extension
 
 
 
-### Step 4: Install and Use a New nf-neuro Module
+## Step 4: Install and Use a New nf-neuro Module
 
-#### List Available Modules
+### List Available Modules
 
 Use the nf-core modules list command to check available modules. 
 It supports remote (for online repositories) and local (for installed modules).
