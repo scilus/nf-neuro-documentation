@@ -49,4 +49,8 @@ img {
     width: 80%;
 }
 
+li {
+	list-style-position: inside;
+}
+
 .expressive-code .copy .no-copy button  { display: none; }
