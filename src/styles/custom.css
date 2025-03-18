@@ -48,3 +48,5 @@ img {
     margin-right: auto;
     width: 80%;
 }
+
+.expressive-code .copy .no-copy button  { display: none; }

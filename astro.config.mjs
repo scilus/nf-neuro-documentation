@@ -33,7 +33,13 @@ export default defineConfig({
 					label: 'Create your pipeline',
 					items: [
 						{ label: 'Setup your computer', slug: 'pipeline/setup' },
-						{ label: 'Your pipeline from A to Z', slug: 'pipeline/prototyping' },
+						{ label: 'Tutorial',
+							items: [
+								{ label: 'Explore', slug: 'pipeline/tutorial_explore' },
+								{ label: 'Steps 1 to 4', slug: 'pipeline/tutorial_steps_1-4' },
+								{ label: 'Steps 4 to 8', slug: 'pipeline/tutorial_steps_5-8' },
+							]
+						},
 					],
 				},
 				{	

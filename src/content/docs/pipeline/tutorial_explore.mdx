@@ -1,0 +1,151 @@
+---
+title: Your pipeline from A to Z
+description: Learn how to build a simple pipeline using nf-neuro components
+---
+
+import CommandOutputs from '../../../components/CommandOutputs.astro';
+import { Steps } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { FileTree } from '@astrojs/starlight/components';
+import { Code } from '@astrojs/starlight/components';
+import Runtime from "@mdx-js/runtime";
+
+export const nextflowConfig=`
+profiles {
+    docker {
+        docker.enabled          = true
+        conda.enabled           = false
+        singularity.enabled     = false
+        podman.enabled          = false
+        shifter.enabled         = false
+        charliecloud.enabled    = false
+        apptainer.enabled       = false
+        docker.runOptions       = '-u $(id -u):$(id -g)'
+    }
+}
+
+manifest {
+    name            = 'scilus/nf-neuro-tutorial'
+    description     = """nf-neuro-tutorial is a Nextflow pipeline for processing neuroimaging data."""
+    version         = '0.1dev'
+}`;
+
+export const main=`
+#!/usr/bin/env nextflow
+
+workflow get_data {
+    main:
+        if ( !params.input ) {
+            log.info "You must provide an input directory containing all files using:"
+            log.info ""
+            log.info "    --input=/path/to/[input]   Input directory containing the file needed"
+            log.info "                        |"
+            log.info "                        └-- Input"
+            log.info "                             └-- participants.*"
+            log.info ""
+            error "Please resubmit your command with the previous file structure."
+        }
+
+        input = file(params.input)
+        // ** Loading all files. ** //
+        participants_channel = Channel.fromFilePairs("$input/participants.*", flat: true)
+            { "participants_files" }
+
+    emit:
+        participants = participants_channel
+}
+
+workflow {
+    // ** Now call your input workflow to fetch your files ** //
+    data = get_data()
+    data.participants.view()
+}`;
+
+
+:::tip[What to expect from this walkthrough]
+In this tutorial, you'll learn how to create a basic pipeline workflow, using components from `nf-neuro`. 
+This pipeline will process a diffusion-weighted image (DWI) and T1-weighted (T1w) images and extract mean diffusivity 
+(MD) and fractional anisotropy (FA) values from white matter (WM), gray matter (GM), and cerebrospinal fluid (CSF) maps.
+:::
+
+## Environment Setup
+
+We recommend using **VS Code** and the `development container`. Follow the
+[setup documentation](/nf-neuro/pipeline/setup). You should be working in a folder containing the github 
+repo: [nf-neuro-tutorial](https://github.com/scilus/nf-neuro-tutorial).
+
+## Explore the github repository structure 
+
+The tutorial folder is pre-configured with necessary files and directories.
+The **config**, **tests**, **modules** and **subworkflows** folders contain the pre-installed nf-neuro components, 
+while the **data** folder contains the data provided for the tutorial. Before starting to play with the data and the code,
+we will review some of the major files and folders in the structure: **nextflow.config**, **main.nf** and the **data** folder.
+
+Here the current structure:
+
+<FileTree>
+- nf-neuro-tutorial
+  - .devcontainer
+  - config
+  - data
+  - modules              
+  - subworkflows
+  - tests
+  - .gitignore
+  - .nf-core.yml
+  - README.md
+  - main.nf
+  - modules.json
+  - nextflow.config
+  - nf-test.config
+</FileTree>
+
+### `nextflow.config`
+
+The `nextflow.config` file defines execution parameters and default configurations.
+It also contains **parameters** that users can change when calling your pipeline
+(prefixed with `params.`). Here is an example of a basic `nextflow.config` file :
+
+<Code code={nextflowConfig} lang="bash" title="nextflow.config" showCopyToClipboardButton="False"/>
+
+The parameters defined with `params.` can be changed at execution by another `nextflow.config` file or
+by supplying them as arguments when calling the pipeline using `nextflow run` :
+
+<Code code="nextflow run main.nf --input /path/to/input --output /path/to/output" lang="nextflow" title="nextflow.config" frame="none"/>
+
+:::caution
+If using a version of `nextflow` prior to `22.03.0-edge` (or `22.04.0` if using only stable releases),
+you need to add `-dsl2` to the `nextflow run` command to enable the DSL2 syntax in which your
+pipeline and `nf-neuro` are written.
+:::
+
+
+### `main.nf`
+
+This file is your pipeline execution file. It contains all modules and subworkflows you want to run, and the
+channels that define how data passes between them. This is also where you define how to fetch your input pipeline files.
+This can be done using a workflow definition called `get_data`.
+
+<Code code={main} lang="bash" title="main.nf"/>
+
+### Data
+
+To keep things simple, we'll consider you want to process a [BIDS](https://bids-specification.readthedocs.io/en/stable/) dataset that contains for one 
+subject and session a DWI and a T1 image, as follows:
+
+<FileTree>
+- data
+  - dataset_description.json
+  - darticipants.json
+  - darticipants.tsv
+    - sub-003
+      - ses-01
+        - anat
+          - sub-003_ses-01_T1w.json
+          - sub-003_ses-01_T1w.nii.gz
+        - dwi
+          - sub-003_ses-01_dir-AP_dwi.bval
+          - sub-003_ses-01_dir-AP_dwi.bvec
+          - sub-003_ses-01_dir-AP_dwi.json
+          - sub-003_ses-01_dir-AP_dwi.nii.gz
+</FileTree>
