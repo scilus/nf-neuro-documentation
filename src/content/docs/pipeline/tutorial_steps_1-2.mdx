@@ -264,14 +264,14 @@ To do this, you use the `map` function and change the main.nf as follows:
     `.map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] }`
 
     This is a map operation that reorganizes the emitted data.
-    It takes the sid (sample ID), bvals, bvecs, and dwi files and reorganizes them into a new structure.
+    It takes the `sid` (sample ID), `bvals`, `bvecs`, and `dwi` files and reorganizes them into a new structure.
 
     The output is a channel where each element is a tuple containing:
 
-        - [id: sid] corresponds to [id:sub-003_ses-01]
-        - dwi corresponds to the dwi.nii.gz file
-        - bvals corresponds to the .bval file
-        - bvecs corresponds to the .bvec file
+        - `[id: sid]` corresponds to `[id:sub-003_ses-01]`
+        - `dwi` corresponds to the `dwi.nii.gz` file
+        - `bvals` corresponds to the `.bval` file
+        - `bvecs` corresponds to the `.bvec` file
 :::
 
 Now, your input pipeline data is well-structured, facilitating seamless processing in subsequent pipeline stages. 
