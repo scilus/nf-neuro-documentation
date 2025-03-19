@@ -16,6 +16,10 @@ import Runtime from "@mdx-js/runtime";
 In this advanced tutorial, you'll learn how to ouput BIDS-like structure.
 :::
 
+:::caution
+This advanced tutorial is based on the pipeline created in the tutorial.
+:::
+
 ### 1. Example for one module
 
 We will integrate specific configurations, including the use of `publishDir`, `saveAs`, and `path` 
@@ -172,7 +176,7 @@ your output files and make them ready for further analysis.
                 saveAs: {
                     filename ->
                     def ses = meta.session ? "_${meta.session}" : ""
-                    if ( filename.contains("denoised.nii.gz") ) { "${meta.id}_desc-denoised_dwi.nii.gz" }
+                    if ( filename.contains("denoised.nii.gz") ) { "${meta.id}_${ses}_desc-denoised_dwi.nii.gz" }
                     else if ( filename.contains("versions.yml") ) { null }
                 },
                 path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/dwi/" : "${params.output}/${meta.id}/dwi/" }
@@ -287,9 +291,32 @@ resume feature and changing the `params.output` parameter to `result_2` or anoth
 Nextflow will simply copy the images from the work directory to the new output folder, following the output definitions you have set.
 :::
 
-
 :::caution
 Do cannot set both a `global` publishDir (`publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }`)
-and a publishDir for each individual module at the same time. 
-(Is it useful ???) 
+and a publishDir for each individual module at the same time.
 :::
+
+### 4. Verify your output structure
+
+**Your result folder should look like this:**
+
+<FileTree>
+- results
+    - sub-03
+        - ses-01
+            - anat
+                - sub-03_ses-01_desc-t1_bet.nii.gz
+                - sub-03_ses-01_desc-t1_map_csf.nii.gz
+                - sub-03_ses-01_desc-t1_map_gm.nii.gz
+                - sub-03_ses-01_desc-t1_map_wm.nii.gz
+                - sub-03_ses-01_desc-t1_mask.nii.gz
+                - sub-03_ses-01_desc-t1_mask_csf.nii.gz
+                - sub-03_ses-01_desc-t1_mask_gm.nii.gz
+                - sub-03_ses-01_desc-t1_mask_wm.nii.gz
+            - dwi
+                - sub-03_ses-01_desc-md.nii.gz
+                - sub-03_ses-01_desc-fa.nii.gz
+                - sub-03_ses-01_desc-denoised_dwi.nii.gz
+            - stats
+                - sub-03_ses-01_desc-dti_stats.json
+</FileTree>
