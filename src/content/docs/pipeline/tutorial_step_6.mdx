@@ -11,10 +11,6 @@ import { FileTree } from '@astrojs/starlight/components';
 import { Code } from '@astrojs/starlight/components';
 import Runtime from "@mdx-js/runtime";
 
-export const main = `
-
-`;
-
 :::tip[What to expect from this walkthrough]
 In this tutorial, you'll learn how to create a basic pipeline workflow, using components from `nf-neuro`. 
 
@@ -25,7 +21,7 @@ In this step, we will create a local module called `METRICSINROI` under the `STA
 designed for segmenting a T1-weighted (T1w) image and extracting metrics from white matter (WM), 
 gray matter (GM), and cerebrospinal fluid (CSF) masks.
 
-### 1. Create a Local Module structure
+### 1. Create a local module structure
 
     Create the following directory structure, including a main.nf file inside the module folder:
 
@@ -153,6 +149,8 @@ The structure of a module should look similar to this:
             4. Extract metrics from the WM, GM and CSF binary masks using `scil_volume_stats_in_ROI.py` or other.
         </Steps>
 
+    </Steps>
+
     :::note
     #### **Add a `meta.yml` file for local modules and subworkflows**  
     When working with local modules in Nextflow, you can add a `meta.yml` file to store metadata. 
@@ -167,7 +165,8 @@ The structure of a module should look similar to this:
     <li> **For Modules:** `./modules/local/<modules_category>/<module_name>/meta.yml`</li>
     <li>**For Subworkflows:** `./subworkflows/local/<subworkflow_name>/meta.yml`</li>
     </html>
-    
+
+
     #### **What Does `meta.yml` Contain?**
     <html>
     <li>General information about the module or subworkflow</li>
@@ -235,9 +234,9 @@ container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_
     }
 ```
 
-### 4. Use and prepare the input structure of the local module in the pipeline
+### 4. Prepare the input structure for the module and include it in your main.nf
 
-#### a. Use your local module
+#### a. Include your local module
 
 You can now include and use your local module to the workflow, as shown in the previous steps:
 
@@ -268,7 +267,7 @@ input_extract_metric = PREPROC_T1.out.image_bet
 STATS_METRICSINROI( input_extract_metric )
 ```
 
-#### 5. Configure your local module
+### 5. Configure your local module
 
 To configure your local module, you need to add each `task.ext.*` to the module. 
 As we’ve seen previously, use the `withName` process selector to link the `ext` 
@@ -283,7 +282,7 @@ parameter defined in your local module to `nextflow.config` file.
     }
 ```
 
-#### 6. Verify your files
+### 6. Verify your files
 
 You now have a working local module in your Nextflow pipeline! 
 
@@ -456,11 +455,9 @@ You now have a working local module in your Nextflow pipeline!
         }
     ```
     </TabItem>
-    <TabItem label="Expected meta.yml">
-    </TabItem>    
     </Tabs>
 
-#### 7. Run nextflow
+### 7. Run nextflow
 
 <RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, you can run nextflow..**
 

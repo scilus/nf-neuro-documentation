@@ -19,7 +19,7 @@ By following step 4, you will learn to use some nf-core command line but you wil
 use and configure a `nf-neuro` module.
 :::
 
-### 1. List Available Modules
+### 1. List available modules
 
 Use the nf-core modules list command to check available modules. 
 It supports remote (for online repositories) and local (for installed modules).
@@ -150,7 +150,7 @@ In this tutorial, you need to remove a directory, like this `./modules/[...]`.
 :::
 
 
-### 3. Configure and use the Module
+### 3. Configure and use the module
 
 The purpose of adding this module is to denoise the DWI image before computing the DTI metrics.
 To do this, simply repeat the sequence of sub-steps seen in 
@@ -306,10 +306,10 @@ To do this, simply repeat the sequence of sub-steps seen in
         for the optional mask input. The `map` operation is similar to the one we did for the DTI module in [**Step 2**](/nf-neuro/pipeline/tutorial_step_2).
     </html>
     :::
+</Steps>
 
 
-
-6. Verify your files: 
+### 4. Verify your files
 
     <Tabs>
     <TabItem label="Expected main.nf">
@@ -442,15 +442,17 @@ To do this, simply repeat the sequence of sub-steps seen in
     ```
     </TabItem>
     </Tabs>
+
+    ### 5. Run nextflow
     <RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, you can run nextflow..**
 
-   <CommandOutputs>
-   <span slot="command">
+    <CommandOutputs>
+    <span slot="command">
     ```bash
     nextflow run main.nf --input data -profile docker
     ```
-   </span>
-   <span slot="output">
+    </span>
+    <span slot="output">
     ```bash
     N E X T F L O W   ~  version 24.10.4
 
@@ -464,8 +466,7 @@ To do this, simply repeat the sequence of sub-steps seen in
     CPU hours   : (a few seconds)
     Succeeded   : 2
     ```
-   </span>
-   </CommandOutputs>
+    </span>
+    </CommandOutputs>
 
     Check your resulting images in the results folder!
-</Steps>
