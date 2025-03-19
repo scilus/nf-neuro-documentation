@@ -34,81 +34,76 @@ which will print all available modules to the terminal.
     ```bash
        # List all modules
        nf-core modules list remote
-
-       # List only reconst modules
-       nf-core modules list remote reconst
     ```
    </span>
    <span slot="output">
-
-        ```
-
-        INFO     Modules available from https://github.com/scilus/nf-neuro.git (main):                                                                                                 
+    ```
+    INFO     Modules available from https://github.com/scilus/nf-neuro.git (main):                                                                                                 
                                                                                                                                                                                     
-        ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-        ┃ Module Name                      ┃
-        ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-        │ betcrop/antsbet                  │
-        │ betcrop/fslbetcrop               │
-        │ betcrop/synthbet                 │
-        │ bundle/centroid                  │
-        │ bundle/coloring                  │
-        │ bundle/fixelafd                  │
-        │ bundle/labelmap                  │
-        │ bundle/recognize                 │
-        │ bundle/stats                     │
-        │ bundle/uniformize                │
-        │ connectivity/afdfixel            │
-        │ connectivity/decompose           │
-        │ connectivity/visualize           │
-        │ denoising/mppca                  │
-        │ denoising/nlmeans                │
-        │ image/applymask                  │
-        │ image/burnvoxels                 │
-        │ image/convert                    │
-        │ image/cropvolume                 │
-        │ image/powderaverage              │
-        │ image/resample                   │
-        │ io/nii2dcm                       │
-        │ io/readbids                      │
-        │ preproc/eddy                     │
-        │ preproc/gibbs                    │
-        │ preproc/n4                       │
-        │ preproc/normalize                │
-        │ preproc/topup                    │
-        │ reconst/diffusivitypriors        │
-        │ reconst/dtimetrics               │
-        │ reconst/fodf                     │
-        │ reconst/freewater                │
-        │ reconst/frf                      │
-        │ reconst/ihmt                     │
-        │ reconst/meanfrf                  │
-        │ reconst/noddi                    │
-        │ reconst/shmetrics                │
-        │ reconst/shsignal                 │
-        │ registration/anattodwi           │
-        │ registration/ants                │
-        │ registration/antsapplytransforms │
-        │ registration/convert             │
-        │ registration/easyreg             │
-        │ registration/synthregistration   │
-        │ registration/tractogram          │
-        │ segmentation/fastseg             │
-        │ segmentation/fastsurfer          │
-        │ segmentation/freesurferseg       │
-        │ segmentation/fsreconall          │
-        │ segmentation/synthseg            │
-        │ stats/metricsinroi               │
-        │ tracking/localtracking           │
-        │ tracking/pfttracking             │
-        │ tractogram/densitymap            │
-        │ tractogram/removeinvalid         │
-        │ tractogram/resample              │
-        │ utils/extractb0                  │
-        └──────────────────────────────────┘
-        ```
-   </span>
-   </CommandOutputs>
+    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+    ┃ Module Name                      ┃
+    ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+    │ betcrop/antsbet                  │
+    │ betcrop/fslbetcrop               │
+    │ betcrop/synthbet                 │
+    │ bundle/centroid                  │
+    │ bundle/coloring                  │
+    │ bundle/fixelafd                  │
+    │ bundle/labelmap                  │
+    │ bundle/recognize                 │
+    │ bundle/stats                     │
+    │ bundle/uniformize                │
+    │ connectivity/afdfixel            │
+    │ connectivity/decompose           │
+    │ connectivity/visualize           │
+    │ denoising/mppca                  │
+    │ denoising/nlmeans                │
+    │ image/applymask                  │
+    │ image/burnvoxels                 │
+    │ image/convert                    │
+    │ image/cropvolume                 │
+    │ image/powderaverage              │
+    │ image/resample                   │
+    │ io/nii2dcm                       │
+    │ io/readbids                      │
+    │ preproc/eddy                     │
+    │ preproc/gibbs                    │
+    │ preproc/n4                       │
+    │ preproc/normalize                │
+    │ preproc/topup                    │
+    │ reconst/diffusivitypriors        │
+    │ reconst/dtimetrics               │
+    │ reconst/fodf                     │
+    │ reconst/freewater                │
+    │ reconst/frf                      │
+    │ reconst/ihmt                     │
+    │ reconst/meanfrf                  │
+    │ reconst/noddi                    │
+    │ reconst/shmetrics                │
+    │ reconst/shsignal                 │
+    │ registration/anattodwi           │
+    │ registration/ants                │
+    │ registration/antsapplytransforms │
+    │ registration/convert             │
+    │ registration/easyreg             │
+    │ registration/synthregistration   │
+    │ registration/tractogram          │
+    │ segmentation/fastseg             │
+    │ segmentation/fastsurfer          │
+    │ segmentation/freesurferseg       │
+    │ segmentation/fsreconall          │
+    │ segmentation/synthseg            │
+    │ stats/metricsinroi               │
+    │ tracking/localtracking           │
+    │ tracking/pfttracking             │
+    │ tractogram/densitymap            │
+    │ tractogram/removeinvalid         │
+    │ tractogram/resample              │
+    │ utils/extractb0                  │
+    └──────────────────────────────────┘
+    ```
+    </span>
+    </CommandOutputs>
 
 
 :::note
@@ -119,7 +114,7 @@ prompt you see.
 ### 2. Install a new module
 
 Now, you can install the modules you want to include in your pipeline. 
-Let's install the `denoising/nlmeans` module for DWI denoising. 
+Let's install the `denoising/mppca` module for DWI denoising. 
 You can install modules using `nf-core modules install` command.
 The new module will be installed to the `./modules/nf-neuro/modules/` directory.
 
@@ -127,7 +122,7 @@ The new module will be installed to the `./modules/nf-neuro/modules/` directory.
    <CommandOutputs>
    <span slot="command">
     ```bash
-        nf-core modules install denoising/nlmeans
+        nf-core modules install denoising/mppca
     ```
    </span>
    <span slot="output">
@@ -143,80 +138,93 @@ The new module will be installed to the `./modules/nf-neuro/modules/` directory.
     There is a new version of nf-core/tools available! (3.2.0)
 
 
-    INFO     Installing 'denoising/nlmeans'                                                                                                                                        
+    INFO     Installing 'denoising/mppca'                                                                                                                                        
     INFO     Use the following statement to include this module:                                                                                                                   
                                                                                                                                                                                 
-    include { DENOISING_NLMEANS } from '../modules/nf-neuro/denoising/nlmeans/main'  
+    include { DENOISING_MPPCA } from '../modules/nf-neuro/denoising/mppca/main'  
     ```
+    </span>
+    </CommandOutputs>
 
-    :::note
-    By default nf-core prints the include command with a `../modules/[...]`.
-    In this tutorial, you need to delete a directory, like this `./modules/[...]`.
-    :::
-   </span>
-   </CommandOutputs>
+:::note
+By default nf-core prints the include command with a `../modules/[...]`.
+In this tutorial, you need to remove a directory, like this `./modules/[...]`.
+:::
+
 
 ### 3. Configure and use the Module
 
 The purpose of adding this module is to denoise the DWI image before computing the DTI metrics.
 To do this, simply repeat the sequence of sub-steps seen in 
-**Step 3: How to use and configure an nf-neuro module in the workflow**.
+[**Step 3: Use and configure a nf-neuro module**](/nf-neuro/pipeline/tutorial_step_3).
 
 <Steps>
 
-1. Include the module in `main.nf`.
+1. Use the module in the workflow
 
-2. Bind the module in your `workflow`.
+2. Bind the module in your `workflow`
 
-3. Prepare the input data structure for denoising module.
+3. Understand input data specific to the module
 
-    Unlike the DTI module, where input data can be provided directly, 
-    the MPPCA denoising module requires only the DWI image and an optional mask.
+    Like the DTI module, the MPPCA denoising module requires only the DWI image and an optional mask.
 
     The challenge is to leverage NextFlow tools to restructure the input data, 
     making it easier to handle. The goal is to efficiently retrieve specific files, 
-    such as the DWI image or the BVEC and BVAL files. 
+    such as the `dwi` image or the `bval` and `bvec` files.
     To achieve this, we'll use NextFlow's [multiMap](https://www.nextflow.io/docs/latest/reference/operator.html#multimap)
     operator to generate multiple output channels from a single input channel, as shown below.
 
     <Tabs>
-    <TabItem label="Command to add">
+    <TabItem label="Before">
     ```nextflow
-    ch_dwi_bvalbvec = inputs.dwi
-        .multiMap { meta, dwi, bval, bvec ->
-            dwi:            [ meta, dwi ]
-            bvs_files:      [ meta, bval, bvec ]
-            dwi_bval_bvec:  [ meta, dwi, bval, bvec ]
-        }
+    workflow {
+        // ** Now call your input workflow to fetch your files ** //
+        data = get_data()
+        input_dti_metric = data.dwi.map{ it + [[]] }
+        input_dti_metric.view()
+        RECONST_DTIMETRICS( input_dti_metric )
+    }
     ```
     </TabItem>
-    <TabItem label="Let's break it down">
-    <Steps>
-
-    1. `inputs.dwi` is the input channel from `get_data` containing : meta, dwi, bval, and bvec.
-
-    2. The [multiMap](https://www.nextflow.io/docs/latest/reference/operator.html#multimap) : creates three new entries in different output channels:
-
-            a. dwi: This output contains the meta information and the dwi file. 
-            
-            b. bvs_files: This output contains the meta information, bval file, and bvec file. 
-            
-            c. dwi_bval_bvec: This output contains all four elements from the input.
-
-    3. ch_dwi_bvalbvec : Allows easy access to different file groups
-    
-        The result of this operation is a multi-channel object, and you can access these channels as follows:
-
-            ch_dwi_bvalbvec.dwi : [meta, dwi]
-
-            ch_dwi_bvalbvec.bvs_files : [meta, bval, bvec]
-
-            ch_dwi_bvalbvec.dwi_bval_bvec : [meta, dwi, bval, bvec]
-
-    </Steps>
-
+    <TabItem label="After">
+    ```nextflow
+    workflow {
+        // ** Now call your input workflow to fetch your files ** //
+        data = get_data()
+        ch_dwi_bvalbvec = data.dwi
+            .multiMap { meta, dwi, bval, bvec ->
+                dwi:            [ meta, dwi ]
+                bvs_files:      [ meta, bval, bvec ]
+                dwi_bval_bvec:  [ meta, dwi, bval, bvec ]
+        }
+        ch_denoise_dwi = ch_dwi_bvalbvec.dwi
+                            .map{ it + [[]] }
+    }    
+    ```
     </TabItem>
     </Tabs>
+
+    :::tip[Let's break down these changes]
+    <html>
+    <li>`data.dwi` is the input channel from `get_data` containing: meta, dwi, bval, and bvec.</li>
+    
+    The [multiMap](https://www.nextflow.io/docs/latest/reference/operator.html#multimap) creates three new entries in different output channels:
+    
+    <ul>
+        <li>dwi: This output contains the meta information and the dwi file.</li>
+        <li>bvs_files: This output contains the meta information, bval file, and bvec file.</li>
+        <li>dwi_bval_bvec: This output contains all four elements from the input.</li>
+    </ul>
+    <li>ch_dwi_bvalbvec : Allows easy access to different file groups</li>
+    
+    The result of this operation is a multi-channel object, and you can access these channels as follows:
+    <ul>
+        <li>ch_dwi_bvalbvec.dwi : [meta, dwi]</li>
+        <li>ch_dwi_bvalbvec.bvs_files : [meta, bval, bvec]</li>
+        <li>ch_dwi_bvalbvec.dwi_bval_bvec : [meta, dwi, bval, bvec]</li>
+    </ul>
+    </html>
+    :::
 
     :::note
     Why Use `multiMap`?
@@ -230,80 +238,82 @@ To do this, simply repeat the sequence of sub-steps seen in
 
 4. Configure the denosing module in the `nextflow.config` using API Documentation [here](https://scilus.github.io/nf-neuro/api/modules/denoising/mppca/)
 
-5. Adapt the input for `RECONST_DTIMETRICS` module to integrate denoised DWI.
+5. Adapt the input for `RECONST_DTIMETRICS` module to integrate denoised DWI before.
 
     <Tabs>
-    <TabItem label="Command to add in workflow">
+    <TabItem label="Before">
     ```nextflow
-    // Add this command just after the DENOISING_MPPCA module
-    ch_dwi_denoised = DENOISING_MPPCA.out.image
-
-    // You can now reuse the outputs and supply them to another module!
-    // Update the input for RECONST_DTIMETRICS with DWI denoised output
-    input_dti_denoised = ch_dwi_denoised
-            .join(ch_dwi_bvalbvec.bvs_files)
-            .map{ it + [[]] }
-
-    // Update input name
-    RECONST_DTIMETRICS( input_dti_denoised )
+    workflow {
+        // ** Now call your input workflow to fetch your files ** //
+        data = get_data()
+        ch_dwi_bvalbvec = data.dwi
+            .multiMap { meta, dwi, bval, bvec ->
+                dwi:            [ meta, dwi ]
+                bvs_files:      [ meta, bval, bvec ]
+                dwi_bval_bvec:  [ meta, dwi, bval, bvec ]
+        }
+        ch_denoise_dwi = ch_dwi_bvalbvec.dwi
+                            .map{ it + [[]] }
+    } 
     ```
     </TabItem>
-    <TabItem label="Let's break it down">
-    <Steps>
+    <TabItem label="After">
+    ```nextflow
+    workflow {
+        // ** Now call your input workflow to fetch your files ** //
+        data = get_data()
+        ch_dwi_bvalbvec = data.dwi
+            .multiMap { meta, dwi, bval, bvec ->
+                dwi:            [ meta, dwi ]
+                bvs_files:      [ meta, bval, bvec ]
+                dwi_bval_bvec:  [ meta, dwi, bval, bvec ]
+        }
+        ch_denoise_dwi = ch_dwi_bvalbvec.dwi
+                            .map{ it + [[]] }
 
-    1. `DENOISING_MPPCA.out.image` : stores the denoised output.
+        DENOISING_MPPCA( ch_denoise_dwi )
+        ch_dwi_denoised = DENOISING_MPPCA.out.image
+
+        // You can now reuse the outputs and supply them to another module!
+        // Update the input for RECONST_DTIMETRICS with DWI denoised output
+        input_dti_denoised = ch_dwi_denoised
+                .join(ch_dwi_bvalbvec.bvs_files)
+                .map{ it + [[]] }
+
+        // Update input name
+        RECONST_DTIMETRICS( input_dti_denoised )
+    }
+    ```
+    </TabItem>
+    </Tabs>
+
+    :::tip[Let's break down these changes]
+    <html>
+    <li>`DENOISING_MPPCA.out.image` : stores the denoised output.</li>
       
         Assign the output from DENOISING_MPPCA to a new channel named `ch_dwi_denoised`. 
         Specifically, it's taking the `image` output.
 
         The **name** of a module's **output(s)** can be determined via the API Documentation in the `Outputs` section.
 
-    2. `.join(ch_dwi_bvalbvec.bvs_files)`: merges it with BVAL/BVEC data
+    <li>`.join(ch_dwi_bvalbvec.bvs_files)`: merges it with `bval/bvec` data</li>
     
         The [join](https://www.nextflow.io/docs/latest/reference/operator.html#join)
         operator is used here to combine the items from `ch_dwi_denoised` with items from another channel `ch_dwi_bvalbvec.bvs_files`.
         The join operation matches items from both channels based on a common key (by default, the first element of each item).
 
-    3. `.map{ it + [[]] }`:  Adds an empty list ([]) to each input tuple.
+    <li>`.map{ it + [[]] }`:  Adds an empty list ([]) to each input tuple.</li>
     
         After joining, we use map to transforms each item in the channel, and adding an empty list [[]], 
-        for the optional mask input. The map operation is similar to the one we did for the DTI module in **Step 2**.
-
-    </Steps>
-
-    </TabItem>
-    </Tabs>
+        for the optional mask input. The map operation is similar to the one we did for the DTI module in [**Step 2**](/nf-neuro/pipeline/tutorial_step_2).
+    </html>
+    :::
 
 
 
-6. Run and Verify the Pipeline : 
+6. Verify your files: 
 
     <Tabs>
-    <TabItem label="Check if it works">
-
-    ```bash
-    nextflow run main.nf --input data -profile docker
-    ```
-    </TabItem>
-    <TabItem label="Expected output">
-
-    ```bash
-    N E X T F L O W   ~  version 24.10.4
-
-    Launching `main.nf` [astonishing_borg] DSL2 - revision: d69b63f305
-
-    executor >  local (2)
-    [ec/62dd72] process > DENOISING_MPPCA (sub-003_ses-01)    [100%] 1 of 1 ✔
-    [6e/837a31] process > RECONST_DTIMETRICS (sub-003_ses-01) [100%] 1 of 1 ✔
-    Completed at: Date Hour
-    Duration    : 1m 19s
-    CPU hours   : (a few seconds)
-    Succeeded   : 2
-    ```
-
-    Check your resulting images in the results folder!
-
-    </TabItem>
     <TabItem label="Expected main.nf">
     ```nextflow
     #!/usr/bin/env nextflow
@@ -375,10 +385,8 @@ To do this, simply repeat the sequence of sub-steps seen in
                 .map{ it + [[]] }
 
         RECONST_DTIMETRICS( input_dti_denoised )
-
     }
     ```
-
     </TabItem>
     <TabItem label="Expected nextflow.config">
     ```nextflow
@@ -436,4 +444,30 @@ To do this, simply repeat the sequence of sub-steps seen in
     ```
     </TabItem>
     </Tabs>
+    <RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, you can run nextflow..**
+
+   <CommandOutputs>
+   <span slot="command">
+    ```bash
+    nextflow run main.nf --input data -profile docker
+    ```
+   </span>
+   <span slot="output">
+    ```bash
+    N E X T F L O W   ~  version 24.10.4
+
+    Launching `main.nf` [astonishing_borg] DSL2 - revision: d69b63f305
+
+    executor >  local (2)
+    [ec/62dd72] process > DENOISING_MPPCA (sub-003_ses-01)    [100%] 1 of 1 ✔
+    [6e/837a31] process > RECONST_DTIMETRICS (sub-003_ses-01) [100%] 1 of 1 ✔
+    Completed at: Date Hour
+    Duration    : 1m 19s
+    CPU hours   : (a few seconds)
+    Succeeded   : 2
+    ```
+   </span>
+   </CommandOutputs>
+
+    Check your resulting images in the results folder!
 </Steps>

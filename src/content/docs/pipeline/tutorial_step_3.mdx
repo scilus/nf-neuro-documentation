@@ -18,7 +18,7 @@ In this tutorial, you'll learn how to create a basic pipeline workflow, using co
 By following step 3, you will learn to use and configure a nf-neuro module.
 :::
 
-## Step 3: Use and Configure a nf-neuro Module
+## Step 3: Use and configure a nf-neuro module
 
 In this step, we'll add a `nf-neuro` module for processing DWI images, 
 and use a pre-installed module to computes diffusion tensor imaging (DTI) metrics.
@@ -26,24 +26,25 @@ and use a pre-installed module to computes diffusion tensor imaging (DTI) metric
 To do this, we will go through 6 successive sub-steps:
 
 <Steps>
-1. Include the module in the `main.nf` workflow.
+1. Include the module in the `main.nf` workflow
 
 2. Use the module in the workflow 
 
-3. Understand input data specific to the module.
+3. Understand input data specific to the module
 
-4. Validate Input Data
+4. Validate input data  
+
 
 5. Configure the module
 
-6. Visualize data in result folder
+6. Visualize data from the result folder
 </Steps>
 
 
 ### 1. Include the module 
 
-Modify your **main.nf** file and insert the `include {}` command at the top. This line adds
-the module **RECONST_DTIMETRICS** to your project.
+Modify your **`main.nf`** file and insert the `include {}` command at the top. This line adds  
+the module **`RECONST_DTIMETRICS`** to your project. 
 
 <Tabs>
   <TabItem label="Before">
@@ -90,26 +91,26 @@ After importing the module, you can then use it in your workflow as follows:
 ### 3. Understand input data specific to the module.
 
 Before using the `RECONST_DTIMETRICS` module, it's essential to understand the file types it expects as input. 
-For this, please refer to the API Documentation: [RECONST_DTIMETRICS](https://scilus.github.io/nf-neuro/api/modules/reconst/dtimetrics/)  
+For this, please refer to the [API Documentation](/nf-neuro/api/modules/reconst/dtimetrics). 
 
 The `Inputs` section module shows that 4 input files are required (excluding meta):
 
-**Mandatory**: DWI, BVAL, BVEC  
-**Optionnel** : Mask 
+**Mandatory**: `dwi`, `bval`, `bvec`  
+**Optionnel** : `b0mask`
 
 :::caution
 `meta` is a special variable, defined in every **module**, a map that gets passed around with the data, into which you can
-put information. Beware however, as it is also used to **join channels together** by looking at there whole content.
+put information. Beware however, as it is also used to **join channels together** by matching its content between the different channels.
 :::
 
 :::note
 Another way to get quick help on how a module works is to use the `nf-core modules info category/tool` 
 command. This displays the module's command-line documentation. 
-Be careful, though: you won't have access to the module's parameters or default values.
+Be careful though, you won't have access to the module's parameters or default values.
 :::
 
-We're now going to prepare the input data using Nextflow's **channel operators** `map()`. 
-In our case, the channel `inputs` already contains the data **dwi**, **bval** and **bvec**. 
+We're now going to prepare the input data using Nextflow's **channel operators** [`map()`](https://www.nextflow.io/docs/latest/reference/operator.html#map).
+In our case, the channel `inputs` already contains the data **`dwi`**, **`bval`** and **`bvec`**.  
 Since the mask is optional, we can handle it by appending an **empty list**.
 
 <Tabs>
@@ -136,7 +137,7 @@ Since the mask is optional, we can handle it by appending an **empty list**.
 
 
 :::tip[Let's break down these changes]
-`.map{ it + [[]] }`: Adds an empty list ([]) to each input tuple.
+`.map{ it + [[]] }`: Adds an empty list `([])` to each input tuple.
 
 `it` refers to the current item being processed and `+ [[]]` is appending an empty list `[]`
 wrapped in another list `[[]]` to each item.
@@ -146,8 +147,8 @@ This ensures compatibility with the module, even if the mask is not provided.
 
 :::note
 Nextflow does not directly support optional entries for processes or modules. 
-Providing an empty list ([]) instead of a file as a module input is a workaround for this 
-limitation; and indicates that an optional input is not provided.
+Providing an empty list `([])` instead of a file as a module input is a workaround for this 
+limitation.
 :::
 
 
@@ -196,7 +197,7 @@ operator, which will display the results directly in the **terminal**, very usef
    </span>
    </CommandOutputs>
 
-You have now configured and checked that the inputs respects the **RECONST_DTIMETRICS** module's expectations, 
+You have now configured and checked that the inputs respect the **`RECONST_DTIMETRICS`** module's expectations,
 taking into account the management of an optional file. The next step is to configure the module parameters.
 
 
@@ -206,7 +207,7 @@ taking into account the management of an optional file. The next step is to conf
 
 Each module may require specific parameters. 
 To find the required **parameters** and their **default values**, check the `Arguments` section of the module supplied by 
-API Documentation [here](https://scilus.github.io/nf-neuro/api/modules/reconst/dtimetrics/) .
+the [API Documentation](/nf-neuro/api/modules/reconst/dtimetrics).
 
 In the nextflow.config, you will have to set these parameters using the **process selector** (`withName`) that
 links the `ext.` parameter to the `params.` parameter.
@@ -225,7 +226,7 @@ process {
 :::
 
 The `RECONST_DTIMETRICS` module requires a set of parameters to be added to the 
-`nextflow.config`. Please copy paste it into your nextflow.config after the `manifest` part.
+`nextflow.config`. Please copy and paste it into your nextflow.config after the `manifest` part.
 
 ```
 process {
@@ -285,7 +286,7 @@ output directory in `nextflow.config` using the `publishDir`:
     
 <li>`${params.output}`</li> 
     This refers to a parameter called output that should be defined 
-    elsewhere in the pipeline, likely in a params section or passed as a command-line argument. 
+    elsewhere in the pipeline, likely in a `params` section or passed as a command-line argument. 
     It serves as the base output directory.
 
 <li>`$meta.id` : Subject/session ID for structured output.</li>
@@ -295,8 +296,8 @@ which has an id field. This could be used to create subdirectories for each samp
 
 <li>`${task.process.replaceAll(':', '-')}` : Ensures valid directory names.</li>
 
-This uses the name of the current process (`task.process`) but replaces any colons : with hyphens `-`. 
-This is likely done because colons are not valid characters in directory names on many file systems.
+This uses the name of the current process (`task.process`) but replaces any colons `:` with hyphens `-`. 
+This is done because colons are not valid characters in directory names on many file systems.
 </html>
 :::
 
@@ -352,7 +353,7 @@ process {
 }
 ```
 
-You can now uncomment the `RECONST_DTIMETRICS` module in `main.nf`.
+**You can now uncomment the `RECONST_DTIMETRICS` module in `main.nf`.**
 
 <RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, you can run nextflow..**
 
