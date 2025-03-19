@@ -49,7 +49,7 @@ gray matter (GM), and cerebrospinal fluid (CSF) masks.
 
 A Nextflow module is a file containing one process that execute one or more command. 
 
-The structure of a module should look like this:
+The structure of a module should look similar to this:
 
     ```
     process CATEGORY_MODULE {
@@ -95,13 +95,13 @@ The structure of a module should look like this:
 
     <li>`Output`</li>
         Defines the output of the process as a tuple containing 
-        the input metadata and a file named "output.txt". 
-        The output is emitted to a channel named "outputname".
+        the input metadata and a file named `output.txt`. 
+        The output is emitted to a channel named `outputname`.
 
     <li>`script`</li>
-        This is the script that will be executed by the process. 
-        It defines some option a `prefix` variable using a `task` extension or the meta id.
-        Defines an 'optionName' variable using a task extension or a default value.
+        This is the section in which the command to be executed by the module are defined. 
+        It is also where you can define options, such as a `prefix` variable using a `task` extension or the `meta.id`.
+        You can also defines optional parameters, such as the 'optionName' variable using a task extension or a default value.
     </html>
     :::
     
@@ -126,8 +126,7 @@ The structure of a module should look like this:
         tuple val(meta), path(t1), path(metrics)
         ```
 
-    2. Update `output` to include segmentation maps and masks, as well as the JSON output from scilpy script
-        Example for WM data:
+    2. Update `output` to include segmentation maps and masks, as well as the JSON output from the scilpy script.
 
         ```nextflow
             output:
@@ -137,7 +136,7 @@ The structure of a module should look like this:
 
         ```
 
-    3. Include `task` extensions for additional options (those from scilpy script)
+    3. Include `task` extensions for additional options (those from the scilpy script)
 
         ```nextflow
             script:
@@ -147,14 +146,12 @@ The structure of a module should look like this:
         ```
 
     4. Modify the `script`
-            1. Update the script to perform segmentation using `fast` on the T1w image.
-
+        <Steps>
+            1. Update the script section to perform segmentation using `fast` on the T1w image.
             2. Generate binary masks for each PVE tissue segmentation using `scil_volume_math.py` or another tool.
-            
-            3. Rename PVE outputs from `fast` to map_\*.nii.gz and mask_*.nii.gz
-
-            - Extract metrics from the WM, GM and CSF binary masks using `scil_volume_stats_in_ROI.py` or other.
-    </Steps>
+            3. Rename PVE outputs from `fast` to `map_\*.nii.gz` and `mask_*.nii.gz`.
+            4. Extract metrics from the WM, GM and CSF binary masks using `scil_volume_stats_in_ROI.py` or other.
+        </Steps>
 
     :::note
     #### **Add a `meta.yml` file for local modules and subworkflows**  
@@ -254,7 +251,7 @@ STATS_METRICSINROI( input_channel )
 
 #### b. Prepare the input channel for your local module
 
-The STATS_METRICSINROIS module requires two inputs: a T1 image and a list of metrics.
+The `STATS_METRICSINROIS` module requires two inputs: a T1 image and a list of metrics.
 
 You can use the `join()` and `map()` operators to create an input channel that combines the T1 BET image output from the 
 `PREPROC_T1` subworkflow with the FA map from the DTI module.
@@ -273,9 +270,9 @@ STATS_METRICSINROI( input_extract_metric )
 
 #### 5. Configure your local module
 
-To configure your local module, you need to add each task.ext.* to the module. 
+To configure your local module, you need to add each `task.ext.*` to the module. 
 As we’ve seen previously, use the `withName` process selector to link the `ext` 
-    parameter defined in your local module to `nextflow.config` file.
+parameter defined in your local module to `nextflow.config` file.
 
 **Add these lines to your ./nextflow.config**
 

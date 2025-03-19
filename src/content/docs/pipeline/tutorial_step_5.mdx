@@ -165,17 +165,14 @@ The subworkflow will be installed in the `./subworkflows/nf-neuro/` directory.
 
 ### 2. Add new data in the input pipeline structure
 
-To include a T1w image in the pipeline, follow the approach from [**Step 2**](/nf-neuro/pipeline/tutorial_step_2) for adding DWI images.
-The necessary steps are: 
+To include a T1w image in the pipeline, we will follow the same approach from [**Step 2**](/nf-neuro/pipeline/tutorial_step_2) as we did for the DWI images.
+The required steps are:  
 
     <Steps>
 
-    1. Add T1w image path to `get_data` input structure.
-
+    1. Add T1w image path to the `get_data` input structure.
     2. `emit` a new output channel called `anat`.
-
-    3. Include the T1 channel data in the worflow and visualize it.
-
+    3. Include the T1w channel data in the workflow and visualize it.
     4. Run the pipeline using `nextflow run main.nf --input data -profile docker`.
 
     </Steps>
@@ -203,7 +200,7 @@ The necessary steps are:
    </CommandOutputs>
 
 
-### 3. Use the subworkflow and prepare the input subworkflow structure
+### 3. Prepare the input structure for the subworkflow and include it in your `main.nf`
 
 #### a. Use the subworkflow as follow in your `main.nf`:
 
@@ -217,21 +214,21 @@ The necessary steps are:
     providing information on **Inputs**, **Outputs** and the module list used in the 
     **Components** section:  [PREPROC_T1](/nf-neuro/api/subworflows/preproc_t1/).
 
-    The PREPROC_T1 process has 7 input channels defined, with only ch_image being mandatory.
+    The `PREPROC_T1` subworkflow has 7 input channels defined, with only `ch_image` being mandatory.
     Just like using an empty list for modules, using an **empty channel** allows the 
-    process to run without optional inputs.
+    process to run without supplying all optional inputs.
 
     <html>
-    <li>ch_image (Mandatory)</li>
-    <li>ch_template (Optional)</li>
-    <li>ch_probability_map (Optional)</li>
-    <li>ch_mask_nlmeans (Optional)</li>
-    <li>ch_ref_n4 (Optional)</li>
-    <li>ch_ref_resample (Optional)</li>
-    <li>ch_weights (Optional)</li>
+    <li>`ch_image` (Mandatory)</li>
+    <li>`ch_template` (Optional)</li>
+    <li>`ch_probability_map` (Optional)</li>
+    <li>`ch_mask_nlmeans` (Optional)</li>
+    <li>`ch_ref_n4` (Optional)</li>
+    <li>`ch_ref_resample` (Optional)</li>
+    <li>`ch_weights` (Optional)</li>
     </html>
 
-    Use the `Channel.empty()` function for optional inputs, try to define the input structure for PREPROC_T1.
+    Using the `Channel.empty()` function for optional inputs, you can define the input structure for `PREPROC_T1` using the newly fetched `inputs.anat` channel.
 
     ```nextflow
 
@@ -248,10 +245,11 @@ The necessary steps are:
 
 ### 4. Configure your subworkflow
 
-Configuring a subworkflow requires understanding the modules used and the associated parameters.
+Configuring a subworkflow requires understanding the modules used within the subworkflow and their associated parameters.
+To properly use them, we will need to configure each of the module similarly to what we did for `RECONST_DTIMETRICS`.
 
-The [PREPROC_T1](https://scilus.github.io/nf-neuro/api/subworkflows/preproc_t1/) API documentation 
-lists the modules included in the subworkflow in the **Components** section : 
+The [`PREPROC_T1`](/nf-neuro/api/subworkflows/preproc_t1/) API documentation 
+lists the modules included in the subworkflow in the **Components** section: 
 
     <html>
         <li>denoising/nlmeans</li>
@@ -266,8 +264,8 @@ However, it does not yet provide a list of the parameters associated with the su
 You can find the parameters for the subworkflow in the `./subworkflow/nf-neuro/preproc_t1/main.nf` 
 file or the `nextflow.config` file within the **tests** folder (`./subworkflow/nf-neuro/preproc_t1/tests/nextflow.config`).
 
-For simplicity's sake, we will enable the `denoising` and `synthbet` options (set to `true`) and 
-disable all other options (set to `false`). 
+For he purpose of this tutorial, we will only enable the `denoising` and `synthbet` options (set to `true`) and 
+disable all other options (set to `false`).
 
 Add the following to your `nextflow.config` file:
 
@@ -285,7 +283,7 @@ Add the following to your `nextflow.config` file:
 ```
 
 Since we are disabling all options except for `denoising` and `synthbet`, we only need to 
-include the parameters for the modules corresponding to those options. 
+include specific parameters for those two modules. 
 Note that the `denoising` module does not require any specific parameters, so it can be ignored in the configuration.
 
 Now, update your `nextflow.config` file by adding the specific options for the subworkflow in the process section as follows:
@@ -463,7 +461,10 @@ Now, update your `nextflow.config` file by adding the specific options for the s
 
 <RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, you can run nextflow..**
 
-Add the `-resume` option to your command line, so you don't recompute each image again.
+:::note[Using Nextflow resumability and caching]
+Add the `-resume` option to your command line, this will make Nextflow cache the process that have
+been successfully run so that you won't have to run them again during a subsequent execution of your pipeline.
+:::
 
    <CommandOutputs>
    <span slot="command">

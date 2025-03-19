@@ -1,5 +1,5 @@
 ---
-title: Steps 5 to 8
+title: "Step 7: Reorganize modules in subworkflow"
 description: Learn how to build a simple pipeline using nf-neuro components
 ---
 
@@ -11,12 +11,10 @@ import { FileTree } from '@astrojs/starlight/components';
 import { Code } from '@astrojs/starlight/components';
 import Runtime from "@mdx-js/runtime";
 
-### Step 7 : Reorganize modules in subworkflow
-
 In this step, we will create a local subworkflow called `PREPROC_DIFF` which include 
 the two first modules used in your pipeline: DENOISING_MPPCA and RECONST_DTIMETRICS.
 
-#### Creating a Local subworkflow structure
+### 1. Creating a Local subworkflow structure
 
     Create the following local directory structure, including a main.nf file inside the subworkflow folder:
 
@@ -32,7 +30,7 @@ the two first modules used in your pipeline: DENOISING_MPPCA and RECONST_DTIMETR
     └── ...
     ```
 
-#### Write the subworkflow module
+### 2. Write the subworkflow module
 
 (faire le lien avec contribute ?, je dirais non, a voir)
 
@@ -255,7 +253,7 @@ The structure of a subworkflow should look like this:
     </Tabs>
 
 
-#### Bind and Prepare the Input Structure of the Local subworkflow in the Pipeline
+### 3. Bind and Prepare the Input Structure of the Local subworkflow in the Pipeline
 
 You can now include and bind your local subworkflow to the workflow, as shown in the previous steps::
 
@@ -286,7 +284,7 @@ Last but not least, don't forget to adapt the input channels for the DTI metrics
             .map{ it }
 ```
 
-#### Configure your Local Subworkflow
+### 4. Configure your Local Subworkflow
 
 Finally, all that's left is to add the parameters defined in the subworkflow to the `nextflow.config` file.
 
@@ -296,6 +294,9 @@ Finally, all that's left is to add the parameters defined in the subworkflow to 
     params.preproc_dwi_run_denoising = true
 ```
 
+### 5. Verify your files
+
+### 6. Run nextflow
 
 **Well done !**
 
