@@ -1,5 +1,5 @@
 ---
-title: "BIDS output: PublishDir specifications"
+title: "BIDS output `PublishDir` specifications"
 hide_breadcrumbs: Outputting BIDS derivatives.
 description: Learn how to build a simple pipeline using nf-neuro components
 ---
@@ -52,7 +52,6 @@ Here is an example of the structure output :
                 else { params.lean_output ? null : filename }
             },
             path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/anat/" : "${params.output}/${meta.id}/anat/" },
-            enabled: params.lean_output ? false : true
         ]
     }
 ```
@@ -73,15 +72,15 @@ Check the [BIDS derivatives specification](https://bids-specification.readthedoc
     <dd>
         <li>**`subject`** is the identifier for the participant.</li>
         <li>**`session`** is the identifier for the session (if applicable).</li>
-        <li>**`datatype`** refers to the type of data (e.g., `anat`, `func`).</li>
-        <li>**`file`** is the actual output file (e.g., T1-weighted MRI image, functional MRI data).</li>
+        <li>**`datatype`** refers to the type of data (e.g., `anat`, `func`, `dwi`).</li>
+        <li>**`file`** is the actual output file (e.g., T1-weighted MRI image, functional MRI data, diffusion MRI data).</li>
     </dd>
 
 <li>`mode`</li>
         The `mode` of publishing is set by a parameter, allowing flexibility in how files are published (e.g., copy, symlink, etc.).
     Define here with `params.publish_dir_mode`.
 
-<li>`SaveAs`</li>
+<li>`saveAs`</li>
         The `saveAs` function allows you to rename or reorganize output files as they are published. 
     This is particularly helpful when you need to ensure that your output files have BIDS-compliant filenames.
 
@@ -102,23 +101,23 @@ Check the [BIDS derivatives specification](https://bids-specification.readthedoc
 
 <li>`path`</li>
     This defines the directory structure for publishing outputs. 
-    The subject and session might be derived from the filenames or passed as inputs.
+    The subject and session are derived from the subject's metadata.
     It includes the subject (`meta.id`), session (`meta.session`), and output (`params.output`).
-    Using `meta.session ? "path_with_meta_session" : "path_without_meta_session"` if no session is provided, the path will omit the session and just use the subject ID.
+    By using `meta.session ? "path_with_meta_session" : "path_without_meta_session"`, if no session is provided,
+    the path will omit the session and create a simpler structure.
 
 <li>`enabled`</li>
     This enables or disables the publishing of outputs based on the `params.lean_output` parameter. 
-    If lean_output is true, publishing is disable : `params.lean_output ? false : true`
+    **It can only be used in intermediate steps, where you do not want any output files to be published in a "lean settings".**
+    If `lean_output` is true, publishing is disabled : `params.lean_output ? false : true`
 
 This configuration allows for fine-grained control over how files are renamed, where they are stored, 
 and whether they are published based on specific parameters such as lean_output.
     </html>
 :::
 
-
-
 Make sure to apply this structure to every process in your pipeline that produces output to ensure that all data is 
-organized consistently, making it easier to integrate with other BIDS-compliant tools and workflows.Additionally, 
+organized consistently, making it easier to integrate with other BIDS-compliant tools and workflows. Additionally, 
 by defining the appropriate metadata and passing the required parameters, you can easily reorganize 
 your output files and make them ready for further analysis.
 
@@ -197,7 +196,6 @@ your output files and make them ready for further analysis.
                     else { params.lean_output ? null : filename }
                 },
                 path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/anat/" : "${params.output}/${meta.id}/anat/" },
-                enabled: params.lean_output ? false : true
             ]
         }
 
@@ -292,8 +290,7 @@ Nextflow will simply copy the images from the work directory to the new output f
 :::
 
 :::caution
-Do cannot set both a `global` publishDir (`publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }`)
-and a publishDir for each individual module at the same time.
+You cannot set both a `global` publishDir (`publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }`)
 :::
 
 ### 4. Verify your output structure

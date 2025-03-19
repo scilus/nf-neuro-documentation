@@ -260,9 +260,10 @@ lists the modules included in the subworkflow in the **Components** section:
         <li>image/cropvolume</li>
     </html>
 
-However, it does not yet provide a list of the parameters associated with the subworkflows. 
-You can find the parameters for the subworkflow in the `./subworkflow/nf-neuro/preproc_t1/main.nf` 
-file or the `nextflow.config` file within the **tests** folder (`./subworkflow/nf-neuro/preproc_t1/tests/nextflow.config`).
+However, our current API documentation does not provide a list of the parameters for each module within a subworkflow.
+This is a work-in-progress and will be implemented in the near future to facilitate the usability of our subworkflows.
+In the meantime, you can find an example of the parameters in the `nextflow.config` file
+within the **tests** (`./subworkflow/nf-neuro/preproc_t1/tests/nextflow.config`).
 
 For he purpose of this tutorial, we will only enable the `denoising` and `synthbet` options (set to `true`) and 
 disable all other options (set to `false`).
