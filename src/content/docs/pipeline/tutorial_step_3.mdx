@@ -21,7 +21,7 @@ By following step 3, you will learn to use and configure a nf-neuro module.
 In this step, we'll add a `nf-neuro` module for processing DWI images, 
 and use a pre-installed module to computes diffusion tensor imaging (DTI) metrics.
 
-To do this, we will go through 6 successive sub-steps:
+To do this, we will go through 8 successive sub-steps:
 
 <Steps>
 1. Include the module in the `main.nf` workflow
@@ -32,10 +32,13 @@ To do this, we will go through 6 successive sub-steps:
 
 4. Validate input data  
 
-
 5. Configure the module
 
-6. Visualize data from the result folder
+6. Verify your files
+
+7. Run Nextflow
+
+8. Visualize data in the result folder
 </Steps>
 
 
@@ -384,7 +387,7 @@ process {
    </CommandOutputs>
 
 
-### 6. Visualize data in result folder
+### 8. Visualize data in result folder
 
 You can check the module's output files with the following command, 
 or use the VSCode interface to display FA and MD images via the NiiVue extension (pre-installed).
