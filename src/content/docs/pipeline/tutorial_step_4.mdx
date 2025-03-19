@@ -115,7 +115,7 @@ prompt you see.
 
 Now, you can install the modules you want to include in your pipeline. 
 Let's install the `denoising/mppca` module for DWI denoising. 
-You can install modules using `nf-core modules install` command.
+You can install the module using `nf-core modules install` command.
 The new module will be installed to the `./modules/nf-neuro/modules/` directory.
 
 
@@ -166,12 +166,12 @@ To do this, simply repeat the sequence of sub-steps seen in
 
 3. Understand input data specific to the module
 
-    Like the DTI module, the MPPCA denoising module requires only the DWI image and an optional mask.
+    Similar to the DTI module, the MPPCA denoising module requires only the DWI image and an optional mask.
 
-    The challenge is to leverage NextFlow tools to restructure the input data, 
-    making it easier to handle. The goal is to efficiently retrieve specific files, 
+    The challenge is to leverage Nextflow tools to restructure the input data into individual channels, 
+    making it easier to handle. The goal is to efficiently extract individual files, 
     such as the `dwi` image or the `bval` and `bvec` files.
-    To achieve this, we'll use NextFlow's [multiMap](https://www.nextflow.io/docs/latest/reference/operator.html#multimap)
+    To achieve this, we'll use Nextflow's [multiMap](https://www.nextflow.io/docs/latest/reference/operator.html#multimap)
     operator to generate multiple output channels from a single input channel, as shown below.
 
     <Tabs>
@@ -206,28 +206,27 @@ To do this, simply repeat the sequence of sub-steps seen in
 
     :::tip[Let's break down these changes]
     <html>
-    <li>`data.dwi` is the input channel from `get_data` containing: meta, dwi, bval, and bvec.</li>
+    <li>`data.dwi` is the input channel from `get_data` containing: `meta`, `dwi`, `bval`, and `bvec`.</li>
     
     The [multiMap](https://www.nextflow.io/docs/latest/reference/operator.html#multimap) creates three new entries in different output channels:
     
-    <ul>
-        <li>dwi: This output contains the meta information and the dwi file.</li>
-        <li>bvs_files: This output contains the meta information, bval file, and bvec file.</li>
-        <li>dwi_bval_bvec: This output contains all four elements from the input.</li>
-    </ul>
-    <li>ch_dwi_bvalbvec : Allows easy access to different file groups</li>
+    <dd>
+        <li>`dwi`: This output contains the meta information and the DWI file.</li>
+        <li>`bvs_files`: This output contains the meta information, the b-value file, and the b-vectors file.</li>
+        <li>`dwi_bval_bvec`: This output contains all four elements from the input.</li>
+    </dd>
+    <li>`ch_dwi_bvalbvec` : Allows easy access to different file groups</li>
     
     The result of this operation is a multi-channel object, and you can access these channels as follows:
-    <ul>
-        <li>ch_dwi_bvalbvec.dwi : [meta, dwi]</li>
-        <li>ch_dwi_bvalbvec.bvs_files : [meta, bval, bvec]</li>
-        <li>ch_dwi_bvalbvec.dwi_bval_bvec : [meta, dwi, bval, bvec]</li>
-    </ul>
+    <dd>
+        <li>`ch_dwi_bvalbvec.dwi` : `[meta, dwi]`</li>
+        <li>`ch_dwi_bvalbvec.bvs_files` : `[meta, bval, bvec]`</li>
+        <li>`ch_dwi_bvalbvec.dwi_bval_bvec` : `[meta, dwi, bval, bvec]`</li>
+    </dd>
     </html>
     :::
 
-    :::note
-    Why Use `multiMap`?
+    :::note[Why Use `multiMap`?]
 
     This approach is useful in Nextflow workflows when different processes require distinct subsets or 
     different combinations of your input data.
@@ -236,9 +235,9 @@ To do this, simply repeat the sequence of sub-steps seen in
     As in this tutorial, you might have one process that only needs the dwi file, another that needs the bval 
     and bvec files, and a third that needs all of them. 
 
-4. Configure the denosing module in the `nextflow.config` using API Documentation [here](https://scilus.github.io/nf-neuro/api/modules/denoising/mppca/)
+4. Configure the denosing module in the `nextflow.config` using the [API Documentation](/nf-neuro/api/modules/denoising/mppca) as a reference.
 
-5. Adapt the input for `RECONST_DTIMETRICS` module to integrate denoised DWI before.
+5. Adapt the input for `RECONST_DTIMETRICS` module to attach it after the newly included denoised DWI module, reusing its outputs as inputs.
 
     <Tabs>
     <TabItem label="Before">
@@ -291,21 +290,22 @@ To do this, simply repeat the sequence of sub-steps seen in
     <html>
     <li>`DENOISING_MPPCA.out.image` : stores the denoised output.</li>
       
-        Assign the output from DENOISING_MPPCA to a new channel named `ch_dwi_denoised`. 
+        Assign the output from `DENOISING_MPPCA` to a new channel named `ch_dwi_denoised`.
         Specifically, it's taking the `image` output.
 
-        The **name** of a module's **output(s)** can be determined via the API Documentation in the `Outputs` section.
+        The **name** of a module's **output(s)** can be determined via the [API Documentation](/nf-neuro/api/categories) in the `Outputs` section.
 
     <li>`.join(ch_dwi_bvalbvec.bvs_files)`: merges it with `bval/bvec` data</li>
     
-        The [join](https://www.nextflow.io/docs/latest/reference/operator.html#join)
+        The [`join`](https://www.nextflow.io/docs/latest/reference/operator.html#join)
         operator is used here to combine the items from `ch_dwi_denoised` with items from another channel `ch_dwi_bvalbvec.bvs_files`.
-        The join operation matches items from both channels based on a common key (by default, the first element of each item).
+        The [`join`](https://www.nextflow.io/docs/latest/reference/operator.html#join) operation matches items from both channels based 
+        on a common key (by default, the first element of each item).
 
-    <li>`.map{ it + [[]] }`:  Adds an empty list ([]) to each input tuple.</li>
+    <li>`.map{ it + [[]] }`:  Adds an empty list `([])` to each input tuple.</li>
     
-        After joining, we use map to transforms each item in the channel, and adding an empty list [[]], 
-        for the optional mask input. The map operation is similar to the one we did for the DTI module in [**Step 2**](/nf-neuro/pipeline/tutorial_step_2).
+        After joining, we use `map` to transforms each item in the channel, and adding an empty list `[[]]`,
+        for the optional mask input. The `map` operation is similar to the one we did for the DTI module in [**Step 2**](/nf-neuro/pipeline/tutorial_step_2).
     </html>
     :::
 

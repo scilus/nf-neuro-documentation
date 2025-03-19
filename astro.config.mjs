@@ -39,7 +39,9 @@ export default defineConfig({
 								{ label: 'Steps 1 to 2', slug: 'pipeline/tutorial_steps_1-2' },
 								{ label: 'Step 3', slug: 'pipeline/tutorial_step_3' },
 								{ label: 'Step 4', slug: 'pipeline/tutorial_step_4' },
-								{ label: 'Steps 4 to 8', slug: 'pipeline/tutorial_steps_5-8' },
+								{ label: 'Step 5', slug: 'pipeline/tutorial_step_5' },
+								{ label: 'Step 6', slug: 'pipeline/tutorial_step_6' },
+								{ label: 'Steps 7 to 8', slug: 'pipeline/tutorial_steps_7-8' },
 							]
 						},
 					],

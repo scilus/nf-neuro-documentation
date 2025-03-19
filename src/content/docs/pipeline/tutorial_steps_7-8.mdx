@@ -1,0 +1,780 @@
+---
+title: Steps 5 to 8
+description: Learn how to build a simple pipeline using nf-neuro components
+---
+
+import RunIcon from '~icons/codicon/run-all';
+import CommandOutputs from '../../../components/CommandOutputs.astro';
+import { Steps } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { FileTree } from '@astrojs/starlight/components';
+import { Code } from '@astrojs/starlight/components';
+import Runtime from "@mdx-js/runtime";
+
+### Step 7 : Reorganize modules in subworkflow
+
+In this step, we will create a local subworkflow called `PREPROC_DIFF` which include 
+the two first modules used in your pipeline: DENOISING_MPPCA and RECONST_DTIMETRICS.
+
+#### Creating a Local subworkflow structure
+
+    Create the following local directory structure, including a main.nf file inside the subworkflow folder:
+
+    ```
+    nf-neuro-tutorial/
+    ├── ...
+    ├── subworkflows/
+    │   ├── local/
+    │   │   ├── preproc_diff/main.nf
+    │   ├── nf-neuro/
+    |   |   |--load_test_data
+    |   |   └──preproc_t1
+    └── ...
+    ```
+
+#### Write the subworkflow module
+
+(faire le lien avec contribute ?, je dirais non, a voir)
+
+A Nextflow subworkflow is a file containing at least two modules. 
+The structure of a subworkflow should look like this:
+
+    <Tabs>
+    <TabItem label="Example of module">
+
+    This workflow demonstrates the use of Nextflow DSL2 features such as module inclusion, 
+    workflow definition with input and output channels, conditional process execution, 
+    and channel manipulation.
+
+    ```
+    include { MODULE1 } from '../../../path/module1/main'
+    include { MODULE2 } from '../../../path/module2/main'
+
+    workflow SUBWORKFLOW_NAME {
+
+        take:
+            input_channel           // channel: [ val(meta), input1, input2, input3 ]
+
+        main:
+
+            reorganize_input_channel = ()
+
+            // ** description MODULE 1 ** //
+            if (params.run_mdoule1) {
+                input_channel_module1 = ()
+
+                MODULE1 ( input_channel_module1 )
+
+                // Output channel
+                output_option = MODULE1.out.output_name
+                    .join(reorganize_input_channel.outname_2)
+            }
+
+            // ** description MODULE 2 ** //
+            input_channel_module2 = ()
+            MODULE2( input_channel_module2 )
+
+        emit:
+            output_module1_1     = MODULE1.out.output1     // channel: [ val(meta), file ]
+            output_module1_2     = output_option           // channel: [ val(meta), file1, file2 ]
+            output_module2_1     = MODULE2.out.output1     // channel: [ val(meta), file ]
+            output_module2_2     = MODULE2.out.output2     // channel: [ val(meta), file ]
+    }
+    ```
+
+    </TabItem>
+    <TabItem label="Let's break it down">
+    <Steps>
+    1. `include {}`
+
+        A subworkflow is a workflow, so it is necessary to import the modules that need to be used in the workflow.
+
+    2. `take` : Input channels
+
+        The workflow takes one or more input channels containing metadata and files.
+
+    3. `main`
+
+        This section contains the main logic of the workflow
+
+    4. `if (params.condition*)` : conditionnal option
+
+        Conditional option : If the condition* parameter is set, 
+        the workflow performs the optionnal module. 
+        This parameter must then be added to the `nextflow.config`.
+
+    5. input channel/modules
+
+        Next, you need to define the input channels necessary for the modules being used.
+
+    6. `emit` : Output Channels
+
+        The workflow emits one or more output channels.
+
+    </Steps>
+
+    </TabItem>
+    <TabItem label="Tasks">
+
+    The purpose of this local subworkflow is to preprocess DWI data, 
+    optionally apply denoising, and compute DTI-derived metrics. 
+    
+    Based on the "Example of module", create a local subworkflow that integrates the following two modules:
+
+    **DENOISING_MPPCA** – Performs MP-PCA denoising on the dMRI data (optional).
+
+    **RECONST_DTIMETRICS** – Computes DTI metrics : FA and MD.
+
+    
+    <Steps>
+    1. Import Required Modules
+
+        Include denoising_mppca and reconst_dtimetrics in your subworkflow.
+
+        ```nextflow
+        include { RECONST_DTIMETRICS } from '../../../modules/nf-neuro/reconst/dtimetrics/main'
+        include { DENOISING_MPPCA } from '../../../modules/nf-neuro/denoising/mppca/main'
+        ```
+    2. Rename your worflow : `PREPROC_DIFF`
+
+    3. Define Input Channels
+        
+        Specify the necessary input channels for the subworkflow.
+        In this case you require the files dwi, bval and bvec.
+
+        ```nextflow
+            take:
+                ch_dwi           // channel: [ val(meta), dwi, bval, bvec ]
+
+        ```
+
+    4. Implement `main:`
+    
+        <Tabs>
+        <TabItem label="Tasks">
+
+        Copy and paste the relevant denoising and DTI metrics sections into the workflow. 
+        Then, modify the workflow structure to include a condition that runs denoising only if the option is enabled.
+
+        Use the parameter name : `preproc_dwi_run_denoising`.
+
+        </TabItem>
+        <TabItem label="Expected main">
+
+        ```nextflow
+
+        // ** Denoise DWI ** //
+        if (params.preproc_dwi_run_denoising) {
+            ch_dwi_bvalbvec = ch_dwi
+                .multiMap { meta, dwi, bval, bvec ->
+                    dwi:    [ meta, dwi ]
+                    bvs_files: [ meta, bval, bvec ]
+                }
+
+            ch_denoise_dwi = ch_dwi_bvalbvec.dwi
+                .map{ it + [[]] }
+
+            DENOISING_MPPCA ( ch_denoise_dwi )
+
+            // Fetch specific output
+            ch_dwi = DENOISING_MPPCA.out.image
+                .join(ch_dwi_bvalbvec.bvs_files)
+        }
+
+        // Input DTI update with DWI denoised output
+        input_dti = ch_dwi.map{ it + [[]] }
+
+        // DTI-derived metrics
+        RECONST_DTIMETRICS( input_dti )
+        ```
+        </TabItem>
+        </Tabs>
+
+    5. Define Output Channels
+    
+        Emit relevant output files, including original and processed dMRI data and DTI metrics.
+
+        ```nextflow
+            emit:
+                dwi                 = ch_dwi_bvalbvec.dwi           // channel: [ val(meta), dwi-raw ]
+                dwi_denoised        = DENOISING_MPPCA.out.image     // channel: [ val(meta), dwi-after-mppca ]
+                bvs_files           = ch_dwi_bvalbvec.bvs_files     // channel: [ val(meta), bval, bvec ]
+                fa                  = RECONST_DTIMETRICS.out.fa     // channel: [ val(meta), fa ]
+                md                  = RECONST_DTIMETRICS.out.md     // channel: [ val(meta), md ]
+        ```
+
+    </Steps>
+
+    </TabItem>
+    <TabItem label="Expected subworkflow">
+    ```nextflow
+        include { RECONST_DTIMETRICS } from '../../../modules/nf-neuro/reconst/dtimetrics/main'
+        include { DENOISING_MPPCA } from '../../../modules/nf-neuro/denoising/mppca/main'
+
+        workflow PREPROC_DIFF {
+
+            take:
+                ch_dwi           // channel: [ val(meta), dwi, bval, bvec ]
+
+            main:
+
+                // ** Denoise DWI ** //
+                if (params.preproc_dwi_run_denoising) {
+                    ch_dwi_bvalbvec = ch_dwi
+                        .multiMap { meta, dwi, bval, bvec ->
+                            dwi:    [ meta, dwi ]
+                            bvs_files: [ meta, bval, bvec ]
+                        }
+
+                    ch_denoise_dwi = ch_dwi_bvalbvec.dwi
+                        .map{ it + [[]] }
+
+                    DENOISING_MPPCA ( ch_denoise_dwi )
+
+                    // Fetch specific output
+                    ch_dwi = DENOISING_MPPCA.out.image
+                        .join(ch_dwi_bvalbvec.bvs_files)
+                }
+
+                // Input DTI update with DWI denoised output
+                input_dti = ch_dwi.map{ it + [[]] }
+
+                // DTI-derived metrics
+                RECONST_DTIMETRICS( input_dti )
+
+            emit:
+                dwi                 = ch_dwi_bvalbvec.dwi           // channel: [ val(meta), dwi-raw ]
+                dwi_denoised        = DENOISING_MPPCA.out.image     // channel: [ val(meta), dwi-after-mppca ]
+                bvs_files           = ch_dwi_bvalbvec.bvs_files     // channel: [ val(meta), bval, bvec ]
+                fa                  = RECONST_DTIMETRICS.out.fa     // channel: [ val(meta), fa ]
+                md                  = RECONST_DTIMETRICS.out.md     // channel: [ val(meta), md ]
+
+        }
+    ```
+    </TabItem>
+    </Tabs>
+
+
+#### Bind and Prepare the Input Structure of the Local subworkflow in the Pipeline
+
+You can now include and bind your local subworkflow to the workflow, as shown in the previous steps::
+
+```nextflow
+
+// Add this line on the top of the main.nf
+ include { PREPROC_DIFF } from './subworkflows/local/preproc_diff/main'
+
+ // Replace the section corresponding to the sub-worflow by calling 
+ // PREPROC_DIFF() in the main.nf
+
+ PREPROC_DIFF()
+
+ ```
+
+As we have defined the input of the subworkflow to take the DWI image and 
+the bval and bvec files, you can directly provide the input data to the workflow.
+
+```nextflow
+ PREPROC_DIFF( inputs.dwi )
+ ```
+
+Last but not least, don't forget to adapt the input channels for the DTI metrics extraction module!
+
+```nextflow
+    input_extract_metric = PREPROC_T1.out.image_bet
+            .join(PREPROC_DIFF.out.fa)
+            .map{ it }
+```
+
+#### Configure your Local Subworkflow
+
+Finally, all that's left is to add the parameters defined in the subworkflow to the `nextflow.config` file.
+
+```nextflow
+
+    // ** subworkflow PREPROC_DIFF **
+    params.preproc_dwi_run_denoising = true
+```
+
+
+**Well done !**
+
+You now have a workflow with one `nf-neuro` subworkflow and your own `local` subworkflow
+in your Nextflow pipeline! **Test it out !**
+
+    <Tabs>
+    <TabItem label="Check if it works">
+
+    ```bash
+    nextflow run main.nf --input data -profile docker
+    ```
+
+    </TabItem>
+    <TabItem label="Expected output">
+    ```bash
+        N E X T F L O W   ~  version 24.10.4
+
+        Launching `main.nf` [mighty_bose] DSL2 - revision: 7d89ad250c
+
+        executor >  local (5)
+        [6d/15e8f5] PREPROC_DIFF:DENOISING_MPPCA (sub-003_ses-01)    [100%] 1 of 1 ✔
+        [18/41c27f] PREPROC_DIFF:RECONST_DTIMETRICS (sub-003_ses-01) [100%] 1 of 1 ✔
+        [de/b69a00] PREPROC_T1:DENOISING_NLMEANS (sub-003_ses-01)    [100%] 1 of 1 ✔
+        [e0/adaf76] PREPROC_T1:BETCROP_SYNTHBET (sub-003_ses-01)     [100%] 1 of 1 ✔
+        [8f/41d4e5] STATS_METRICSINROI (sub-003_ses-01)              [100%] 1 of 1 ✔
+        Completed at: 16-Mar-2025 20:00:54
+        Duration    : 2m 4s
+        CPU hours   : (a few seconds)
+        Succeeded   : 5
+    ```
+
+    </TabItem>
+    <TabItem label="Expected main.nf">
+    ```nextflow
+        #!/usr/bin/env nextflow
+
+        include { PREPROC_T1 } from './subworkflows/nf-neuro/preproc_t1/main'
+        include { STATS_METRICSINROI } from './modules/local/stats/metricsinrois/main'
+        include { PREPROC_DIFF } from './subworkflows/local/preproc_diff/main'
+
+
+        workflow get_data {
+            main:
+                if ( !params.input ) {
+                    log.info "You must provide an input directory containing all images using:"
+                    log.info ""
+                    log.info "    --input=/path/to/[input]   Input directory containing your subjects"
+                    log.info "                        |"
+                    log.info "                        ├-- S1"
+                    log.info "                        |    ├-- *dwi.nii.gz"
+                    log.info "                        |    ├-- *dwi.bval"
+                    log.info "                        |    ├-- *dwi.bvec"
+                    log.info "                        |    └-- *t1.nii.gz"
+                    log.info "                        └-- S2"
+                    log.info "                             ├-- *dwi.nii.gz"
+                    log.info "                             ├-- *bval"
+                    log.info "                             ├-- *bvec"
+                    log.info "                             └-- *t1.nii.gz"
+                    log.info ""
+                    error "Please resubmit your command with the previous file structure."
+                }
+
+                input = file(params.input)
+                // ** Loading DWI files. ** //
+                dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+                    { it.parent.parent.parent.name + "_" + it.parent.parent.name} // Set the subject filename as subjectID + '_' + session.
+                    .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
+                // ** Loading T1 file. ** //
+                t1_channel = Channel.fromFilePairs("$input/**/**/anat/*T1w.nii.gz", size: 1, flat: true)
+                    { it.parent.parent.parent.name + "_" + it.parent.parent.name } // Set the subject filename as subjectID + '_' + session.
+                    .map{ sid, t1 -> [ [id: sid], t1 ] }
+            emit:
+                dwi = dwi_channel 
+                anat = t1_channel
+        }
+
+        workflow {
+            inputs = get_data()
+
+            //Processing DWI
+            PREPROC_DIFF( inputs.dwi )
+
+            // Preprocessing T1 images
+            //inputs.anat.view()
+
+            PREPROC_T1(
+                inputs.anat,
+                Channel.empty(),
+                Channel.empty(),
+                Channel.empty(),
+                Channel.empty(),
+                Channel.empty(),
+                Channel.empty()
+            )
+
+            // Extract FA value 
+            input_extract_metric = PREPROC_T1.out.image_bet
+                    .join(PREPROC_DIFF.out.fa)
+                    .map{ it }
+            
+            STATS_METRICSINROI( input_extract_metric )
+
+        }
+    ```
+
+    </TabItem>
+    <TabItem label="Expected nextflow.config">
+    ```nextflow
+        profiles {
+            docker {
+                docker.enabled          = true
+                conda.enabled           = false
+                singularity.enabled     = false
+                podman.enabled          = false
+                shifter.enabled         = false
+                charliecloud.enabled    = false
+                apptainer.enabled       = false
+                docker.runOptions       = '-u $(id -u):$(id -g)'
+            }
+        }
+
+        manifest {
+            name            = 'scilus/nf-neuro-tutorial'
+            description     = """nf-neuro-tutorial is a Nextflow pipeline for processing neuroimaging data."""
+            version         = '0.1dev'
+        }
+
+        params.input      = false
+        params.output     = 'result'
+
+        // ** subworkflow PREPROC_DIFF **
+        params.preproc_dwi_run_denoising = true
+
+        // ** Subworkflow PREPROC T1 **
+        params.preproc_t1_run_denoising = true
+        params.preproc_t1_run_N4 = false
+        params.preproc_t1_run_resampling = false
+        params.preproc_t1_run_ants_bet = false
+        params.preproc_t1_run_synthbet = true
+        params.preproc_t1_run_crop = false
+
+
+        process {
+
+            publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }
+
+            withName: "DENOISING_MPPCA" {
+                ext.extent = 3
+            }
+
+            withName: "BETCROP_SYNTHBET" {
+                memory = "4G"
+                ext.nocsf = false
+            }
+
+            withName: "RECONST_DTIMETRICS" {
+                ext.ad = false
+                ext.evecs = false
+                ext.evals = false
+                ext.fa = true
+                ext.ga = false
+                ext.rgb = false
+                ext.md = true
+                ext.mode = false
+                ext.norm = false
+                ext.rd = false
+                ext.tensor = false
+                ext.nonphysical = false
+                ext.pulsation = false
+                ext.residual = false
+                ext.b0_thr_extract_b0 = 10
+                ext.dwi_shell_tolerance = 50
+                ext.max_dti_shell_value = 1200
+                ext.run_qc = false
+            }
+
+            withName: "STATS_METRICSINROI" {
+                ext.bin = true
+                ext.normalize_weights = false
+            }
+        }
+    ```
+    </TabItem>
+    </Tabs>
+
+
+
+
+### Step 8 : Reorganize output in result folder ( BIDS like format - Optional )
+
+In this step, we will guide you through the process of configuring the output 
+of your Nextflow pipeline to follow a BIDS-like structure. 
+
+#### Example for one module
+
+We will integrate specific configurations, including the use of `publishDir`, `saveAs`, and `path` 
+in the `nextflow.config` file to handle the output of the process `BETCROP_SYNTHBET`.
+(This configuration **must be applied to each module** in your pipeline to ensure all outputs are properly organized.)
+
+
+Here is an example of the structure output :
+
+<Tabs>
+<TabItem label="Example of BIDS-like output format">
+
+```nextflow
+
+    // Add those parameters after the params.output
+
+    // Publish BIDS-like configuration
+    params.lean_output = true
+    params.publish_dir_mode = 'copy'
+
+    // In process {} part
+
+    withName: "BETCROP_SYNTHBET" {
+        memory = "4G"
+        ext.nocsf = false
+        publishDir = [
+            mode: params.publish_dir_mode,
+            saveAs: {
+                filename ->
+                def ses = meta.session ? "_${meta.session}" : ""
+                if ( filename.contains("bet_image.nii.gz") ) { "${meta.id}_${ses}_desc-t1_bet.nii.gz" }
+                else if ( filename.contains("brain_mask.nii.gz") ) { "${meta.id}_${ses}_desc-t1_mask.nii.gz" }
+                else if ( filename.contains("versions.yml") ) { null }
+                else { params.lean_output ? null : filename }
+            },
+            path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/anat/" : "${params.output}/${meta.id}/anat/" },
+            enabled: params.lean_output ? false : true
+        ]
+    }
+```
+
+</TabItem>
+<TabItem label="Let's break it down">
+
+<Steps>
+1. `publishDir` : Specify directory
+
+    The `publishDir` directive in Nextflow specifies where the output files from a process 
+    should be saved. To match the BIDS format, we need to use dynamic paths that follow the BIDS directory structure.
+
+    ```nextflow
+    /<directory>/<subject>/<session>/<datatype>/<file>
+    ```
+
+    Where:
+
+    **subject** is the identifier for the participant.
+
+    **session** is the identifier for the session (if applicable).
+
+    **datatype** refers to the type of data (e.g., `anat`, `func`).
+
+    **file** is the actual output file (e.g., T1-weighted MRI image, functional MRI data).
+
+2. `mode` : Mode of publishing
+
+    The `mode` of publishing is set by a parameter, allowing flexibility in how files are published (e.g., copy, symlink, etc.).
+    Define here with `params.publish_dir_mode`.
+
+3. `SaveAs` : Name convention.
+
+    The `saveAs` function allows you to rename or reorganize output files as they are published. 
+    This is particularly helpful when you need to ensure that your output files have BIDS-compliant filenames.
+
+    It uses the following logic:
+
+    `def ses = meta.session ? "_${meta.session}" : ""` : It **checks** if there's a session in the metadata and creates a session string accordingly.
+
+    `if ( filename.contains("bet_image.nii.gz") ) { "${meta.id}_${ses}_desc-t1_bet.nii.gz" }` : For specific file types (bet_image.nii.gz and brain_mask.nii.gz), it **renames** them with a structured naming convention including metadata.
+
+    `if ( filename.contains("versions.yml") ) { null }` : It **excludes the versions.yml** file from being published.
+
+    For other files, it either publishes them **as-is** or **excludes** them based on the `params.lean_output` setting.
+
+4. path: Directory structure
+
+    This defines the directory structure for publishing outputs. 
+    The subject and session might be derived from the filenames or passed as inputs.
+
+    It includes the subject (`meta.id`), session (`meta.session`), and output (`params.output`).
+
+    Using `meta.session ? "path_with_meta_session" : "path_without_meta_session"` if no session is provided, the path will omit the session and just use the subject ID.
+
+5. enabled: 
+
+    This enables or disables the publishing of outputs based on the `params.lean_output` parameter. 
+    If lean_output is true, publishing is disable : `params.lean_output ? false : true`
+
+</Steps>
+
+This configuration allows for fine-grained control over how files are renamed, where they are stored, 
+and whether they are published based on specific parameters such as lean_output.
+
+</TabItem>
+</Tabs>
+
+Make sure to apply this structure to every process in your pipeline that produces output to ensure that all data is 
+organized consistently, making it easier to integrate with other BIDS-compliant tools and workflows.Additionally, 
+by defining the appropriate metadata and passing the required parameters, you can easily reorganize 
+your output files and make them ready for further analysis.
+
+#### Run with BIDS-like format nextflow.config
+
+Copy and paste this nextflow.config or write it yourself for each module and run your nextflow pipeline again.
+
+```bash
+nextflow run --input data -profile docker -resume
+```
+
+```nextflow
+    profiles {
+        docker {
+            docker.enabled          = true
+            conda.enabled           = false
+            singularity.enabled     = false
+            podman.enabled          = false
+            shifter.enabled         = false
+            charliecloud.enabled    = false
+            apptainer.enabled       = false
+            docker.runOptions       = '-u $(id -u):$(id -g)'
+        }
+    }
+
+    manifest {
+        name            = 'scilus/nf-neuro-tutorial'
+        description     = """nf-neuro-tutorial is a Nextflow pipeline for processing neuroimaging data."""
+        version         = '0.1dev'
+    }
+
+    params.input      = false
+    params.output     = 'result'
+
+    // Publish BIDS-like configuration
+    params.lean_output = true
+    params.publish_dir_mode = 'copy'
+
+    // ** subworkflow PREPROC_DIFF **
+    params.preproc_dwi_run_denoising = true
+
+    // ** Subworkflow PREPROC T1 **
+    params.preproc_t1_run_denoising = true
+    params.preproc_t1_run_N4 = false
+    params.preproc_t1_run_resampling = false
+    params.preproc_t1_run_ants_bet = false
+    params.preproc_t1_run_synthbet = true
+    params.preproc_t1_run_crop = false
+
+
+    process {
+
+        //publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }
+
+        withName: "DENOISING_MPPCA" {
+            ext.extent = 3
+            publishDir = [
+                mode: params.publish_dir_mode,
+                saveAs: {
+                    filename ->
+                    def ses = meta.session ? "_${meta.session}" : ""
+                    if ( filename.contains("denoised.nii.gz") ) { "${meta.id}_desc-denoised_dwi.nii.gz" }
+                    else if ( filename.contains("versions.yml") ) { null }
+                },
+                path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/dwi/" : "${params.output}/${meta.id}/dwi/" }
+            ]
+        }
+
+        withName: "BETCROP_SYNTHBET" {
+            memory = "4G"
+            ext.nocsf = false
+            publishDir = [
+                mode: params.publish_dir_mode,
+                saveAs: {
+                    filename ->
+                    def ses = meta.session ? "_${meta.session}" : ""
+                    if ( filename.contains("bet_image.nii.gz") ) { "${meta.id}_${ses}_desc-t1_bet.nii.gz" }
+                    else if ( filename.contains("brain_mask.nii.gz") ) { "${meta.id}_${ses}_desc-t1_mask.nii.gz" }
+                    else if ( filename.contains("versions.yml") ) { null }
+                    else { params.lean_output ? null : filename }
+                },
+                path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/anat/" : "${params.output}/${meta.id}/anat/" },
+                enabled: params.lean_output ? false : true
+            ]
+        }
+
+        withName: "RECONST_DTIMETRICS" {
+            ext.ad = false
+            ext.evecs = false
+            ext.evals = false
+            ext.fa = true
+            ext.ga = false
+            ext.rgb = false
+            ext.md = true
+            ext.mode = false
+            ext.norm = false
+            ext.rd = false
+            ext.tensor = false
+            ext.nonphysical = false
+            ext.pulsation = false
+            ext.residual = false
+            ext.b0_thr_extract_b0 = 10
+            ext.dwi_shell_tolerance = 50
+            ext.max_dti_shell_value = 1200
+            ext.run_qc = false
+            publishDir = [
+                mode: params.publish_dir_mode,
+                saveAs: {
+                    filename ->
+                    def ses = meta.session ? "_${meta.session}" : ""
+                    if ( filename.contains("md.nii.gz") ) { "${meta.id}_${ses}_desc-md.nii.gz" }
+                    else if ( filename.contains("fa.nii.gz") ) { "${meta.id}_${ses}_desc-fa.nii.gz" }
+                    else if ( filename.contains("versions.yml") ) { null }
+                    else { params.lean_output ? null : filename }
+                },
+                path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/dwi/" : "${params.output}/${meta.id}/dwi/" }
+            ]
+        }
+
+        // Here is an example where you want to store output with two different datatypes (stats + dwi)
+        withName: "STATS_METRICSINROI" {
+            ext.bin = true
+            ext.normalize_weights = false
+            publishDir = [
+            [
+                mode: params.publish_dir_mode,
+                saveAs: {
+                    filename ->
+                    def ses = meta.session ? "_${meta.session}" : ""
+                    if ( filename.contains("stats.json") ) { "${meta.id}_${ses}_desc-dti_stats.json" }
+                    else { params.lean_output ? null : filename }
+                },
+                path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/stats/" : "${params.output}/${meta.id}/stats/" }
+            ],
+            [
+                mode: params.publish_dir_mode,
+                saveAs: {
+                    filename ->
+                    def ses = meta.session ? "_${meta.session}" : ""
+                    if ( filename.contains("map_csf.nii.gz") ) { "${meta.id}_${ses}_desc-t1_map_csf.nii.gz" }
+                    else if ( filename.contains("map_wm.nii.gz") ) { "${meta.id}_${ses}_desc-t1_map_wm.nii.gz" }
+                    else if ( filename.contains("map_gm.nii.gz") ) { "${meta.id}_${ses}_desc-t1_map_gm.nii.gz" }
+                    else if ( filename.contains("mask_csf.nii.gz") ) { "${meta.id}_${ses}_desc-t1_mask_csf.nii.gz" }
+                    else if ( filename.contains("mask_wm.nii.gz") ) { "${meta.id}_${ses}_desc-t1_mask_wm.nii.gz" }
+                    else if ( filename.contains("mask_gm.nii.gz") ) { "${meta.id}_${ses}_desc-t1_mask_gm.nii.gz" }
+                    else { params.lean_output ? null : filename }
+                },
+                path: { meta.session ? "${params.output}/${meta.id}/${meta.session}/anat/" : "${params.output}/${meta.id}/anat/" }
+            ]
+            ]
+        }
+    }
+```
+
+```bash
+nextflow run --input data -profile docker -resume
+```
+
+:::note
+Note that once the pipeline has run, you can experiment with different `publishDir` options by using the 
+resume feature and changing the `params.output` parameter to `result_2` or another directory. 
+Nextflow will simply copy the images from the work directory to the new output folder, following the output definitions you have set.
+:::
+
+
+
+:::caution
+Do cannot set both a `global` publishDir (`publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }`)
+and a publishDir for each individual module at the same time. 
+(Is it useful ???) 
+:::
+
+
+### Dataset 
+
+You can find example **input data** [here](https://openneuro.org/datasets/ds004513/versions/1.0.4). Take
+note that the dataset is very large, consider using a **data management system** like datalab
+to download a single subject. You are also free to use any of your own data, as long
+as they respect the directory structure defined [above](#create-a-prototype-pipeline).
+:::
