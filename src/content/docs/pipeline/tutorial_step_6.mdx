@@ -1,5 +1,5 @@
 ---
-title: Steps 6
+title: "Steps 6: Create your own local module"
 description: Learn how to build a simple pipeline using nf-neuro components
 ---
 
@@ -11,8 +11,8 @@ import { FileTree } from '@astrojs/starlight/components';
 import { Code } from '@astrojs/starlight/components';
 import Runtime from "@mdx-js/runtime";
 
-export const main=`
-test
+export const main = `
+
 `;
 
 :::tip[What to expect from this walkthrough]
@@ -21,13 +21,11 @@ In this tutorial, you'll learn how to create a basic pipeline workflow, using co
 By following step 6, you will learn to create your own local module.
 :::
 
-## Step 6: Create your own local module 
-
 In this step, we will create a local module called `METRICSINROI` under the `STATS` category, 
 designed for segmenting a T1-weighted (T1w) image and extracting metrics from white matter (WM), 
 gray matter (GM), and cerebrospinal fluid (CSF) masks.
 
-### 1. Creating a Local Module structure
+### 1. Create a Local Module structure
 
     Create the following directory structure, including a main.nf file inside the module folder:
 
@@ -169,8 +167,8 @@ The structure of a module should look like this:
     
     #### **Where to Place the `meta.yml` File?** 
     <html>
-    <li> **For Modules:** `./modules/nf-core/<module_name>/meta.yml`</li>
-    <li>**For Subworkflows:** `./subworkflows/nf-core/<subworkflow_name>/meta.yml`</li>
+    <li> **For Modules:** `./modules/local/<modules_category>/<module_name>/meta.yml`</li>
+    <li>**For Subworkflows:** `./subworkflows/local/<subworkflow_name>/meta.yml`</li>
     </html>
     
     #### **What Does `meta.yml` Contain?**
@@ -181,12 +179,64 @@ The structure of a module should look like this:
        <li>A brief description of input and output files used in the main script (specific to each module or subworkflow)</li>
     </dd>
     </html>
-    If you're looking for an **example**, you can find a `meta.yml` file in the nf-neuro repository, within its  
-       modules/subworkflows directory. This example provides a structured reference for how to document your own modules/subworkflows.
+    If you're looking for an **example**, you can find a `meta.yml` file in the nf-neuro repository, within its 
+    modules/subworkflows directory. This example provides a structured reference for how to document your own modules/subworkflows.
     By including a `meta.yml` file, you ensure better documentation and maintainability of your Nextflow components.
     :::
 
-<Code code={main} lang="bash" title="Expected main.nf"/>
+
+<br></br>
+<br></br>
+**Expected ./modules/local/stats/metricsinroi/main.nf:**
+
+``` bash
+STATS_METRICSINROI {
+tag "$meta.id"
+label 'process_single'
+
+container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+'https://scil.usherbrooke.ca/containers/scilus_latest.sif':
+'scilus/scilus:latest'}"
+
+    input:
+    tuple val(meta), path(t1), path(metrics)
+
+    output:
+    tuple val(meta), path("*.json")                         , emit: stats
+    tuple val(meta), path("*mask_wm.nii.gz")                , emit: wm_mask
+    tuple val(meta), path("*mask_gm.nii.gz")                , emit: gm_mask
+    tuple val(meta), path("*mask_csf.nii.gz")               , emit: csf_mask
+    tuple val(meta), path("*map_wm.nii.gz")                 , emit: wm_map
+    tuple val(meta), path("*map_gm.nii.gz")                 , emit: gm_map
+    tuple val(meta), path("*map_csf.nii.gz")                , emit: csf_map
+
+    script:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def bin = task.ext.bin ? "--bin " : ""
+    def normalize_weights = task.ext.normalize_weights ? "--normalize_weights " : ""
+
+    """
+    export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+
+    fast -t 1 -n 3\
+        -H 0.1 -I 4 -l 20.0 -g -o t1.nii.gz $t1
+    scil_volume_math.py convert t1_seg_2.nii.gz ${prefix}__mask_wm.nii.gz --data_type uint8
+    scil_volume_math.py convert t1_seg_1.nii.gz ${prefix}__mask_gm.nii.gz --data_type uint8
+    scil_volume_math.py convert t1_seg_0.nii.gz ${prefix}__mask_csf.nii.gz --data_type uint8
+    mv t1_pve_2.nii.gz ${prefix}__map_wm.nii.gz
+    mv t1_pve_1.nii.gz ${prefix}__map_gm.nii.gz
+    mv t1_pve_0.nii.gz ${prefix}__map_csf.nii.gz
+
+    scil_volume_stats_in_ROI.py ${prefix}__mask*.nii.gz  \
+        --metrics $metrics \
+        --sort_keys \
+        $bin $normalize_weights > ${prefix}__stats.json
+
+    """
+    }
+```
 
 ### 4. Use and prepare the input structure of the local module in the pipeline
 
@@ -196,61 +246,45 @@ You can now include and use your local module to the workflow, as shown in the p
 
 ```nextflow
 // Add this line on the top of the main.nf
- include { STATS_METRICSINROI } from './modules/local/stats/metricsinrois/main'
+include { STATS_METRICSINROI } from './modules/local/stats/metricsinrois/main'
 
- // Add the local module in the workflow
- STATS_METRICSINROI( input_channel )
-
- ```
+// Add the local module in the workflow
+STATS_METRICSINROI( input_channel )
+```
 
 #### b. Prepare the input channel for your local module
 
 The STATS_METRICSINROIS module requires two inputs: a T1 image and a list of metrics.
 
-   <Tabs>
-    <TabItem label="Task">
+You can use the `join()` and `map()` operators to create an input channel that combines the T1 BET image output from the 
+`PREPROC_T1` subworkflow with the FA map from the DTI module.
 
-    You can use the `join()` and `map()` operators 
-    to create an input channel that combines the T1 BET image output from the 
-    `PREPROC_T1` subworkflow with the FA map from the DTI module.
+Add the input channel to the module.
 
-    Add the input channel to the module.
+**Expected input channel:**
 
-    </TabItem>
-    <TabItem label="Expected input channel">
+```nextflow
+input_extract_metric = PREPROC_T1.out.image_bet
+            .join(RECONST_DTIMETRICS.out.fa)
+            .map{ it }
 
-        ```nextflow
-        input_extract_metric = PREPROC_T1.out.image_bet
-                    .join(RECONST_DTIMETRICS.out.fa)
-                    .map{ it }
-
-        STATS_METRICSINROI( input_extract_metric )
-        ```
-    </TabItem>
-    </Tabs>
-
+STATS_METRICSINROI( input_extract_metric )
+```
 
 #### 5. Configure your local module
 
 To configure your local module, you need to add each task.ext.* to the module. 
-
-   <Tabs>
-    <TabItem label="Task">
-
-    As we’ve seen previously, use the `withName` process selector to link the `ext` 
+As we’ve seen previously, use the `withName` process selector to link the `ext` 
     parameter defined in your local module to `nextflow.config` file.
 
-    </TabItem>
-    <TabItem label="Expected nextflow.config">
+**Add these lines to your ./nextflow.config**
 
-        ```nextflow
-            withName: "STATS_METRICSINROI" {
-                ext.bin = true
-                ext.normalize_weights = false
-            }
-        ```
-    </TabItem>
-    </Tabs>
+```nextflow
+    withName: "STATS_METRICSINROI" {
+        ext.bin = true
+        ext.normalize_weights = false
+    }
+```
 
 #### 6. Verify your files
 
