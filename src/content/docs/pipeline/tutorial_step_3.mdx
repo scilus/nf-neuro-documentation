@@ -24,7 +24,7 @@ and use a pre-installed module to computes diffusion tensor imaging (DTI) metric
 To do this, we will go through 8 successive sub-steps:
 
 <Steps>
-1. Include the module in the `main.nf` workflow
+1. Include the module in your `main.nf`
 
 2. Use the module in the workflow 
 
@@ -42,7 +42,7 @@ To do this, we will go through 8 successive sub-steps:
 </Steps>
 
 
-### 1. Include the module 
+### 1. Include the module in your `main.nf`
 
 Modify your **`main.nf`** file and insert the `include {}` command at the top. This line adds  
 the module **`RECONST_DTIMETRICS`** to your project. 
@@ -138,7 +138,7 @@ Since the mask is optional, we can handle it by appending an **empty list**.
 
 
 :::tip[Let's break down these changes]
-`.map{ it + [[]] }`: Adds an empty list `([])` to each input tuple.
+`.map{ it + [[]] }`: Adds an empty list `[[]]` to each input tuple.
 
 `it` refers to the current item being processed and `+ [[]]` is appending an empty list `[]`
 wrapped in another list `[[]]` to each item.
@@ -148,7 +148,7 @@ This ensures compatibility with the module, even if the mask is not provided.
 
 :::note
 Nextflow does not directly support optional entries for processes or modules. 
-Providing an empty list `([])` instead of a file as a module input is a workaround for this 
+Providing an empty list `[[]]` instead of a file as a module input is a workaround for this 
 limitation.
 :::
 
@@ -356,9 +356,11 @@ process {
 }
 ```
 
-**You can now uncomment the `RECONST_DTIMETRICS` module in `main.nf`.**
-
 ### 7. Run nextflow
+
+:::note
+**Uncomment the `RECONST_DTIMETRICS` module in `main.nf`.**
+:::
 
 <RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, you can run nextflow..**
 
@@ -373,12 +375,7 @@ process {
         ```
             executor >  local (1)
             executor >  local (1)
-            [work_folder_id/id_subfloder] process > RECONST_DTIMETRICS (sub-003_ses-01) [100%] 1 of 1 ✔
-
-            Completed at: Date hour
-            Duration    : Xm Ys
-            CPU hours   : (a few seconds)
-            Succeeded   : 1
+            [a8/7a8x13] process > RECONST_DTIMETRICS (sub-003_ses-01) [100%] 1 of 1 ✔
         ```
         :::note
         Depending on whether or not you have commented `input_dti_metric.view()`, you will also see the list of files.

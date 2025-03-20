@@ -23,7 +23,14 @@ the two first modules used in your pipeline: `DENOISING_MPPCA` and `RECONST_DTIM
 
 ### 1. Create a local subworkflow structure
 
-    Create the following local directory structure, including a main.nf file inside the subworkflow folder:
+    Create the following local directory structure, including a main.nf file inside the subworkflow folder.
+
+```bash
+    mkdir -p /workspaces/nf-neuro-tutorial/subworkflows/local/preproc_diff
+    touch /workspaces/nf-neuro-tutorial/subworkflows/local/preproc_diff/main.nf
+```
+
+You should get this structure.
 
 <FileTree>
 - nf-neuro-tutorial/
@@ -131,14 +138,15 @@ optionally apply denoising, and compute DTI-derived metrics.
     
         <Tabs>
         <TabItem label="Tasks">
+        
+        1- Copy and paste the relevant denoising and DTI metrics sections into the workflow
 
-        Copy and paste the relevant denoising and DTI metrics sections into the workflow. 
-        Then, modify the workflow structure to include a condition that runs denoising only if the option is enabled.
+        2- Modify the workflow structure to include a condition that runs denoising only if the option is enabled
 
-        Use the parameter name : `preproc_dwi_run_denoising`.
+        2a- Use the parameter name : `preproc_dwi_run_denoising`
 
         </TabItem>
-        <TabItem label="Expected main">
+        <TabItem label="Solution">
 
         ```nextflow
 
@@ -461,4 +469,10 @@ in your Nextflow pipeline!
    </span>
    </CommandOutputs>
 
-    
+:::tip[Congratulations]
+You've successfully completed the nf-neuro tutorial – great job! We hope you now feel more confident using the pipeline.
+
+But this is just the beginning! 🚀 If you're ready to dive deeper, check out our [advanced tutorials](/nf-neuro/advanced-tutorials/bidsinput) for more complex use cases, or explore the [How-To](nf-neuro/how-to/nextflow/top-5-operators/) section to sharpen your skills even further.
+
+Keep exploring and happy analyzing! 🧠🔬
+:::

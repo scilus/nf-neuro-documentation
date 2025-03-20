@@ -168,7 +168,7 @@ We still use the current structure, but with an additional item mapping using `i
   <TabItem label="After">
     ```nextflow
         dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
-                 { it.parent.parent.parent.name + "_" + it.parent.parent.name}`;
+                 { it.parent.parent.parent.name + "_" + it.parent.parent.name};
     ```
   </TabItem>
 </Tabs>

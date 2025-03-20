@@ -25,7 +25,16 @@ gray matter (GM), and cerebrospinal fluid (CSF) masks.
 
     Create the following directory structure, including a main.nf file inside the module folder:
 
-    `stats` = category and `metricsinrois` = module name
+    `stats` = category and `metricsinroi` = module name
+
+    Create the following local directory structure, including a main.nf file inside the subworkflow folder.
+
+```bash
+    mkdir -p /workspaces/nf-neuro-tutorial/modules/local/stats/metricsinroi
+    touch /workspaces/nf-neuro-tutorial/modules/local/stats/metricsinroi/main.nf
+```
+
+You should get this structure.
 
     <FileTree>
     - nf-neuro-tutorial
@@ -33,7 +42,7 @@ gray matter (GM), and cerebrospinal fluid (CSF) masks.
         - modules
             - local
                 - stats
-                    - metricsinrois
+                    - metricsinroi
                         - main.nf
             - nf-neuro
                 - modules_categories 
@@ -186,13 +195,13 @@ The structure of a module should look similar to this:
 **Expected ./modules/local/stats/metricsinroi/main.nf:**
 
 ``` bash
-STATS_METRICSINROI {
-tag "$meta.id"
-label 'process_single'
+process STATS_METRICSINROI {
+    tag "$meta.id"
+    label 'process_single'
 
-container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-'https://scil.usherbrooke.ca/containers/scilus_latest.sif':
-'scilus/scilus:latest'}"
+    container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    'https://scil.usherbrooke.ca/containers/scilus_latest.sif':
+    'scilus/scilus:latest'}"
 
     input:
     tuple val(meta), path(t1), path(metrics)
@@ -231,26 +240,29 @@ container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_
         $bin $normalize_weights > ${prefix}__stats.json
 
     """
-    }
+}
 ```
 
 ### 4. Prepare the input structure for the module and include it in your main.nf
 
 #### a. Include your local module
 
-You can now include and use your local module to the workflow, as shown in the previous steps:
+You can now include and use your local module to the workflow, as shown in the previous steps.
+
+Add this line on the top of the `main.nf.
 
 ```nextflow
-// Add this line on the top of the main.nf
-include { STATS_METRICSINROI } from './modules/local/stats/metricsinrois/main'
+include { STATS_METRICSINROI } from './modules/local/stats/metricsinroi/main'
+```
 
-// Add the local module in the workflow
+Add the local module in the workflow.
+```nextflow
 STATS_METRICSINROI( input_channel )
 ```
 
 #### b. Prepare the input channel for your local module
 
-The `STATS_METRICSINROIS` module requires two inputs: a T1 image and a list of metrics.
+The `STATS_METRICSINROI` module requires two inputs: a T1 image and a list of metrics.
 
 You can use the `join()` and `map()` operators to create an input channel that combines the T1 BET image output from the 
 `PREPROC_T1` subworkflow with the FA map from the DTI module.
@@ -287,88 +299,14 @@ parameter defined in your local module to `nextflow.config` file.
 You now have a working local module in your Nextflow pipeline! 
 
     <Tabs>
-    <TabItem label="Expected nextflow.config">
-    ```nextflow
-        profiles {
-            docker {
-                docker.enabled          = true
-                conda.enabled           = false
-                singularity.enabled     = false
-                podman.enabled          = false
-                shifter.enabled         = false
-                charliecloud.enabled    = false
-                apptainer.enabled       = false
-                docker.runOptions       = '-u $(id -u):$(id -g)'
-            }
-        }
-
-        manifest {
-            name            = 'scilus/nf-neuro-tutorial'
-            description     = """nf-neuro-tutorial is a Nextflow pipeline for processing neuroimaging data."""
-            version         = '0.1dev'
-        }
-
-        params.input      = false
-        params.output     = 'result'
-
-        // ** Subworkflow PREPROC T1 **
-        params.preproc_t1_run_denoising = true
-        params.preproc_t1_run_N4 = false
-        params.preproc_t1_run_resampling = false
-        params.preproc_t1_run_ants_bet = false
-        params.preproc_t1_run_synthbet = true
-        params.preproc_t1_run_crop = false
-
-
-        process {
-
-            publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }
-
-            withName: "DENOISING_MPPCA" {
-                ext.extent = 3
-            }
-
-            withName: "BETCROP_SYNTHBET" {
-                memory = "4G"
-                ext.nocsf = false
-            }
-
-            withName: "RECONST_DTIMETRICS" {
-                ext.ad = false
-                ext.evecs = false
-                ext.evals = false
-                ext.fa = true
-                ext.ga = false
-                ext.rgb = false
-                ext.md = true
-                ext.mode = false
-                ext.norm = false
-                ext.rd = false
-                ext.tensor = false
-                ext.nonphysical = false
-                ext.pulsation = false
-                ext.residual = false
-                ext.b0_thr_extract_b0 = 10
-                ext.dwi_shell_tolerance = 50
-                ext.max_dti_shell_value = 1200
-                ext.run_qc = false
-            }
-
-            withName: "STATS_METRICSINROI" {
-                ext.bin = true
-                ext.normalize_weights = false
-            }
-        }
-    ```
-    </TabItem>
-    <TabItem label="Expected main.nf">
+     <TabItem label="Expected main.nf">
    ```nextflow
         #!/usr/bin/env nextflow
 
         include { RECONST_DTIMETRICS } from './modules/nf-neuro/reconst/dtimetrics/main'
         include { DENOISING_MPPCA } from './modules/nf-neuro/denoising/mppca/main'
         include { PREPROC_T1 } from './subworkflows/nf-neuro/preproc_t1/main'
-        include { STATS_METRICSINROI } from './modules/local/stats/metricsinrois/main'
+        include { STATS_METRICSINROI } from './modules/local/stats/metricsinroi/main'
 
         workflow get_data {
             main:
@@ -452,6 +390,80 @@ You now have a working local module in your Nextflow pipeline!
             //input_extract_metric.view()
             
             STATS_METRICSINROI( input_extract_metric )
+        }
+    ```
+    </TabItem>
+    <TabItem label="Expected nextflow.config">
+    ```nextflow
+        profiles {
+            docker {
+                docker.enabled          = true
+                conda.enabled           = false
+                singularity.enabled     = false
+                podman.enabled          = false
+                shifter.enabled         = false
+                charliecloud.enabled    = false
+                apptainer.enabled       = false
+                docker.runOptions       = '-u $(id -u):$(id -g)'
+            }
+        }
+
+        manifest {
+            name            = 'scilus/nf-neuro-tutorial'
+            description     = """nf-neuro-tutorial is a Nextflow pipeline for processing neuroimaging data."""
+            version         = '0.1dev'
+        }
+
+        params.input      = false
+        params.output     = 'result'
+
+        // ** Subworkflow PREPROC T1 **
+        params.preproc_t1_run_denoising = true
+        params.preproc_t1_run_N4 = false
+        params.preproc_t1_run_resampling = false
+        params.preproc_t1_run_ants_bet = false
+        params.preproc_t1_run_synthbet = true
+        params.preproc_t1_run_crop = false
+
+
+        process {
+
+            publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }
+
+            withName: "DENOISING_MPPCA" {
+                ext.extent = 3
+            }
+
+            withName: "BETCROP_SYNTHBET" {
+                memory = "4G"
+                ext.nocsf = false
+            }
+
+            withName: "RECONST_DTIMETRICS" {
+                ext.ad = false
+                ext.evecs = false
+                ext.evals = false
+                ext.fa = true
+                ext.ga = false
+                ext.rgb = false
+                ext.md = true
+                ext.mode = false
+                ext.norm = false
+                ext.rd = false
+                ext.tensor = false
+                ext.nonphysical = false
+                ext.pulsation = false
+                ext.residual = false
+                ext.b0_thr_extract_b0 = 10
+                ext.dwi_shell_tolerance = 50
+                ext.max_dti_shell_value = 1200
+                ext.run_qc = false
+            }
+
+            withName: "STATS_METRICSINROI" {
+                ext.bin = true
+                ext.normalize_weights = false
+            }
         }
     ```
     </TabItem>

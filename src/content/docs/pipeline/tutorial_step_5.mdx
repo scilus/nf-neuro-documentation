@@ -268,30 +268,26 @@ within the **tests** (`./subworkflow/nf-neuro/preproc_t1/tests/nextflow.config`)
 For he purpose of this tutorial, we will only enable the `denoising` and `synthbet` options (set to `true`) and 
 disable all other options (set to `false`).
 
-Add the following to your `nextflow.config` file:
+Add the following lines to your `nextflow.config` file after `params.output = 'result'`:
 
-```nextflow
-    // Add those line after params.output = 'result'
-
-    // ** Subworkflow PREPROC T1 **
-    params.preproc_t1_run_denoising = true
-    params.preproc_t1_run_N4 = true
-    params.preproc_t1_run_resampling = false
-    params.preproc_t1_run_ants_bet = false
-    params.preproc_t1_run_synthbet = true
-    params.preproc_t1_run_crop = false
-
+```Nextflow
+// ** Subworkflow PREPROC T1 **
+params.preproc_t1_run_denoising = true
+params.preproc_t1_run_N4 = false
+params.preproc_t1_run_resampling = false
+params.preproc_t1_run_ants_bet = false
+params.preproc_t1_run_synthbet = true
+params.preproc_t1_run_crop = false
 ```
 
 Since we are disabling all options except for `denoising` and `synthbet`, we only need to 
 include specific parameters for those two modules. 
 Note that the `denoising` module does not require any specific parameters, so it can be ignored in the configuration.
 
-Now, update your `nextflow.config` file by adding the specific options for the subworkflow in the process section as follows:
+Now, update your `nextflow.config` file by adding the specific options for the subworkflow in the process section 
+as follows after the DENOISING_MPPCA block:
 
 ```nextflow
-    // Add those line in the process {} after DENOISING_MPPCA :
-
     withName: "BETCROP_SYNTHBET" {
         memory = "4G"
         ext.nocsf = false
@@ -303,158 +299,151 @@ Now, update your `nextflow.config` file by adding the specific options for the s
 <Tabs>
 <TabItem label="Expected main.nf">
 ```nextflow
-    #!/usr/bin/env nextflow
+#!/usr/bin/env nextflow
 
-    include { RECONST_DTIMETRICS } from './modules/nf-neuro/reconst/dtimetrics/main'
-    include { DENOISING_MPPCA } from './modules/nf-neuro/denoising/mppca/main'
-    include { PREPROC_T1 } from './subworkflows/nf-neuro/preproc_t1/main'
+include { RECONST_DTIMETRICS } from './modules/nf-neuro/reconst/dtimetrics/main'
+include { DENOISING_MPPCA } from './modules/nf-neuro/denoising/mppca/main'
+include { PREPROC_T1 } from './subworkflows/nf-neuro/preproc_t1/main'
 
-    workflow get_data {
-        main:
-            if ( !params.input ) {
-                log.info "You must provide an input directory containing all images using:"
-                log.info ""
-                log.info "    --input=/path/to/[input]   Input directory containing your subjects"
-                log.info "                        |"
-                log.info "                        ├-- S1"
-                log.info "                        |    ├-- *dwi.nii.gz"
-                log.info "                        |    ├-- *dwi.bval"
-                log.info "                        |    ├-- *dwi.bvec"
-                log.info "                        |    └-- *t1.nii.gz"
-                log.info "                        └-- S2"
-                log.info "                             ├-- *dwi.nii.gz"
-                log.info "                             ├-- *bval"
-                log.info "                             ├-- *bvec"
-                log.info "                             └-- *t1.nii.gz"
-                log.info ""
-                error "Please resubmit your command with the previous file structure."
-            }
+workflow get_data {
+    main:
+        if ( !params.input ) {
+            log.info "You must provide an input directory containing all images using:"
+            log.info ""
+            log.info "    --input=/path/to/[input]   Input directory containing your subjects"
+            log.info "                        |"
+            log.info "                        ├-- S1"
+            log.info "                        |    ├-- *dwi.nii.gz"
+            log.info "                        |    ├-- *dwi.bval"
+            log.info "                        |    ├-- *dwi.bvec"
+            log.info "                        |    └-- *t1.nii.gz"
+            log.info "                        └-- S2"
+            log.info "                             ├-- *dwi.nii.gz"
+            log.info "                             ├-- *bval"
+            log.info "                             ├-- *bvec"
+            log.info "                             └-- *t1.nii.gz"
+            log.info ""
+            error "Please resubmit your command with the previous file structure."
+        }
 
-            input = file(params.input)
-            // ** Loading DWI files. ** //
-            dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
-                { it.parent.parent.parent.name + "_" + it.parent.parent.name} // Set the subject filename as subjectID + '_' + session.
-                .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
-            // ** Loading T1 file. ** //
-            t1_channel = Channel.fromFilePairs("$input/**/**/anat/*T1w.nii.gz", size: 1, flat: true)
-                { it.parent.parent.parent.name + "_" + it.parent.parent.name } // Set the subject filename as subjectID + '_' + session.
-                .map{ sid, t1 -> [ [id: sid], t1 ] }
-        emit:
-            dwi = dwi_channel 
-            anat = t1_channel
-    }
+        input = file(params.input)
+        // ** Loading DWI files. ** //
+        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+            { it.parent.parent.parent.name + "_" + it.parent.parent.name} // Set the subject filename as subjectID + '_' + session.
+            .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
+        // ** Loading T1 file. ** //
+        t1_channel = Channel.fromFilePairs("$input/**/**/anat/*T1w.nii.gz", size: 1, flat: true)
+            { it.parent.parent.parent.name + "_" + it.parent.parent.name } // Set the subject filename as subjectID + '_' + session.
+            .map{ sid, t1 -> [ [id: sid], t1 ] }
+    emit:
+        dwi = dwi_channel 
+        anat = t1_channel
+}
 
-    workflow {
-        inputs = get_data()
+workflow {
+    inputs = get_data()
+    // Use Multimap to split the tuple into multi inputs structure
+    ch_dwi_bvalbvec = inputs.dwi
+        .multiMap { meta, dwi, bval, bvec ->
+            dwi:            [ meta, dwi ]
+            bvs_files:      [ meta, bval, bvec ]
+            dwi_bval_bvec:  [ meta, dwi, bval, bvec ]
+        }
+    // Denoising DWI
+    input_dwi_denoise = ch_dwi_bvalbvec.dwi
+                    .map{ it + [[]] }
+    DENOISING_MPPCA( input_dwi_denoise )
+    // Fetch specific output
+    ch_dwi_denoised = DENOISING_MPPCA.out.image
+    // Input DTI update with DWI denoised output
+    input_dti_denoised = ch_dwi_denoised
+            .join(ch_dwi_bvalbvec.bvs_files)
+            .map{ it + [[]] }
 
-        // Use Multimap to split the tuple into multi inputs structure
-        ch_dwi_bvalbvec = inputs.dwi
-            .multiMap { meta, dwi, bval, bvec ->
-                dwi:            [ meta, dwi ]
-                bvs_files:      [ meta, bval, bvec ]
-                dwi_bval_bvec:  [ meta, dwi, bval, bvec ]
-            }
+    // DTI-derived metrics
+    RECONST_DTIMETRICS( input_dti_denoised )
 
-        // Denoising DWI
-        input_dwi_denoise = ch_dwi_bvalbvec.dwi
-                        .map{ it + [[]] }
-        DENOISING_MPPCA( input_dwi_denoise )
+    // Preprocessing T1 images
+    //inputs.anat.view()
 
-        // Fetch specific output
-        ch_dwi_denoised = DENOISING_MPPCA.out.image
-
-        // Input DTI update with DWI denoised output
-        input_dti_denoised = ch_dwi_denoised
-                .join(ch_dwi_bvalbvec.bvs_files)
-                .map{ it + [[]] }
-
-        // DTI-derived metrics
-        RECONST_DTIMETRICS( input_dti_denoised )
-
-        // Preprocessing T1 images
-        //inputs.anat.view()
-        
-        PREPROC_T1(
-            input_t1,
-            Channel.empty(),
-            Channel.empty(),
-            Channel.empty(),
-            Channel.empty(),
-            Channel.empty(),
-            Channel.empty()
-        )
-
-    }
+    PREPROC_T1(
+        inputs.anat,
+        Channel.empty(),
+        Channel.empty(),
+        Channel.empty(),
+        Channel.empty(),
+        Channel.empty(),
+        Channel.empty()
+    )
+}
 ```
 </TabItem>
 <TabItem label="Expected nextflow.config">
 ```nextflow
-    profiles {
-        docker {
-            docker.enabled          = true
-            conda.enabled           = false
-            singularity.enabled     = false
-            podman.enabled          = false
-            shifter.enabled         = false
-            charliecloud.enabled    = false
-            apptainer.enabled       = false
-            docker.runOptions       = '-u $(id -u):$(id -g)'
-        }
+profiles {
+    docker {
+        docker.enabled          = true
+        conda.enabled           = false
+        singularity.enabled     = false
+        podman.enabled          = false
+        shifter.enabled         = false
+        charliecloud.enabled    = false
+        apptainer.enabled       = false
+        docker.runOptions       = '-u $(id -u):$(id -g)'
+    }
+}
+
+manifest {
+    name            = 'scilus/nf-neuro-tutorial'
+    description     = """nf-neuro-tutorial is a Nextflow pipeline for processing neuroimaging data."""
+    version         = '0.1dev'
+}
+
+params.input      = false
+params.output     = 'result'
+
+// ** Subworkflow PREPROC T1 **
+params.preproc_t1_run_denoising = true
+params.preproc_t1_run_N4 = false
+params.preproc_t1_run_resampling = false
+params.preproc_t1_run_ants_bet = false
+params.preproc_t1_run_synthbet = true
+params.preproc_t1_run_crop = false
+
+process {
+    publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }
+
+    withName: "DENOISING_MPPCA" {
+        ext.extent = 3
     }
 
-    manifest {
-        name            = 'scilus/nf-neuro-tutorial'
-        description     = """nf-neuro-tutorial is a Nextflow pipeline for processing neuroimaging data."""
-        version         = '0.1dev'
+    withName: "BETCROP_SYNTHBET" {
+        memory = "4G"
+        ext.nocsf = false
     }
 
-    params.input      = false
-    params.output     = 'result'
-
-    // ** Subworkflow PREPROC T1 **
-    params.preproc_t1_run_denoising = true
-    params.preproc_t1_run_N4 = false
-    params.preproc_t1_run_resampling = false
-    params.preproc_t1_run_ants_bet = false
-    params.preproc_t1_run_synthbet = true
-    params.preproc_t1_run_crop = false
-
-
-    process {
-
-        publishDir = { "${params.output}/$meta.id/${task.process.replaceAll(':', '-')}" }
-
-        withName: "DENOISING_MPPCA" {
-            ext.extent = 3
-        }
-
-        withName: "BETCROP_SYNTHBET" {
-            memory = "4G"
-            ext.nocsf = false
-        }
-
-        withName: "RECONST_DTIMETRICS" {
-            ext.ad = false
-            ext.evecs = false
-            ext.evals = false
-            ext.fa = true
-            ext.ga = false
-            ext.rgb = false
-            ext.md = true
-            ext.mode = false
-            ext.norm = false
-            ext.rd = false
-            ext.tensor = false
-            ext.nonphysical = false
-            ext.pulsation = false
-            ext.residual = false
-            ext.b0_thr_extract_b0 = 10
-            ext.dwi_shell_tolerance = 50
-            ext.max_dti_shell_value = 1200
-            ext.run_qc = false
-        }
+    withName: "RECONST_DTIMETRICS" {
+        ext.ad = false
+        ext.evecs = false
+        ext.evals = false
+        ext.fa = true
+        ext.ga = false
+        ext.rgb = false
+        ext.md = true
+        ext.mode = false
+        ext.norm = false
+        ext.rd = false
+        ext.tensor = false
+        ext.nonphysical = false
+        ext.pulsation = false
+        ext.residual = false
+        ext.b0_thr_extract_b0 = 10
+        ext.dwi_shell_tolerance = 50
+        ext.max_dti_shell_value = 1200
+        ext.run_qc = false
     }
-    ```
+}
+```
 </TabItem>
 </Tabs>
 
