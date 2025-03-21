@@ -28,6 +28,9 @@ manifest {
     name            = 'scilus/nf-neuro-tutorial'
     description     = """nf-neuro-tutorial is a Nextflow pipeline for processing neuroimaging data."""
     version         = '0.1dev'
+
+params.input      = false
+params.output     = 'result'
 }`;
 
 export const main=`
@@ -136,16 +139,16 @@ subject and session a DWI and a T1 image, as follows:
 <FileTree>
 - data
   - dataset_description.json
-  - darticipants.json
-  - darticipants.tsv
-    - sub-003
-      - ses-01
-        - anat
-          - sub-003_ses-01_T1w.json
-          - sub-003_ses-01_T1w.nii.gz
-        - dwi
-          - sub-003_ses-01_dir-AP_dwi.bval
-          - sub-003_ses-01_dir-AP_dwi.bvec
-          - sub-003_ses-01_dir-AP_dwi.json
-          - sub-003_ses-01_dir-AP_dwi.nii.gz
+  - participants.json
+  - participants.tsv
+  - sub-003
+    - ses-01
+      - anat
+        - sub-003_ses-01_T1w.json
+        - sub-003_ses-01_T1w.nii.gz
+      - dwi
+        - sub-003_ses-01_dir-AP_dwi.bval
+        - sub-003_ses-01_dir-AP_dwi.bvec
+        - sub-003_ses-01_dir-AP_dwi.json
+        - sub-003_ses-01_dir-AP_dwi.nii.gz
 </FileTree>

@@ -94,11 +94,11 @@ The structure of a module should look similar to this:
         Specifies the container to use for the process. 
         It conditionally chooses between a Singularity or Docker container based on the workflow configuration.
 
-    <li>`Input`</li>
+    <li>`input`</li>
         Defines the input for the process as a tuple containing 
         metadata (meta) and an input file path.
 
-    <li>`Output`</li>
+    <li>`output`</li>
         Defines the output of the process as a tuple containing 
         the input metadata and a file named `output.txt`. 
         The output is emitted to a channel named `outputname`.
@@ -110,7 +110,7 @@ The structure of a module should look similar to this:
     </html>
     :::
     
-    Here it, execute a simple command to copy the contents of the input file to output.txt.
+    Here it executes a simple command to copy the contents of the input file to output.txt.
     In summary, this process takes an input file, copies its contents to an output file,
     and provides some flexibility in naming and options through the use of metadata and task extensions. 
     The process can run in either a Singularity or Docker container, depending on the workflow configuration.
@@ -165,18 +165,18 @@ The structure of a module should look similar to this:
     When working with local modules in Nextflow, you can add a `meta.yml` file to store metadata. 
        This file provides useful details about the module or subworkflow, making it easier to understand and use.  
     
-    #### **Why Use `meta.yml`?**  
+    #### **Why use `meta.yml`?**  
     - It serves as a metadata file that contains essential information about a module or subworkflow, 
        and helps document the component, making it more accessible to other users and developers.  
     
-    #### **Where to Place the `meta.yml` File?** 
+    #### **Where to place the `meta.yml` file?** 
     <html>
     <li> **For Modules:** `./modules/local/<modules_category>/<module_name>/meta.yml`</li>
     <li>**For Subworkflows:** `./subworkflows/local/<subworkflow_name>/meta.yml`</li>
     </html>
 
 
-    #### **What Does `meta.yml` Contain?**
+    #### **What does `meta.yml` contain?**
     <html>
     <li>General information about the module or subworkflow</li>
     <dd>
@@ -245,40 +245,41 @@ process STATS_METRICSINROI {
 
 ### 4. Prepare the input structure for the module and include it in your main.nf
 
-#### a. Include your local module
+<Steps>
+    1. Include your local module
 
-You can now include and use your local module to the workflow, as shown in the previous steps.
+        You can now include and use your local module to the workflow, as shown in the previous steps.
 
-Add this line on the top of the `main.nf.
+        Add this line on the top of the `main.nf.
 
-```nextflow
-include { STATS_METRICSINROI } from './modules/local/stats/metricsinroi/main'
-```
+        ```nextflow
+        include { STATS_METRICSINROI } from './modules/local/stats/metricsinroi/main'
+        ```
 
-Add the local module in the workflow.
-```nextflow
-STATS_METRICSINROI( input_channel )
-```
+        Add the local module in the workflow.
+        ```nextflow
+        STATS_METRICSINROI( input_channel )
+        ```
 
-#### b. Prepare the input channel for your local module
+    2. Prepare the input channel for your local module
 
-The `STATS_METRICSINROI` module requires two inputs: a T1 image and a list of metrics.
+        The `STATS_METRICSINROI` module requires two inputs: a T1 image and a list of metrics.
 
-You can use the `join()` and `map()` operators to create an input channel that combines the T1 BET image output from the 
-`PREPROC_T1` subworkflow with the FA map from the DTI module.
+        You can use the `join()` and `map()` operators to create an input channel that combines the T1 BET image output from the 
+        `PREPROC_T1` subworkflow with the FA map from the DTI module.
 
-Add the input channel to the module.
+        Add the input channel to the module.
 
-**Expected input channel:**
+        **Expected input channel:**
 
-```nextflow
-input_extract_metric = PREPROC_T1.out.image_bet
-            .join(RECONST_DTIMETRICS.out.fa)
-            .map{ it }
+        ```nextflow
+        input_extract_metric = PREPROC_T1.out.image_bet
+                    .join(RECONST_DTIMETRICS.out.fa)
+                    .map{ it }
 
-STATS_METRICSINROI( input_extract_metric )
-```
-
+        STATS_METRICSINROI( input_extract_metric )
+        ```
+</Steps>
 ### 5. Configure your local module
 
 To configure your local module, you need to add each `task.ext.*` to the module. 
