@@ -142,9 +142,9 @@ optionally apply denoising, and compute DTI-derived metrics.
         1- Copy and paste the relevant denoising and DTI metrics sections into the workflow
 
         2- Modify the workflow structure to include a condition that runs denoising only if the option is enabled
+        using the parameter name: `preproc_dwi_run_denoising`
 
-        2a- Use the parameter name : `preproc_dwi_run_denoising`
-
+        <br></br>
         </TabItem>
         <TabItem label="Solution">
 
@@ -192,7 +192,8 @@ optionally apply denoising, and compute DTI-derived metrics.
 
     </Steps>
 
-    **Expected ./subworkflows/local/preproc_diff/main.nf**
+    <Tabs>
+    <TabItem label="Expected main.nf">
     ```nextflow
         include { RECONST_DTIMETRICS } from '../../../modules/nf-neuro/reconst/dtimetrics/main'
         include { DENOISING_MPPCA } from '../../../modules/nf-neuro/denoising/mppca/main'
@@ -237,6 +238,8 @@ optionally apply denoising, and compute DTI-derived metrics.
 
         }
     ```
+    </TabItem>
+    </Tabs>
 
 
 ### 3. Prepare the input structure for the subworkflow and include it in your main.nf
@@ -287,6 +290,7 @@ in your Nextflow pipeline!
 
 <Tabs>
 <TabItem label="Expected main.nf">
+
     ```nextflow
     #!/usr/bin/env nextflow
 

@@ -157,7 +157,8 @@ You can get more information about this method through the [nextflow API](https:
 
 ### 2. Set correctly the Subject and session ID
 Now let's modify the input structure to make the key identifier `sub-003_ses-01_dir-AP` become `sub-003_ses-01`.
-We still use the current structure, but with an additional item mapping using `it`. You can replace the previous `fromFilePairs` call the `after` section.
+We still use the current structure, but with an additional item mapping using `it`. Check the **Before** and **After** 
+sections below to see the needed modification.
 
 <Tabs>
   <TabItem label="Before">
@@ -199,15 +200,20 @@ We still use the current structure, but with an additional item mapping using `i
 
     <Steps>
 
-    1. `it` corresponds to the file name (here: /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bval).
+    1. `it` corresponds to the file name
 
     2. `.parent` corresponds to the parent folder.
 
     </Steps>
 
+    In our exemple `it` is
+    `
+    /workspaces/nf-neuro-tutorial_test/data/sub-003/ses-01/dwi/sub-003_ses-01_dir-AP_dwi.bval
+    `
+
     **To get subjectID `sub-003` from `it`:**
      <html>
-    <li>`sub-003_ses-01_dir-AP_dwi.bval` `.parent`-> dwi</li>
+    <li>`sub-003_ses-01_dir-AP_dwi.bval` `.parent`-> dwi (dwi is the parent folder of the file)</li>
     <li>`dwi` `.parent`-> ses-01</li>
     <li>`ses-01` `.parent`-> sub-003</li>
     </html>

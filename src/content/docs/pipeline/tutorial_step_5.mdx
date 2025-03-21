@@ -212,7 +212,7 @@ The required steps are:
 
     As with modules, the API documentation also lists [**subworkflows**](/nf-neuro/api/categories), 
     providing information on **Inputs**, **Outputs** and the module list used in the 
-    **Components** section:  [PREPROC_T1](/nf-neuro/api/subworflows/preproc_t1/).
+    **Components** section:  [PREPROC_T1](/nf-neuro/api/subworkflows/preproc_t1/).
 
     The `PREPROC_T1` subworkflow has 7 input channels defined, with only `ch_image` being mandatory.
     Just like using an empty list for modules, using an **empty channel** allows the 
@@ -265,7 +265,7 @@ This is a work-in-progress and will be implemented in the near future to facilit
 In the meantime, you can find an example of the parameters in the `nextflow.config` file
 within the **tests** (`./subworkflow/nf-neuro/preproc_t1/tests/nextflow.config`).
 
-For he purpose of this tutorial, we will only enable the `denoising` and `synthbet` options (set to `true`) and 
+For the purpose of this tutorial, we will only enable the `denoising` and `synthbet` options (set to `true`) and 
 disable all other options (set to `false`).
 
 Add the following lines to your `nextflow.config` file after `params.output = 'result'`:
@@ -293,6 +293,10 @@ as follows after the DENOISING_MPPCA block:
         ext.nocsf = false
     }
 ```
+
+:::note
+`BETCROP_SYNTHBET` needs 4G of RAM to be executed (using the default `memory` keyword) and the `nocsf` param excludes CSF from brain border.
+:::
 
 ### 5. Verify your files
 
