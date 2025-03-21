@@ -157,22 +157,13 @@ You can get more information about this method through the [nextflow API](https:
 
 ### 2. Set correctly the Subject and session ID
 Now let's modify the input structure to make the key identifier `sub-003_ses-01_dir-AP` become `sub-003_ses-01`.
-We still use the current structure, but with an additional item mapping using `it`. Check the **Before** and **After** 
-sections below to see the needed modification.
+We still use the current structure, but with an additional item mapping using `it`. Find the **dwi_channel** input
+and add the content highlighted below.
 
-<Tabs>
-  <TabItem label="Before">
-    ```nextflow
-        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true);
-    ```
-   </TabItem>
-  <TabItem label="After">
-    ```nextflow
-        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
-                 { it.parent.parent.parent.name + "_" + it.parent.parent.name};
-    ```
-  </TabItem>
-</Tabs>
+  ```nextflow ins={2}
+      dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+                { it.parent.parent.parent.name + "_" + it.parent.parent.name};
+  ```
 
 <RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, you can run nextflow..**
 
@@ -234,21 +225,11 @@ sections below to see the needed modification.
 By default, files are sorted alphabetically, so you need to reorder them to get a specific file order. 
 To do this, you use the `map` function and change the main.nf as follows:
 
-<Tabs>
-  <TabItem label="Before">
-    ```nextflow
-        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
-            { it.parent.parent.parent.name + "_" + it.parent.parent.name}`;
-    ```
-   </TabItem>
-  <TabItem label="After">
-    ```nextflow
-        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
-            { it.parent.parent.parent.name + "_" + it.parent.parent.name}
-            .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
-    ```
-  </TabItem>
-</Tabs>
+```nextflow ins={3}
+    dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+        { it.parent.parent.parent.name + "_" + it.parent.parent.name}
+        .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
+```
 
 <RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, you can run nextflow..**
 
