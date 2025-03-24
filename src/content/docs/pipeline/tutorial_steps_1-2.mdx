@@ -1,5 +1,5 @@
 ---
-title: "Steps 1 and 2: Visualize and create input data"
+title: "Part 1-2 Visualize and create input data"
 description: Learn how to build a simple pipeline using nf-neuro components
 ---
 
@@ -33,7 +33,7 @@ export const main=`
                 log.info "                        |    └-- ses-02"            
                 log.info "                        └-- S2"
                 log.info "                             └-- ses-01"
-                log.info "                             |     ├-- anat"
+                log.info "                             |    ├-- anat"
                 log.info "                             |    |   |--*t1.nii.gz"
                 log.info "                             |    |--dwi"
                 log.info "                             |    |   |--*dwi.nii.gz"
@@ -46,7 +46,7 @@ export const main=`
 
             input = file(params.input)
             // ** Loading all files. ** //
-            dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+            dwi_channel = Channel.fromFilePairs("$input/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
 
         emit:
             dwi = dwi_channel
@@ -63,10 +63,10 @@ export const main=`
 :::tip[What to expect from this walkthrough]
 In this tutorial, you'll learn how to create a basic pipeline workflow, using components from `nf-neuro`. 
 
-By following steps 1 to 2, you will learn the input structure.
+By following part 1 and 2, you will learn the input structure.
 :::
 
-## Step 1: Visualize input data
+## Part 1. Visualize input data
 
 Open the **`main.nf`** file in VS Code. This file is pre-filled with a workflow named `get_data`, 
 which is responsible for fetching input files from a specified directory.
@@ -91,7 +91,7 @@ To run the Nextflow pipeline, use the following command:
    </span>
    </CommandOutputs>
 
-## Step 2: Create input structure
+## Part 2: Create input structure
 
 ### 1. Update data structure
 
@@ -102,10 +102,10 @@ Replace the existing `main.nf` file with the following.
 
 :::tip[Let's break down these changes]
 ```
-dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+dwi_channel = Channel.fromFilePairs("$input/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
 ```
 <html>
-<li>File Matching Pattern: `$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}`</li>
+<li>File Matching Pattern: `$input/**/dwi/*dwi.{nii.gz,bval,bvec}`</li>
 This is the glob pattern used to match files. 
 It searches for files in any subdirectory of `$input` inside `dwi/`, matching `.nii.gz`, `.bval`, or `.bvec` files.
 
@@ -163,12 +163,12 @@ sections below to see the needed modification.
 <Tabs>
   <TabItem label="Before">
     ```nextflow
-        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true);
+        dwi_channel = Channel.fromFilePairs("$input/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true);
     ```
    </TabItem>
   <TabItem label="After">
     ```nextflow
-        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+        dwi_channel = Channel.fromFilePairs("$input/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
                  { it.parent.parent.parent.name + "_" + it.parent.parent.name};
     ```
   </TabItem>
@@ -237,13 +237,13 @@ To do this, you use the `map` function and change the main.nf as follows:
 <Tabs>
   <TabItem label="Before">
     ```nextflow
-        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+        dwi_channel = Channel.fromFilePairs("$input/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
             { it.parent.parent.parent.name + "_" + it.parent.parent.name}`;
     ```
    </TabItem>
   <TabItem label="After">
     ```nextflow
-        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+        dwi_channel = Channel.fromFilePairs("$input/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
             { it.parent.parent.parent.name + "_" + it.parent.parent.name}
             .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
     ```

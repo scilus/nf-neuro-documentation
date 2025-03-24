@@ -36,12 +36,12 @@ export default defineConfig({
 						{ label: 'Tutorial',
 							items: [
 								{ label: 'Explore', slug: 'pipeline/tutorial_explore' },
-								{ label: 'Steps 1 and 2', slug: 'pipeline/tutorial_steps_1-2' },
-								{ label: 'Step 3', slug: 'pipeline/tutorial_step_3' },
-								{ label: 'Step 4', slug: 'pipeline/tutorial_step_4' },
-								{ label: 'Step 5', slug: 'pipeline/tutorial_step_5' },
-								{ label: 'Step 6', slug: 'pipeline/tutorial_step_6' },
-								{ label: 'Step 7', slug: 'pipeline/tutorial_step_7' },
+								{ label: 'Part 1-2 : Use inputs', slug: 'pipeline/tutorial_steps_1-2' },
+								{ label: 'Part 3 : Use modules', slug: 'pipeline/tutorial_step_3' },
+								{ label: 'Part 4 : Install modules', slug: 'pipeline/tutorial_step_4' },
+								{ label: 'Part 5 : Install subworkflows', slug: 'pipeline/tutorial_step_5' },
+								{ label: 'Part 6 : Create a module', slug: 'pipeline/tutorial_step_6' },
+								{ label: 'Part 7 : Create a subworkflow', slug: 'pipeline/tutorial_step_7' },
 							]
 						},
 					],

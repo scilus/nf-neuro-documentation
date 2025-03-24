@@ -1,5 +1,5 @@
 ---
-title: "Step 4: Install and use a new nf-neuro module"
+title: "Part 4: Install and use a new nf-neuro module"
 description: Learn how to build a simple pipeline using nf-neuro components
 ---
 
@@ -15,7 +15,7 @@ import Runtime from "@mdx-js/runtime";
 :::tip[What to expect from this walkthrough]
 In this tutorial, you'll learn how to create a basic pipeline workflow, using components from `nf-neuro`. 
 
-By following step 4, you will learn to use some nf-core command line but you will also learn to install,
+By following part 4, you will learn to use some nf-core command line but you will also learn to install,
 use and configure a `nf-neuro` module.
 :::
 
@@ -154,17 +154,14 @@ In this tutorial, you need to remove a directory, like this `./modules/[...]`.
 
 The purpose of adding this module is to denoise the DWI image before computing the DTI metrics.
 To do this, simply repeat the sequence of sub-steps seen in 
-[**Step 3: Use and configure a nf-neuro module**](/nf-neuro/pipeline/tutorial_step_3).
+[**Part 3: Use and configure a nf-neuro module**](/nf-neuro/pipeline/tutorial_step_3).
 
 <Steps>
 
-1. Include the module in your `main.nf`
+1. Include the module in your `main.nf` : `include { DENOISING_MPPCA } from './modules/nf-neuro/denoising/mppca/main'`
 
-2. Use the module in the workflow
-
-3. Understand input data specific to the module
-
-    Similar to the DTI module, the MPPCA denoising module requires only the DWI image and an optional mask.
+2. Use the module in the workflow. The MPPCA denoising module requires only the DWI image, opposed to the DTI_METRICS
+   modules which takes the dwi volume with its bval/bvec directly. Both can take a mask as input, but it is optional.
 
     The challenge is to leverage Nextflow tools to restructure the input data into individual channels, 
     making it easier to handle. The goal is to efficiently extract individual files, 
@@ -233,9 +230,9 @@ To do this, simply repeat the sequence of sub-steps seen in
     As in this tutorial, you might have one process that only needs the dwi file, another that needs the bval 
     and bvec files, and a third that needs all of them. 
 
-4. Configure the denosing module in the `nextflow.config` using the [API Documentation](/nf-neuro/api/modules/denoising/mppca) as a reference.
+3. Configure the denosing module in the `nextflow.config` using the [API Documentation](/nf-neuro/api/modules/denoising/mppca) as a reference.
 
-5. Adapt the input for `RECONST_DTIMETRICS` module to attach it after the newly included denoised DWI module, reusing its outputs as inputs.
+4. Adapt the input for `RECONST_DTIMETRICS` module to attach it after the newly included denoised DWI module, reusing its outputs as inputs.
 
     <Tabs>
     <TabItem label="Before">
@@ -303,7 +300,7 @@ To do this, simply repeat the sequence of sub-steps seen in
     <li>`.map{ it + [[]] }`:  Adds an empty list `([])` to each input tuple.</li>
     
         After joining, we use `map` to transform each item in the channel, and adding an empty list `[[]]`,
-        for the optional mask input. The `map` operation is similar to the one we did for the DTI module in [**Step 2**](/nf-neuro/pipeline/tutorial_step_2).
+        for the optional mask input. The `map` operation is similar to the one we did for the DTI module in [**Part 2**](/nf-neuro/pipeline/tutorial_step_2).
     </html>
     :::
 </Steps>
