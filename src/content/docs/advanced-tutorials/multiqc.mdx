@@ -48,9 +48,9 @@ we will reused the completed pipeline from the tutorial [Your pipeline from A to
     :::caution[If you did not complete the pipeline creation tutorial]
     Don't worry! You can still catch up by following the [setup section](/nf-neuro/pipeline/setup/).
     Once you are setup, we prepared a branch that contains the complete pipeline. To access it,
-    checkout the `complete_pipeline` branch.
+    checkout the `full_tutorial` branch.
     ```bash
-    git checkout complete_pipeline
+    git checkout full_tutorial
     ```
     :::
 
@@ -656,3 +656,9 @@ and supply it to the MultiQc module:
     As you can see, the report is now much cleaner and informative!
 
 </Steps>
+
+## Creating a global MultiQC report
+
+As described above, you can also create a single report containing quantitative
+metrics across all subjects. This is particularly useful to single out outliers
+needing further quality control. **This section will be coming soon!**
