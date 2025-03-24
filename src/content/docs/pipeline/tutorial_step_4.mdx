@@ -160,8 +160,8 @@ To do this, simply repeat the sequence of sub-steps seen in
 
 1. Include the module in your `main.nf` : `include { DENOISING_MPPCA } from './modules/nf-neuro/denoising/mppca/main'`
 
-2. Use the module in the workflow. The MPPCA denoising module requires only the DWI image and an optional mask,
-   opposed to the DTI_METRICS modules which takes the dwi volume with its bval/bvec directly.
+2. Use the module in the workflow. The MPPCA denoising module requires only the DWI image, opposed to the DTI_METRICS
+   modules which takes the dwi volume with its bval/bvec directly. Both can take a mask as input, but it is optional.
 
     The challenge is to leverage Nextflow tools to restructure the input data into individual channels, 
     making it easier to handle. The goal is to efficiently extract individual files, 
