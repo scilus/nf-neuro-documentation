@@ -1,6 +1,6 @@
 ---
-title: Integrating MultiQC in your pipeline
-description: Integrating MultiQC report in your pipeline.
+title: Integrate MultiQC in your pipeline
+description: Integrate MultiQC report in your pipeline.
 ---
 
 import RunIcon from '~icons/codicon/run-all';
@@ -28,7 +28,7 @@ results within interactive html reports: [MultiQC](https://docs.seqera.io/multiq
 This integration allows for an easy evaluation of key processing steps for every
 subjects and/or a more global evaluation (population-level) using quantitative
 metrics. In this tutorial, you will see an overview of how MultiQC can integrate
-your data into a clean report, and to implement it in your own pipeline.
+your data into a clean report, and how to implement it in your own pipeline.
 
 :::note[If you use MultiQC in your work]
 Please cite their original paper:
@@ -92,7 +92,7 @@ INFO     Use the following statement to include this module:
 </span>
 </CommandOutputs>
 
-## Set up MultiQC in your pipeline
+## Import MultiQC in your pipeline
 
 Once your module is installed, you need to import it within
 the `main.nf` file of your pipeline.
@@ -101,7 +101,7 @@ the `main.nf` file of your pipeline.
 include { MULTIQC } from "./modules/nf-core/multiqc/main"
 ```
 
-### MultiQC inputs
+### Modify the MultiQC inputs
 
 MultiQC was originally designed to perform quality control
 on genomic data on a population level. In the neuroimaging
@@ -110,14 +110,11 @@ field, quality control is mostly done on a per-subject basis
 data across the studied population). In this walkthrough, we
 will go over the two methods to create:
 
-<Steps>
-
-1. A **subject-specific report** allowing QC of key processing steps using
-figures (e.g., registration, segmentation, etc.).
-
-2. A **global report** for quantitative metrics across a population.
-
-</Steps>
+<html>
+<li>A **subject-specific report** allowing QC of key processing steps using
+figures (e.g., registration, segmentation, etc.).</li>
+<li>A **global report** for quantitative metrics across a population.</li>
+</html>
 
 Creating the global report is natively supported by MultiQC.
 However, we will need to tweak the existing inputs to create the
@@ -150,6 +147,8 @@ input:
     path(sample_names)
 ```
 
+### Prefix your report with a subject specific tag
+
 Now that we have a meta field that identifies our subjects, let's use it
 to name our resulting report. To do that, we need to modify how the
 `prefix` variable is defined at the beginning of the script section.
@@ -169,6 +168,8 @@ def prefix = task.ext.prefix ? "--filename ${task.ext.prefix}.html" : ''
 </TabItem>
 </Tabs>
 
+### Change MultiQC container
+
 We also want to change the container to use the [official docker container](https://hub.docker.com/r/multiqc/multiqc)
 for MultiQc. 
 
@@ -186,6 +187,8 @@ for MultiQc.
 ```
 </TabItem>
 </Tabs>
+
+### Add a label to the process execution
 
 Finally, we want to tag each execution of the module using this `meta.id` tag.
 To do so, let's add a `tag "$meta.id"` at the top of the process definition:
@@ -214,7 +217,7 @@ process MULTIQC {
 
 Your MultiQC module is now up-and-running for our neuroimaging needs!
 
-### Generating and collecting QC files
+## Create a subject MultiQC report
 
 :::note[If you do not already have QC within your modules]
 The instructions for how to create QC files within your modules have
@@ -233,6 +236,8 @@ should look at the FA map and validate they do not contain any artifact.
 Luckily, the `RECONST_DTIMETRICS` module already includes a QC section, producing
 screenshots of the generated metrics map. We will leverage this to create our
 first section of our individual-level MultiQC report.
+
+### Collect QC files
 
 <Steps>
 
@@ -388,7 +393,7 @@ in the main workflow. We will use the same approach as step 3 above:
 
 </Steps>
 
-### Supplying QC files to MultiQC
+### Supply QC files to MultiQC
 
 Now that the QC files are accessible in the main workflow, we can supply those
 files to the MultiQC module. However, we need to format the channel to make
@@ -489,7 +494,7 @@ empty list if we do not have them.
     :::
 </Steps>
 
-### Customizing your MultiQC report
+### Customize your MultiQC report
 
 We have now learned how to collect QC files, supply them to MultiQC, and generate a
 per-subject report. However, our report is not really informative as it does not contain
@@ -657,7 +662,7 @@ and supply it to the MultiQc module:
 
 </Steps>
 
-## Creating a global MultiQC report
+## Create a global MultiQC report
 
 As described above, you can also create a single report containing quantitative
 metrics across all subjects. This is particularly useful to single out outliers
