@@ -33,7 +33,7 @@ export const main=`
                 log.info "                        |    └-- ses-02"            
                 log.info "                        └-- S2"
                 log.info "                             └-- ses-01"
-                log.info "                             |     ├-- anat"
+                log.info "                             |    ├-- anat"
                 log.info "                             |    |   |--*t1.nii.gz"
                 log.info "                             |    |--dwi"
                 log.info "                             |    |   |--*dwi.nii.gz"
@@ -46,7 +46,7 @@ export const main=`
 
             input = file(params.input)
             // ** Loading all files. ** //
-            dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+            dwi_channel = Channel.fromFilePairs("$input/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
 
         emit:
             dwi = dwi_channel
@@ -102,10 +102,10 @@ Replace the existing `main.nf` file with the following.
 
 :::tip[Let's break down these changes]
 ```
-dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+dwi_channel = Channel.fromFilePairs("$input/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
 ```
 <html>
-<li>File Matching Pattern: `$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}`</li>
+<li>File Matching Pattern: `$input/**/dwi/*dwi.{nii.gz,bval,bvec}`</li>
 This is the glob pattern used to match files. 
 It searches for files in any subdirectory of `$input` inside `dwi/`, matching `.nii.gz`, `.bval`, or `.bvec` files.
 
@@ -163,12 +163,12 @@ sections below to see the needed modification.
 <Tabs>
   <TabItem label="Before">
     ```nextflow
-        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true);
+        dwi_channel = Channel.fromFilePairs("$input/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true);
     ```
    </TabItem>
   <TabItem label="After">
     ```nextflow
-        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+        dwi_channel = Channel.fromFilePairs("$input/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
                  { it.parent.parent.parent.name + "_" + it.parent.parent.name};
     ```
   </TabItem>
@@ -237,13 +237,13 @@ To do this, you use the `map` function and change the main.nf as follows:
 <Tabs>
   <TabItem label="Before">
     ```nextflow
-        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+        dwi_channel = Channel.fromFilePairs("$input/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
             { it.parent.parent.parent.name + "_" + it.parent.parent.name}`;
     ```
    </TabItem>
   <TabItem label="After">
     ```nextflow
-        dwi_channel = Channel.fromFilePairs("$input/**/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
+        dwi_channel = Channel.fromFilePairs("$input/**/dwi/*dwi.{nii.gz,bval,bvec}", size: 3, flat: true)
             { it.parent.parent.parent.name + "_" + it.parent.parent.name}
             .map{ sid, bvals, bvecs, dwi -> [ [id: sid], dwi, bvals, bvecs ] } // Reordering the inputs.
     ```
