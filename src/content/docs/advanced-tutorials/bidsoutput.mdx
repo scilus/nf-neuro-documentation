@@ -14,10 +14,23 @@ import Runtime from "@mdx-js/runtime";
 
 :::tip[What to expect from this walkthrough]
 In this advanced tutorial, you'll learn how to ouput BIDS-like structure.
+
+The Brain Imaging Data Structure (BIDS) is a simple and intuitive way to organize and describe data.
+
+Here is an [introduction](https://bids-specification.readthedocs.io/en/stable/introduction.html) to the BIDS specification.
 :::
 
 :::caution
 This advanced tutorial is based on the pipeline created in the tutorial.
+
+If you did not complete the pipeline creation tutorial, Don't worry!
+You can still catch up by following the [setup section](/nf-neuro/pipeline/setup/).
+Once you are setup, we prepared a branch that contains the complete pipeline. To access it,
+checkout the `full_tutorial` branch.
+
+```bash
+git checkout full_tutorial
+```
 :::
 
 ### 1. Example for one module
@@ -26,18 +39,19 @@ We will integrate specific configurations, including the use of `publishDir`, `s
 in the `nextflow.config` file to handle the output of the process `BETCROP_SYNTHBET`.
 (This configuration **must be applied to each module** in your pipeline to ensure all outputs are properly organized).
 
-Here is an example of the structure output :
+Follow these two main modifications in the `nextflow.config`:
+
+<html>
+<li>Add those parameters after the params.output section</li>
 
 ```nextflow
-
-    // Add those parameters after the params.output
-
     // Publish BIDS-like configuration
     params.lean_output = true
     params.publish_dir_mode = 'copy'
+```
 
-    // In process {} part
-
+<li>Add those parameters in the process {} section</li>
+```nextflow
     withName: "BETCROP_SYNTHBET" {
         memory = "4G"
         ext.nocsf = false
@@ -55,6 +69,7 @@ Here is an example of the structure output :
         ]
     }
 ```
+</html>
 
 :::tip[Let's break down these changes]
 <html>
@@ -123,8 +138,10 @@ your output files and make them ready for further analysis.
 
 ### 2. Verify your files
 
-**Your nextflow.config file should look like this:**
+Your nextflow.config file should look like this.
 
+    <Tabs>
+    <TabItem label="Expected nextflow.config">
 ```nextflow
     profiles {
         docker {
@@ -266,6 +283,8 @@ your output files and make them ready for further analysis.
         }
     }
 ```
+</TabItem>
+</Tabs>
 
 ### 3. Run nextflow
 
@@ -279,6 +298,17 @@ your output files and make them ready for further analysis.
    </span>
    <span slot="output">
     ```bash
+    Nextflow 24.10.5 is available - Please consider updating your version to it
+
+ N E X T F L O W   ~  version 24.10.4
+
+Launching `main.nf` [disturbed_dijkstra] DSL2 - revision: 4d02798a26
+
+[21/1edece] process > PREPROC_DIFF:DENOISING_MPPCA (sub-003_ses-01)    [100%] 1 of 1, cached: 1 ✔
+[80/a026d2] process > PREPROC_DIFF:RECONST_DTIMETRICS (sub-003_ses-01) [100%] 1 of 1, cached: 1 ✔
+[62/02540f] process > PREPROC_T1:DENOISING_NLMEANS (sub-003_ses-01)    [100%] 1 of 1, cached: 1 ✔
+[ee/83d196] process > PREPROC_T1:BETCROP_SYNTHBET (sub-003_ses-01)     [100%] 1 of 1, cached: 1 ✔
+[08/dff9de] process > STATS_METRICSINROI (sub-003_ses-01)              [100%] 1 of 1, cached: 1 ✔
     ```
    </span>
 </CommandOutputs>
@@ -311,9 +341,9 @@ You cannot set both a `global` publishDir (`publishDir = { "${params.output}/$me
                 - sub-03_ses-01_desc-t1_mask_gm.nii.gz
                 - sub-03_ses-01_desc-t1_mask_wm.nii.gz
             - dwi
-                - sub-03_ses-01_desc-md.nii.gz
-                - sub-03_ses-01_desc-fa.nii.gz
                 - sub-03_ses-01_desc-denoised_dwi.nii.gz
+                - sub-03_ses-01_desc-fa.nii.gz
+                - sub-03_ses-01_desc-md.nii.gz
             - stats
                 - sub-03_ses-01_desc-dti_stats.json
 </FileTree>
