@@ -314,7 +314,7 @@ the main workflow file. However, generating the QC files within `RECONST_DTIMETR
 is optional (as it is for all modules that have QC within `nf-neuro`). To actually
 produce the QC files during runtime, we need to change the `ext.qc` argument to
 `true`. In the `nextflow.config` file, locate the `ext.qc` argument, and replace
-`false` with `true`. We will also enable all the other metrics to create a more meaningful
+`false` with `true`. We will also enable some of the other metrics to create a more meaningful
 QC report.
     <Tabs>
     <TabItem label="Before">
@@ -345,19 +345,19 @@ QC report.
     ```groovy
     withName: "RECONST_DTIMETRICS" {
         ext.ad = true
-        ext.evecs = true
-        ext.evals = true
+        ext.evecs = false
+        ext.evals = false
         ext.fa = true
-        ext.ga = true
-        ext.rgb = true
+        ext.ga = false
+        ext.rgb = false
         ext.md = true
-        ext.mode = true
-        ext.norm = true
+        ext.mode = false
+        ext.norm = false
         ext.rd = true
-        ext.tensor = true
-        ext.nonphysical = true
-        ext.pulsation = true
-        ext.residual = true
+        ext.tensor = false
+        ext.nonphysical = false
+        ext.pulsation = false
+        ext.residual = false
         ext.b0_thr_extract_b0 = 10
         ext.dwi_shell_tolerance = 50
         ext.max_dti_shell_value = 1200
