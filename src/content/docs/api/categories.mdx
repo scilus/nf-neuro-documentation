@@ -3,4 +3,29 @@ title: Categories
 description: Overview of nf-neuro API.
 ---
 
-Landing page.
+# Modules & Subworkflows in nf-neuro
+
+**nf-neuro** pipelines are built using two key components:
+
+### 🧩 Modules
+<html>
+<li> Single, reusable Nextflow processes (e.g., brain extraction, filtering).</li>
+<li> Found in `/modules/nf-neuro/`.</li>
+<li> Focused on one specific task.</li>
+</html>
+
+### 🔗 Subworkflows
+<html>
+<li> Chains of modules forming higher-level workflows.</li>
+<li> Found in `/subworkflows/`.</li>
+<li> Define how modules connect to achieve a broader goal (e.g., preprocessing pipeline).</li>
+</html>
+
+### Why?
+<html>
+<li> 🔄 Reusability</li>
+<li> 🧼 Clean, modular code</li>
+<li> 🚀 Easier maintenance & scaling</li>
+</html>
+
+👇 Let's explore full API details for modules and subworkflows.

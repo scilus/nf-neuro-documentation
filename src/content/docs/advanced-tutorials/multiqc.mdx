@@ -40,25 +40,20 @@ Epub 2016 Jun 16. PMID: 27312411; PMCID: PMC5039924.
 
 ## Prerequisites
 
-<Steps>
+You need to work on a pipeline that follows the `nf-core` conventions and have access to the [`nf-core` tools commands](https://nf-co.re/docs/nf-core-tools/).
 
-1. Pipeline following the `nf-core` conventions. For the purpose of this walkthrough,
-we will reused the completed pipeline from the tutorial [Your pipeline from A to Z](/nf-neuro/pipeline/tutorial_explore/).
+For the purpose of this walkthrough, we will reused the completed pipeline from the tutorial [Your pipeline from A to Z](/nf-neuro/pipeline/tutorial_explore/).
 
-    :::caution[If you did not complete the pipeline creation tutorial]
-    Don't worry! You can still catch up by following the [setup section](/nf-neuro/pipeline/setup/).
-    Once you are setup, we prepared a branch that contains the complete pipeline. To access it,
-    checkout the `full_tutorial` branch.
-    ```bash
-    git checkout full_tutorial
-    ```
-    :::
+:::caution[If you did not complete the pipeline creation tutorial]
+Don't worry! You can still catch up by following the [setup section](/nf-neuro/pipeline/setup/).
+Once you are setup, we prepared a branch that contains the complete pipeline. To access it,
+checkout the `full_tutorial` branch.
+```bash
+git checkout full_tutorial
+```
+:::
 
-2. Access to the [`nf-core` tools commands](https://nf-co.re/docs/nf-core-tools/)
-
-</Steps>
-
-## Installation
+## Install MultiQC module
 
 `nf-core` have already developed a [dedicated module that runs MultiQC](https://nf-co.re/modules/multiqc/)
 and create the html report containing your data. However, we first need to install it
@@ -101,7 +96,7 @@ the `main.nf` file of your pipeline.
 include { MULTIQC } from "./modules/nf-core/multiqc/main"
 ```
 
-### Modify the MultiQC inputs
+### 1. Modify the MultiQC inputs
 
 MultiQC was originally designed to perform quality control
 on genomic data on a population level. In the neuroimaging
@@ -118,8 +113,10 @@ figures (e.g., registration, segmentation, etc.).</li>
 
 Creating the global report is natively supported by MultiQC.
 However, we will need to tweak the existing inputs to create the
-subject-specific reports. First, let's go over the original
-inputs:
+subject-specific reports. Check the modifications needed for the `main.nf` in **./modules/nf-core/multiqc/**:
+
+<Tabs>
+<TabItem label="Before">
 
 ```groovy
 input:
@@ -130,12 +127,8 @@ input:
     path(replace_names) // Option to replace some samples, not relevant to our case.
     path(sample_names) // Option to change sample name.
 ```
-
-As you can see, there is no metadata field that map the data to a
-single subject. This will make the module run only once and generate
-a single report for all subjects. To solve this issue,
-we will add new input containing a subject-specific metadata field:
-
+</TabItem>
+<TabItem label="After">
 ```groovy
 input:
     tuple val(meta), path(qc_images) // Added input with subject meta field.
@@ -146,67 +139,78 @@ input:
     path(replace_names)
     path(sample_names)
 ```
+</TabItem>
+</Tabs>
 
-### Prefix your report with a subject specific tag
+:::tip[Let's break down these changes]
+As you can see, there is no metadata field that map the data to a
+single subject. This will make the module run only once and generate
+a single report for all subjects. To solve this issue,
+we will add new input containing a subject-specific metadata field: 
+`tuple val(meta), path(qc_images)`.
+:::
+
+### 2. Prefix your report with a subject specific tag
 
 Now that we have a meta field that identifies our subjects, let's use it
 to name our resulting report. To do that, we need to modify how the
 `prefix` variable is defined at the beginning of the script section.
 Copy this new line and replace the existing `def prefix...` in your
-multiqc module.
+MultiQC module (`main.nf`).
 
 <Tabs>
-<TabItem label="New prefix">
-```groovy
-def prefix = "--filename ${meta.id}_multiqc_report"
-```
-</TabItem>
-<TabItem label="Old prefix">
+<TabItem label="Before">
 ```groovy
 def prefix = task.ext.prefix ? "--filename ${task.ext.prefix}.html" : ''
 ```
 </TabItem>
-</Tabs>
-
-### Change MultiQC container
-
-We also want to change the container to use the [official docker container](https://hub.docker.com/r/multiqc/multiqc)
-for MultiQc. 
-
-<Tabs>
-<TabItem label="New container">
+<TabItem label="After">
 ```groovy
-    container "${ 'multiqc/multiqc:v1.27.1' }"
+def prefix = "--filename ${meta.id}_multiqc_report"
 ```
 </TabItem>
-<TabItem label="Old container">
+</Tabs>
+
+### 3. Change MultiQC container
+
+We also want to change the container to use the [official docker container](https://hub.docker.com/r/multiqc/multiqc)
+for MultiQc.
+
+<Tabs>
+<TabItem label="Before">
 ```groovy
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/multiqc:1.27--pyhdfd78af_0' :
         'biocontainers/multiqc:1.27--pyhdfd78af_0' }"
 ```
 </TabItem>
+<TabItem label="After">
+```groovy
+    container "${ 'multiqc/multiqc:v1.27.1' }"
+```
+</TabItem>
 </Tabs>
 
-### Add a label to the process execution
+### 4. Add a label to the process execution
 
 Finally, we want to tag each execution of the module using this `meta.id` tag.
-To do so, let's add a `tag "$meta.id"` at the top of the process definition:
+To do so, let's add a `tag "$meta.id"` at the top of the process definition (`main.nf`).
 
 <Tabs>
-<TabItem label="Added tag">
+<TabItem label="Before">
 ```groovy
 process MULTIQC {
-    tag "$meta.id"
     label 'process_single'
 
     <...>
 }
+
 ```
 </TabItem>
-<TabItem label="Without tag">
+<TabItem label="After">
 ```groovy
 process MULTIQC {
+    tag "$meta.id"
     label 'process_single'
 
     <...>
@@ -237,14 +241,14 @@ Luckily, the `RECONST_DTIMETRICS` module already includes a QC section, producin
 screenshots of the generated metrics map. We will leverage this to create our
 first section of our individual-level MultiQC report.
 
-### Collect QC files
+### 1. Collect QC files
 
 <Steps>
 
 1. To collect the QC files during pipeline execution we need to create an
 empty channel at the beginning of the workflow file. This empty channel will
 be populated when the modules output QC files. Add this line at the beginning
-of the workflow section in your `main.nf` file:
+of the workflow section in your `./main.nf` file.
     ```groovy
     ch_multiqc_files = Channel.empty()
     ```
@@ -252,7 +256,7 @@ of the workflow section in your `main.nf` file:
 2. Since `RECONST_DTIMETRICS` is nested within the `PREPROC_DIFF` subworkflow,
 we also need to collect the files within the subworkflow to make them accessible
 in the main workflow. Identical to the step above, define an empty channel at the
-top of your `PREPROC_DIFF` `main.nf`, right below the `main:` section:
+top of your `PREPROC_DIFF` `./subworkflows/local/preproc_diff/main.nf`, right below the `main:` section.
     ```groovy
     ch_multiqc_files = Channel.empty()
     ```
@@ -263,26 +267,36 @@ or directly in the `main.nf`), you will see an emitted channel called `mqc`. Thi
 channel contains the QC files generated within the module. Let's append this
 channel to our previously empty channel.
     <Tabs>
-    <TabItem label="QC files collected">
-    ```groovy
-    // DTI-derived metrics
-    RECONST_DTIMETRICS( input_dti )
-    ch_multiqc_files = ch_multiqc_files.mix(RECONST_DTIMETRICS.out.mqc)
-    ```
-    </TabItem>
     <TabItem label="Before">
     ```groovy
     // DTI-derived metrics
     RECONST_DTIMETRICS( input_dti )
     ```
     </TabItem>
+    <TabItem label="After">
+    ```groovy
+    // DTI-derived metrics
+    RECONST_DTIMETRICS( input_dti )
+    ch_multiqc_files = ch_multiqc_files.mix(RECONST_DTIMETRICS.out.mqc)
+    ```
+    </TabItem>
     </Tabs>
 
 4. We now need to output this `ch_multiqc_files` from the subworkflow to
 make it accessible on the workflow level. We will add a new output in the `emit:`
-section of the `PREPROC_DIFF` subworkflow
+section of the `PREPROC_DIFF` subworkflow.
     <Tabs>
-    <TabItem label="New output">
+    <TabItem label="Before">
+    ```groovy
+    emit:
+        dwi                 = ch_dwi_bvalbvec.dwi           // channel: [ val(meta), dwi-raw ]
+        dwi_denoised        = DENOISING_MPPCA.out.image     // channel: [ val(meta), dwi-after-mppca ]
+        bvs_files           = ch_dwi_bvalbvec.bvs_files     // channel: [ val(meta), bval, bvec ]
+        fa                  = RECONST_DTIMETRICS.out.fa     // channel: [ val(meta), fa ]
+        md                  = RECONST_DTIMETRICS.out.md     // channel: [ val(meta), md ]
+    ```
+    </TabItem>
+    <TabItem label="After">
     ```groovy
     emit:
         dwi                 = ch_dwi_bvalbvec.dwi           // channel: [ val(meta), dwi-raw ]
@@ -293,16 +307,6 @@ section of the `PREPROC_DIFF` subworkflow
         mqc                 = ch_multiqc_files              // channel: [ val(meta), mqc ]
     ```
     </TabItem>
-    <TabItem label="Original outputs">
-    ```groovy
-    emit:
-        dwi                 = ch_dwi_bvalbvec.dwi           // channel: [ val(meta), dwi-raw ]
-        dwi_denoised        = DENOISING_MPPCA.out.image     // channel: [ val(meta), dwi-after-mppca ]
-        bvs_files           = ch_dwi_bvalbvec.bvs_files     // channel: [ val(meta), bval, bvec ]
-        fa                  = RECONST_DTIMETRICS.out.fa     // channel: [ val(meta), fa ]
-        md                  = RECONST_DTIMETRICS.out.md     // channel: [ val(meta), md ]
-    ```
-    </TabItem>
     </Tabs>
 
 5. We have now setup the structure to collect QC files and deliver them to
@@ -310,34 +314,10 @@ the main workflow file. However, generating the QC files within `RECONST_DTIMETR
 is optional (as it is for all modules that have QC within `nf-neuro`). To actually
 produce the QC files during runtime, we need to change the `ext.qc` argument to
 `true`. In the `nextflow.config` file, locate the `ext.qc` argument, and replace
-`false` with `true`. We will also enable all the other metrics to create a more meaningful
+`false` with `true`. We will also enable some of the other metrics to create a more meaningful
 QC report.
     <Tabs>
-    <TabItem label="QC enabled">
-    ```groovy
-    withName: "RECONST_DTIMETRICS" {
-        ext.ad = false
-        ext.evecs = false
-        ext.evals = false
-        ext.fa = true
-        ext.ga = false
-        ext.rgb = false
-        ext.md = false
-        ext.mode = false
-        ext.norm = false
-        ext.rd = false
-        ext.tensor = false
-        ext.nonphysical = false
-        ext.pulsation = false
-        ext.residual = false
-        ext.b0_thr_extract_b0 = 10
-        ext.dwi_shell_tolerance = 50
-        ext.max_dti_shell_value = 1200
-        ext.run_qc = true
-    }
-    ```
-    </TabItem>
-    <TabItem label="QC disabled">
+    <TabItem label="Before">
     ```groovy
     withName: "RECONST_DTIMETRICS" {
         ext.ad = false
@@ -361,6 +341,30 @@ QC report.
     }
     ```
     </TabItem>
+    <TabItem label="After">
+    ```groovy
+    withName: "RECONST_DTIMETRICS" {
+        ext.ad = true
+        ext.evecs = false
+        ext.evals = false
+        ext.fa = true
+        ext.ga = false
+        ext.rgb = false
+        ext.md = true
+        ext.mode = false
+        ext.norm = false
+        ext.rd = true
+        ext.tensor = false
+        ext.nonphysical = false
+        ext.pulsation = false
+        ext.residual = false
+        ext.b0_thr_extract_b0 = 10
+        ext.dwi_shell_tolerance = 50
+        ext.max_dti_shell_value = 1200
+        ext.run_qc = true
+    }
+    ```
+    </TabItem>
     </Tabs>
 
     :::caution[Custom content within MultiQC]
@@ -373,27 +377,26 @@ QC report.
 
 6. Final step before being ready to supply those files to the MultiQC module is
 to append the QC files from the `PREPROC_DIFF` subworkflow to the `ch_multiqc_files`
-in the main workflow. We will use the same approach as step 3 above:
-
+in the main workflow (`./main.nf`). We will use the same approach as step 3 above.
     <Tabs>
-    <TabItem label="QC files collected">
-    ```groovy
-    //Processing DWI
-    PREPROC_DIFF( inputs.dwi )
-    ch_multiqc_files = ch_multiqc_files.mix(PREPROC_DIFF.out.mqc)
-    ```
-    </TabItem>
     <TabItem label="Before">
     ```groovy
     //Processing DWI
     PREPROC_DIFF( inputs.dwi )
     ```
     </TabItem>
+    <TabItem label="After">
+    ```groovy
+    //Processing DWI
+    PREPROC_DIFF( inputs.dwi )
+    ch_multiqc_files = ch_multiqc_files.mix(PREPROC_DIFF.out.mqc)
+    ```
+    </TabItem>
     </Tabs>
 
 </Steps>
 
-### Supply QC files to MultiQC
+### 2. Supply QC files to MultiQC
 
 Now that the QC files are accessible in the main workflow, we can supply those
 files to the MultiQC module. However, we need to format the channel to make
@@ -435,8 +438,8 @@ lines at the end of our main workflow definition:
     </Tabs>
 
 2. Once the channel is properly reformatted, we can safely set it as input to
-our MultiQC module. Since we already imported the module at the top of the `main.nf`
-file, we can simply call it, and fill the [MultiQC inputs](#multiqc-inputs) with
+our MultiQC module. Since we already imported the module at the top of the `./main.nf`
+file, we can simply call it, and fill the [MultiQC inputs](#1-modify-the-multiqc-inputs) with
 empty list if we do not have them.
 
     <Tabs>
@@ -455,7 +458,7 @@ empty list if we do not have them.
     </TabItem>
     </Tabs>
 
-3. <RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, let's test this out!**
+3. <RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, you can run nextflow..**
 
    <CommandOutputs>
    <span slot="command">
@@ -494,7 +497,7 @@ empty list if we do not have them.
     :::
 </Steps>
 
-### Customize your MultiQC report
+### 3. Customize your MultiQC report
 
 We have now learned how to collect QC files, supply them to MultiQC, and generate a
 per-subject report. However, our report is not really informative as it does not contain
@@ -504,7 +507,7 @@ file.
 
 <Steps>
 
-1. Create a `assets/multiqc_config.yml` file.
+1. Create a `./assets/multiqc_config.yml` file.
 
     ```bash
     mkdir assets
@@ -593,11 +596,25 @@ pattern to use to match your files for this specific section. This can be done u
 6. The final step consists of supplying this QC file to your MultiQC module. To fetch
 external files, you can use the [`Channel.fromPath()` channel factory](https://www.nextflow.io/docs/latest/reference/channel.html#frompath)
 combined with the [`$projectDir` variable](https://www.nextflow.io/docs/latest/reference/stdlib.html)
-available in the standard Nextflow library. Let's fetch the config file
-and supply it to the MultiQc module:
+available in the standard Nextflow library. Let's fetch the config file and supply it to the MultiQc module.
+Change your `./main.nf` file.
 
     <Tabs>
-    <TabItem label="With config file">
+    <TabItem label="Before">
+    ```groovy
+    // MultiQC
+    MULTIQC(
+        ch_multiqc_files,
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+    )
+    ```
+    </TabItem>
+    <TabItem label="After">
     ```groovy
     ch_multiqc_config = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
 
@@ -613,23 +630,9 @@ and supply it to the MultiQc module:
     )
     ```
     </TabItem>
-    <TabItem label="Without config file">
-    ```groovy
-    // MultiQC
-    MULTIQC(
-        ch_multiqc_files,
-        [],
-        [],
-        [],
-        [],
-        [],
-        []
-    )
-    ```
-    </TabItem>
     </Tabs>
 
-7. <RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, let's test this out!**
+7. <RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, you can run nextflow..**
 
    <CommandOutputs>
    <span slot="command">
