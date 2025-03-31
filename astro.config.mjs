@@ -19,11 +19,11 @@ export default defineConfig({
 			// Add a script to use web analytics.
 			head: [
 				{
-				  tag: 'script',
-				  attrs: {
-					src: 'https://scripts.simpleanalyticscdn.com/latest.js',
-					defer: true,
-				  },
+					tag: 'script',
+					attrs: {
+						src: 'https://scripts.simpleanalyticscdn.com/latest.js',
+						defer: true,
+					},
 				},
 			],
 			customCss: [
