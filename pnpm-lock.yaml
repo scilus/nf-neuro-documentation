@@ -23,6 +23,9 @@ importers:
       astro:
         specifier: ^5.4.3
         version: 5.4.3(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(rollup@4.35.0)(terser@5.39.0)(typescript@5.8.2)(yaml@2.7.0)
+      astro-matomo:
+        specifier: ^1.8.1
+        version: 1.8.1(astro@5.4.3(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(rollup@4.35.0)(terser@5.39.0)(typescript@5.8.2)(yaml@2.7.0))
       pnpm:
         specifier: ^10.6.2
         version: 10.6.2
@@ -860,6 +863,11 @@ packages:
     resolution: {integrity: sha512-yJMQId0yXSAbW9I6yqvJ3FcjKzJ8zRL7elbJbllkv1ZJPlsI0NI83Pxn1YL1IapEM347EvOOkSW2GL+2+NO61w==}
     peerDependencies:
       astro: ^4.0.0-beta || ^5.0.0-beta || ^3.3.0
+
+  astro-matomo@1.8.1:
+    resolution: {integrity: sha512-ifSyb6Pw57cWiAPQB8Y2+mIFaKBxBMCcwmu2U1bJpTrMYTdw8bDyP1YfpzMgXdvFhXXWiOBYzgMb4TAfZTAQYg==}
+    peerDependencies:
+      astro: ^2.0.0-beta.0 || ^3.0.0 || ^4.0.0 || ^5.0.0
 
   astro@5.4.3:
     resolution: {integrity: sha512-GKkOJQCHLx6CrPoghGhj7824WDSvIuuc+HTVjfjMPdB9axp238iJLByREJNDaSdzMeR/lC13xvBiUnKvcYyEIA==}
@@ -3481,6 +3489,10 @@ snapshots:
     dependencies:
       astro: 5.4.3(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(rollup@4.35.0)(terser@5.39.0)(typescript@5.8.2)(yaml@2.7.0)
       rehype-expressive-code: 0.40.2
+
+  astro-matomo@1.8.1(astro@5.4.3(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(rollup@4.35.0)(terser@5.39.0)(typescript@5.8.2)(yaml@2.7.0)):
+    dependencies:
+      astro: 5.4.3(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(rollup@4.35.0)(terser@5.39.0)(typescript@5.8.2)(yaml@2.7.0)
 
   astro@5.4.3(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(rollup@4.35.0)(terser@5.39.0)(typescript@5.8.2)(yaml@2.7.0):
     dependencies:
