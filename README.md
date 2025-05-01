@@ -39,7 +39,3 @@ The documentation website is deployed on [scilus.github.io/nf-neuro](https://sci
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
-Built by HYP3R00T. The source code is available on [GitHub](https://github.com/yourusername/celestialdocs). Crafted with ❤️ and care.
