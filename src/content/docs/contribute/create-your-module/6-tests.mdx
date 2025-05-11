@@ -1,5 +1,5 @@
 ---
-title: Create test cases
+title: Test definitions
 description: Add tests to ensure reproducible results.
 ---
 
@@ -20,7 +20,7 @@ potential bugs!
 To specify test data, you need to define a `setup` section before the actual
 test definition. This setup section will use the `LOAD_TEST_DATA` workflow to
 fetch your test data from an available package (refer to [this section]
-(/contribute/create-your-module/infrastructure) to learn how to find packages). Once you 
+(/contribute/create-your-module/7-test-data) to learn how to find packages). Once you 
 selected the archives and files you need, add a `setup` section before the 
 test section.
 
@@ -189,7 +189,7 @@ whole **nf-neuro** codebase can be easily triggered.
 The `nextflow.config` file does not exist by default, so you will have to
 create it if needed. This is not mandatory, except if you have defined
 optional parameters with `task.ext` and want to alter their values for some
-test cases. Refer to [this section](/nf-neuro/contribute/create-your-module/arguments) to
+test cases. Refer to [this section](/nf-neuro/contribute/create-your-module/3-configuration) to
 see how to scope those parameters to specific tests using `selectors`.
 
 ### Generate tests snapshots
