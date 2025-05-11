@@ -1,0 +1,62 @@
+---
+title: Quality Control
+description: Add quality control to commands outputs
+---
+
+## Including quality control (QC) steps within your module
+
+When applicable, each module should include its own quality control (QC) steps compatible with the
+[MultiQC](https://docs.seqera.io/multiqc) report. This step should be run only
+if specified in the `nextflow.config` file, using the `ext.run_qc` scope.
+The QC can take different form depending on which processing steps are
+performed within your module.
+Common types are:
+    - Static image (overlay of labels/segmentation on T1w image, `.{png,jpeg,tiff,...}`),
+    - Dynamic image (dynamic change between pre-post eddy correction, `.{gif,webp}`)
+    - Simple numerical values as either `.{txt,csv,tsv,...}` files.
+
+Typically, the images are created using the mid slice for all three axes and then
+combined into a mosaic using [ImageMagick](https://imagemagick.org/index.php).
+Below is a code snippet giving general instructions or guidelines for this QC section:
+
+```bash
+    if $run_qc;
+    then
+        # Start by extracting the dimension of your image, then store it into a
+        # single variable for each axis.
+        extract_dim=\$(mrinfo ${prefix}__<image>.nii.gz -size)
+        read sagittal_dim axial_dim coronal_dim <<< "\${extract_dim}"
+
+        # Get the middle slice
+        coronal_dim=\$((\$coronal_dim / 2))
+        axial_dim=\$((\$axial_dim / 2))
+        sagittal_dim=\$((\$sagittal_dim / 2))
+
+        # Set visualization parameters to be applied to all images.
+        viz_params="--display_slice_number --display_lr --size 256 256"
+
+        # Sometimes, it might be useful to normalize the intensities to ensure 
+        # its consistency across images.
+        scil_volume_math.py normalize_max ${prefix}__<image>.nii.gz \
+          ${prefix}__<image>_norm.nii.gz
+
+        # Do the actual screenshotting (adapt to your needs).
+        scil_viz_volume_screenshot.py ${prefix}__<image>_norm.nii.gz \
+          ${prefix}__<image>_coronal.png \${viz_params} --slices \${coronal_dim} \
+          --axis coronal
+        <...>
+
+        # To create mosaics, use [ImageMagick](https://imagemagick.org/index.php).
+        convert ${prefix}_<image>_axial*.png ${prefix}_<image>_coronal*.png \
+          ${prefix}_<image>_saggital*.png +append ${prefix}_<image>_mqc.png
+        
+        # Clean up the intermediate pngs and norm image.
+        rm ${prefix}_<image>_axial*.png ${prefix}_<image>_coronal*.png ${prefix}_<image>_saggital*.png
+        rm *_norm.nii.gz
+    fi
+```
+
+For simplicity, we will not add a QC step for the current `denoising/nlmeans` module.
+For more complete example, you can refer to the [`preproc/topup`](https://github.com/scilus/nf-neuro/blob/main/modules/nf-neuro/preproc/topup/main.nf),
+[`preproc/eddy`](https://github.com/scilus/nf-neuro/blob/main/modules/nf-neuro/preproc/eddy/main.nf),
+or [`registration/anattodwi`](https://github.com/scilus/nf-neuro/blob/main/modules/nf-neuro/registration/anattodwi/main.nf).

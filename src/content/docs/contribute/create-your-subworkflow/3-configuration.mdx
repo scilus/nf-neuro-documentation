@@ -1,22 +1,9 @@
 ---
-title: Optional Inputs
-description: Feeding optional parameters to your module.
+title: Subworkflow configuration
+description: Configure the subworkflow inner logic.
 ---
 
-## Defining optional input parameters
-
-Using the DLS2 module framework, we can define passage of optional parameters using a configuration
-proprietary to the `process scope`, the `task.ext` mapping (or dictionary). In `nf-core`, the convention
-is to load `task.ext.args` with all optional parameters acceptable by the process.
-
-This does not work perfectly for our use-cases, and instead, we use the whole `task.ext` as a
-parameters map. To define an optional parameter `param1` through `task.ext`, add the following to
-the process script section, before the script definition (in `""" """`) :
-
-```groovy
-def args_for_cmd1 = task.ext.param1 ? "<parameter flag for param1 if needed> $task.ext.param1"
-                                    : '<empty string or what to do if not supplied>'
-```
+## Optional module parameters
 
 Then, use `args_for_cmd1` in the script. Defining the actual value for the parameters is done
 by means of `.config` files, inside the `process` scope. A global affectation of the parameter
