@@ -2,3 +2,328 @@
 title: Subworkflow definition
 description: Edit the subworkflow definition in the `main.nf` file.
 ---
+
+import { Steps } from '@astrojs/starlight/components';
+
+:::caution[Empty template not available for subworkflows !]
+The first edition steps for the subworkflow are to :
+
+<Steps>
+1. Remove the comment lines.
+2. Remove the pre-included modules `{ SAMTOOLS_SORT }` and `{ SAMTOOLS_INDEX }`.
+</Steps>
+:::
+
+## Including other `nf-neuro` components
+
+Defining a subworkflow for `nf-neuro` is a bit like creating a custom one for a project, with a few exceptions. For one,
+you cannot use modules or subworkflows from outside the nf-neuro scope. If you need one, then you have to contribute it
+as well. However, that means you don't have to install anything, you can use components by referencing their path
+relative to the subworkflow :
+
+- For modules : `../../../modules/nf-neuro/`
+- For subworkflows : `../`
+
+For the **anatomical preprocessing** subworkflow, add the following include statements at the top of the file :
+
+```diff lang="groovy"
++// MODULES
++include { DENOISING_NLMEANS        } from '../../../modules/nf-neuro/denoising/nlmeans/main'
++include { BETCROP_SYNTHBET         } from '../../../modules/nf-neuro/betcrop/synthbet/main'
++include { BETCROP_ANTSBET          } from '../../../modules/nf-neuro/betcrop/antsbet/main'
++include { PREPROC_N4               } from '../../../modules/nf-neuro/preproc/n4/main'
++// SUBWORKFLOWS
++include { ANATOMICAL_SEGMENTATION  } from '../anatomical_segmentation/main'
+
+workflow PREPROC_ANAT {
+    ...
+```
+
+## Chaining up the components with channels
+
+The job of the subworkflow is to define the flow of data between the components it includes. In the current case, you
+want to execute the following linear processing flow :
+
+<Steps>
+1. Denoise the anatomical image with `DENOISING_NLMEANS`.
+2. Do a quick first brain extraction with `BETCROP_SYNTHBET`.
+3. Run intensity normalization with `PREPROC_N4`.
+4. Compute a robust brain mask with `BETCROP_ANTSBET`.
+5. Segment brain tissues with `ANATOMICAL_SEGMENTATION`.
+</Steps>
+
+Instead of defining input channels now, start by describing the chaining of channels in the `main`. This will help
+detect which data is needed in input and what should be defined in a configuration. Take into account that you have
+access to an anatomical images channel, containing **tuple** elements of the shape :
+
+```groovy
+[ [id: string], path(anat_image) ]
+```
+
+Add the channel to the inputs, then create an input channel for the nl-means module :
+
+```diff lang="groovy" {"1": 3} {"2": 6-7} {"3": 9-10}
+workflow PREPROC_ANAT {
+take:
++    ch_anatomical  // Structure : [ [id: string], path(anat_image) ]
+main:
+    ch_versions = Channel.empty()
+
++    ch_denoising_nlmeans = ch_anatomical
++        .map{ meta, image -> [meta, image, [], []] }
+
++    DENOISING_NLMEANS( ch_denoising_nlmeans )
++    ch_versions = ch_versions.mix(DENOISING_NLMEANS.out.versions)
+}
+```
+
+:::tip[What is happening here ?]
+<Steps>
+1. Each line in the `take` section define a distinct input channel users employ to pass data into your subworkflow.
+2. The `DENOISING_NLMEANS` module optionally takes two masks in addition to an image to denoise. The `map` operator
+   add two empty arrays at the end of each elements of `ch_anatomical`, acting as placeholders that will indicate to
+   the modules there are no masks provided.
+3. The data prepared at the step above is given to the `DENOISING_NLMEANS` module. Then, the dependencies versions are
+   collected in a channel for later use.
+</Steps>
+:::
+
+:::note
+In **nextflow**, you will often see a method or function called on a **closure** `{}` instead of on an argument list
+in between parenthesis `()`. This is a special behavior for some of them, like the `.map` method of a channel, that
+applies the closure given as last argument to all its elements.
+:::
+:::tip
+All closures in **nextflow** have a default input argument called `it`. In the example above, we explicitly declared
+arguments to represent the content of `ch_anatomical`, `meta` and `image`, because it improves readability. However,
+we could also have written the following for speed and conciseness :
+```groovy
+.map{ it + [[], []] } // Here, it = [meta, image]
+```
+:::
+
+Next, chain up the output `image` resuting from the `DENOISING_NLMEANS` module into `BETCROP_SYNTHBET`, preparing its
+input channel like above :
+
+```diff lang="groovy" {"1": 13-14} {"2": 16-17}
+workflow PREPROC_ANAT {
+take:
+    ch_anatomical   // Structure : [ [id: string], path(anat_image) ]
+main:
+    ch_versions = Channel.empty()
+
+    ch_denoising_nlmeans = ch_anatomical
+        .map{ meta, image -> [meta, image, [], []] }
+
+    DENOISING_NLMEANS( ch_denoising_nlmeans )
+    ch_versions = ch_versions.mix(DENOISING_NLMEANS.out.versions)
+
++    ch_betcrop_synthbet = DENOISING_NLMEANS.out.image
++        .map{ meta, image -> [meta, image, []] }
+
++    BETCROP_SYNTHBET( ch_betcrop_synthbet )
++    ch_versions = ch_versions.mix(BETCROP_SYNTHBET.out.versions)
+}
+```
+
+:::tip[What is happening here ?]
+<Steps>
+1. To prepare the input for synthbet, we access the output of `DENOISING_NLMEANS`, using its output map and the
+   name of the channel of interest (here `image`, refer to the [API documentation](/nf-neuro/api/modules/denoising/nlmeans)
+   for more).
+2. Just as previously, the module is called on the prepared inputs and the versions collected.
+</Steps>
+:::
+
+To call the next process, `PREPROC_N4`, you have to associate the outputs of two modules together : `DENOISING_NLMEANS`
+and `BETCROP_SYNTHBET`. This is done by the [join](https://www.nextflow.io/docs/latest/reference/operator.html#join)
+operator. It uses the first item in the `tuple` of each element, the `meta` map, to associate them together and emit a
+single channel with the result :
+
+```diff lang="groovy" {"1": 10-12} {"2": 14-15}
+    DENOISING_NLMEANS( ch_denoising_nlmeans )
+    ch_versions = ch_versions.mix(DENOISING_NLMEANS.out.versions)
+
+    ch_betcrop_synthbet = DENOISING_NLMEANS.out.image
+        .map{ meta, image -> [meta, image, []] }
+
+    BETCROP_SYNTHBET( ch_betcrop_synthbet )
+    ch_versions = ch_versions.mix(BETCROP_SYNTHBET.out.versions)
+
++    ch_preproc_n4 = DENOISING_NLMEANS.out.image
++        .map{ meta, image -> [meta, image, []] }
++        .join(BETCROP_SYNTHBET.out.brain_mask)
+
++    PREPROC_N4( ch_preproc_n4 )
++    ch_versions = ch_versions.mix(PREPROC_N4.out.versions)
+}
+```
+
+The next module to chain is `BETCROP_ANTSBET`. It requires two special files to execute : an anatomical reference and
+a brain probability image from a template. It could be good to define one here, but would be restrictive since the users
+could want to use your subworkflow for other kind of images than the ones that fits your template (other species, ages
+or for pathologies). Here, you'll instead define another `input` for it :
+
+```diff lang="groovy"
+workflow PREPROC_ANAT {
+take:
+    ch_anatomical     // Structure : [ [id: string]  , path(anat_image)  ]
++    ch_template       // Structure : [ path(anat_ref), path(brain_proba) ]
+main:
+    ...
+
+    ch_preproc_n4 = DENOISING_NLMEANS.out.image
+        .map{ meta, image -> [meta, image, []] }
+        .join(BETCROP_SYNTHBET.out.brain_mask)
+
+    PREPROC_N4( ch_preproc_n4 )
+    ch_versions = ch_versions.mix(PREPROC_N4.out.versions)
+
++    ch_betcrop_antsbet = PREPROC_N4.out.image
++        .combine(ch_template)
+
++    BETCROP_ANTSBET( ch_betcrop_antsbet )
++    ch_versions = ch_versions.mix(BETCROP_ANTSBET.out.versions)
+}
+```
+
+:::tip[What is happening here ?]
+The main difference here is the use of the [combine](https://www.nextflow.io/docs/latest/reference/operator.html#combine)
+operator. In this case, it acts as a **cartesian products** and appends the content of `ch_template` to each elements
+contained in the `PREPROC_N4.out.image` channel.
+:::
+
+The last step to implement is the **segmentation**. This one is particular, since it is a call to another `subworkflow`,
+not to a module. Contrary to the other calls, it has **more than one input channel** (not that modules are exempt from
+it). However, for the case of this subworkflow, we'll only supply the image channel, all others will be given **empty
+channels** :
+
+```diff lang="groovy"
+    PREPROC_N4( ch_preproc_n4 )
+    ch_versions = ch_versions.mix(PREPROC_N4.out.versions)
+
+    ch_betcrop_antsbet = PREPROC_N4.out.image
+        .combine(ch_template)
+
+    BETCROP_ANTSBET( ch_betcrop_antsbet )
+    ch_versions = ch_versions.mix(BETCROP_ANTSBET.out.versions)
+
++    ANATOMICAL_SEGMENTATION(
++        PREPROC_N4.out.image,
++        Channel.empty(),
++        Channel.empty(),
++        Channel.empty()
++    )
+```
+
+## Adding outputs
+
+For users of your subworkflow to be able to access the results of the execution of the included components, you have to
+output them in the `emit` section. AS a rule of thumb, **each output channel should emit a single item per element**.
+They should also **always be associated to a** `meta` **map**, if the item is scoped to a subject or sample.
+
+:::caution
+This does not **publish** the files to a results output directory, which is done by a `publishDir` directive and is the
+matter of a future section.
+:::
+
+The most boilded down output section only outputs the **end results** of the subworkflow. For the current case, it means :
+
+<Steps>
+1. the image outputed by `PREPROC_N4`, which has also been denoised by NL-Means.
+2. The final brain mask computed by `BETCROP_ANTSBET`.
+3. The segmentation masks and maps generated by `ANATOMICAL_SEGMENTATION`.
+</Steps>
+
+```diff lang="groovy"
+    ANATOMICAL_SEGMENTATION(
+        PREPROC_N4.out.image,
+        Channel.empty(),
+        Channel.empty(),
+        Channel.empty()
+    )
++emit:
++    ch_anatomical = PREPROC_N4.out.image               // channel: [ [id: string]      , path(image)      ]
++    ch_brain_mask = BETCROP_ANTSBET.out.mask           // channel: [ [id: string]      , path(brain_mask) ]
+
++    wm_mask = ANATOMICAL_SEGMENTATION.out.wm_mask      // channel: [ [id: string]      , path(wm_mask)    ]
++    gm_mask = ANATOMICAL_SEGMENTATION.out.gm_mask      // channel: [ [id: string]      , path(gm_mask)    ]
++    csf_mask = ANATOMICAL_SEGMENTATION.out.csf_mask    // channel: [ [id: string]      , path(csf_mask)   ]
+
++    wm_map = ANATOMICAL_SEGMENTATION.out.wm_map        // channel: [ [id: string]      , path(wm_map)     ]
++    gm_map = ANATOMICAL_SEGMENTATION.out.gm_map        // channel: [ [id: string]      , path(gm_map)     ]
++    csf_map = ANATOMICAL_SEGMENTATION.out.csf_map      // channel: [ [id: string]      , path(csf_map)    ]
++    versions = ch_versions                             // channel: [ path(versions.yml)                   ]
+```
+
+:::note
+It is a good practice to also include **intermediary** outputs in the `emit` section. This allows user to shortcut
+the subworkflow and execute custom algorithms. It makes it easier to re-use, without having the need to modify and
+re-submit the subworkflow, with potential errors.
+:::
+
+With that, you have implemented a basic form of the **anatomical segmentation** subworkflow. In the next sections of the
+tutorial, you will **add optional inputs**, **compose the configuration** and **link it** to the included components,
+**document** the different sections and **create test cases**. For now, here is the full implementation :
+
+```groovy
+// MODULES
+include { DENOISING_NLMEANS        } from '../../../modules/nf-neuro/denoising/nlmeans/main'
+include { BETCROP_SYNTHBET         } from '../../../modules/nf-neuro/betcrop/synthbet/main'
+include { BETCROP_ANTSBET          } from '../../../modules/nf-neuro/betcrop/antsbet/main'
+include { PREPROC_N4               } from '../../../modules/nf-neuro/preproc/n4/main'
+// SUBWORKFLOWS
+include { ANATOMICAL_SEGMENTATION  } from '../anatomical_segmentation/main'
+
+workflow PREPROC_ANAT {
+take:
+    ch_anatomical     // Structure : [ [id: string]  , path(anat_image)  ]
+    ch_template       // Structure : [ path(anat_ref), path(brain_proba) ]
+main:
+    ch_versions = Channel.empty()
+
+    ch_denoising_nlmeans = ch_anatomical
+        .map{ meta, image -> [meta, image, [], []] }
+
+    DENOISING_NLMEANS( ch_denoising_nlmeans )
+    ch_versions = ch_versions.mix(DENOISING_NLMEANS.out.versions)
+
+    ch_betcrop_synthbet = DENOISING_NLMEANS.out.image
+        .map{ meta, image -> [meta, image, []] }
+
+    BETCROP_SYNTHBET( ch_betcrop_synthbet )
+    ch_versions = ch_versions.mix(BETCROP_SYNTHBET.out.versions)
+
+    ch_preproc_n4 = DENOISING_NLMEANS.out.image
+        .map{ meta, image -> [meta, image, []] }
+        .join(BETCROP_SYNTHBET.out.brain_mask)
+
+    PREPROC_N4( ch_preproc_n4 )
+    ch_versions = ch_versions.mix(PREPROC_N4.out.versions)
+
+    ch_betcrop_antsbet = PREPROC_N4.out.image
+        .combine(ch_template)
+
+    BETCROP_ANTSBET( ch_betcrop_antsbet )
+    ch_versions = ch_versions.mix(BETCROP_ANTSBET.out.versions)
+
+    ANATOMICAL_SEGMENTATION(
+        PREPROC_N4.out.image,
+        Channel.empty(),
+        Channel.empty(),
+        Channel.empty()
+    )
+emit:
+    ch_anatomical = PREPROC_N4.out.image               // channel: [ [id: string]      , path(image)      ]
+    ch_brain_mask = BETCROP_ANTSBET.out.mask           // channel: [ [id: string]      , path(brain_mask) ]
+
+    wm_mask = ANATOMICAL_SEGMENTATION.out.wm_mask      // channel: [ [id: string]      , path(wm_mask)    ]
+    gm_mask = ANATOMICAL_SEGMENTATION.out.gm_mask      // channel: [ [id: string]      , path(gm_mask)    ]
+    csf_mask = ANATOMICAL_SEGMENTATION.out.csf_mask    // channel: [ [id: string]      , path(csf_mask)   ]
+
+    wm_map = ANATOMICAL_SEGMENTATION.out.wm_map        // channel: [ [id: string]      , path(wm_map)     ]
+    gm_map = ANATOMICAL_SEGMENTATION.out.gm_map        // channel: [ [id: string]      , path(gm_map)     ]
+    csf_map = ANATOMICAL_SEGMENTATION.out.csf_map      // channel: [ [id: string]      , path(csf_map)    ]
+    versions = ch_versions                             // channel: [ path(versions.yml)                   ]
+}
+```

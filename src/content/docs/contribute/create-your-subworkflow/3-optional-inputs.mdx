@@ -1,0 +1,191 @@
+---
+title: Optional inputs
+description: Improve the subworkflow i/o capabilities
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+In the previous section, you only added inputs if you needed them to supply a **required input** for an included
+component. Now, you'll define new inputs, optional ones, that users can use to modify the behavior of the subworkflow.
+
+## Binding a component's optional input
+
+A good first optional input to define for the subworkflow is an **input brain mask**. For now, we compute this mask two
+times : once with `BETCROP_SYNTHBET` to **control intensity normalization** by `PREPROC_N4`, then a second time with
+`BETCROP_ANTSBET` to obtain a **robust mask based on a population template**. A user might have a different technique
+of preference to compute the brain mask, or he might want to do it by hand. To allow him to input it, add the
+`ch_brain_mask` input in the `take` section of the subworkflow :
+
+```diff lang="groovy"
+workflow PREPROC_ANAT {
+take:
+    ch_anatomical     // Structure : [ [id: string]  , path(anat_image)  ]
+    ch_template       // Structure : [ path(anat_ref), path(brain_proba) ]
++    ch_brain_mask     // Structure : [ [id: string]  , path(brain_mask)  ], optional
+main:
+    ...
+```
+
+Now, you can start using the mask to improve the behavior of included components, but you have to be careful about it,
+since the mask is **optional**. To associate it with another channel, use `join` with the special argument `remainder: true`,
+which keeps **incomplete elements** resulting from the operation :
+
+```diff lang="groovy" {"1": 10} {"2": 11}
+workflow PREPROC_ANAT {
+take:
+    ch_anatomical     // Structure : [ [id: string]  , path(anat_image)  ]
+    ch_template       // Structure : [ path(anat_ref), path(brain_proba) ]
+    ch_brain_mask     // Structure : [ [id: string]  , path(brain_mask)  ], optional
+main:
+    ch_versions = Channel.empty()
+
+    ch_denoising_nlmeans = ch_anatomical
++        .join(ch_brain_mask, remainder: true)
++        .map{ meta, image, mask -> [meta, image, [], mask ?: []] }
+
+    DENOISING_NLMEANS( ch_denoising_nlmeans )
+    ch_versions = ch_versions.mix(DENOISING_NLMEANS.out.versions)
+    ...
+```
+
+:::tip[What is happening here ?]
+<Steps>
+1. `ch_anatomical` and `ch_brain_mask` are joined together, using `remainder: true`. Element in `ch_anatomical` are
+   associated with ones in `ch_brain_mask`, if their `meta` field is identical (`[meta, image, mask]`). If no
+   association is found in `ch_brain_mask`, the element gets appended with the value `null` ( `[meta, image, null]`).
+2. Using the `map` operator, each element is verified. If the mask value is `null`, it is replaced with the
+   **empty array, the nextflow default value for path**. In addition, some organisation of the element's content is
+   performed so the mask is used for noise estimation only.
+</Steps>
+:::
+
+## Skipping a component execution given an optional input
+
+If a brain mask is given in input, then brain masking modules included in the subworflow should not be executed. This is
+not as simple as doing a conditional test on `ch_brain_mask`, it will return `true` even if empty. Instead, you need to
+**filter** the content of a component's input you wish to skip, **to empty it of all elements for which a mask exists** :
+
+```diff lang="groovy" {"1": 10,11} {"2": 12}
+workflow PREPROC_ANAT {
+take:
+    ch_anatomical     // Structure : [ [id: string]  , path(anat_image)  ]
+    ch_template       // Structure : [ path(anat_ref), path(brain_proba) ]
+    ch_brain_mask     // Structure : [ [id: string]  , path(brain_mask)  ], optional
+main:
+    ...
+
+    ch_betcrop_synthbet = DENOISING_NLMEANS.out.image
++        .join(ch_brain_mask, remainder: true)
++        .filter{ meta, image, mask -> !mask }
++        .map{ meta, image, mask -> [meta, image, []] }
+
+    BETCROP_SYNTHBET( ch_betcrop_synthbet )
+    ch_versions = ch_versions.mix(BETCROP_SYNTHBET.out.versions)
+```
+
+:::tip[What is happening here ?]
+<Steps>
+1. As previously, we join using `remainder: true`. Using `filter`, we remove all elements which are associated to a
+   mask provided through `ch_brain_mask`.
+2. We use `map` again to organize the elements, this time additionally ditching the `mask` entry.
+</Steps>
+:::
+
+Repeat the same procedure for `BETCROP_ANTSBET` :
+
+```diff lang="groovy" {"1": 10,11} {"2": 12}
+workflow PREPROC_ANAT {
+take:
+    ch_anatomical     // Structure : [ [id: string]  , path(anat_image)  ]
+    ch_template       // Structure : [ path(anat_ref), path(brain_proba) ]
+    ch_brain_mask     // Structure : [ [id: string]  , path(brain_mask)  ], optional
+main:
+    ...
+
+    ch_betcrop_antsbet = PREPROC_N4.out.image
++        .join(ch_brain_mask, remainder: true)
++        .filter{ meta, image, mask -> !mask }
++        .map{ meta, image, mask -> [meta, image] }
+        .combine(ch_template)
+
+    BETCROP_ANTSBET( ch_betcrop_antsbet )
+    ch_versions = ch_versions.mix(BETCROP_ANTSBET.out.versions)
+```
+
+Below is a full example will all optional inputs defined :
+
+```groovy
+// MODULES
+include { DENOISING_NLMEANS        } from '../../../modules/nf-neuro/denoising/nlmeans/main'
+include { BETCROP_SYNTHBET         } from '../../../modules/nf-neuro/betcrop/synthbet/main'
+include { BETCROP_ANTSBET          } from '../../../modules/nf-neuro/betcrop/antsbet/main'
+include { PREPROC_N4               } from '../../../modules/nf-neuro/preproc/n4/main'
+// SUBWORKFLOWS
+include { ANATOMICAL_SEGMENTATION  } from '../anatomical_segmentation/main'
+
+workflow PREPROC_ANAT {
+take:
+    ch_anatomical       // Structure : [ [id: string]  , path(anat_image)                ]
+    ch_template         // Structure : [ path(anat_ref), path(brain_proba)               ]
+    ch_brain_mask       // Structure : [ [id: string]  , path(brain_mask)                ], optional
+    ch_synthbet_weights // Structure : [ [id: string]  , path(weights)                   ], optional
+    ch_n4_reference     // Structure : [ [id: string]  , path(reference)                 ], optional
+    ch_freesurferseg    // Structure : [ [id: string]  , path(aparc+aseg) , path(wmparc) ], optional
+    ch_lesion           // Structure : [ [id: string]  , path(lesion)                    ], optional
+    ch_fs_license       // Structure : [ [id: string]  , path(license)                   ], optional
+main:
+    ch_versions = Channel.empty()
+
+    ch_denoising_nlmeans = ch_anatomical
+        .join(ch_brain_mask, remainder: true)
+        .map{ meta, image, mask -> [meta, image, [], mask ?: []] }
+
+    DENOISING_NLMEANS( ch_denoising_nlmeans )
+    ch_versions = ch_versions.mix(DENOISING_NLMEANS.out.versions)
+
+    ch_betcrop_synthbet = DENOISING_NLMEANS.out.image
+        .join(ch_brain_mask, remainder: true)
+        .filter{ meta, image, mask -> !mask }
+        .join(ch_synthbet_weights, remainder: true)
+        .map{ meta, image, mask, weights -> [meta, image, weights ?: []] }
+
+    BETCROP_SYNTHBET( ch_betcrop_synthbet )
+    ch_versions = ch_versions.mix(BETCROP_SYNTHBET.out.versions)
+
+    ch_preproc_n4 = DENOISING_NLMEANS.out.image
+        .join(ch_n4_reference, remainder: true)
+        .map{ meta, image, reference -> [meta, image, reference ?: []] }
+        .join(BETCROP_SYNTHBET.out.brain_mask)
+
+    PREPROC_N4( ch_preproc_n4 )
+    ch_versions = ch_versions.mix(PREPROC_N4.out.versions)
+
+    ch_betcrop_antsbet = PREPROC_N4.out.image
+        .join(ch_brain_mask, remainder: true)
+        .filter{ meta, image, mask -> !mask }
+        .map{ meta, image, mask -> [meta, image] }
+        .combine(ch_template)
+
+    BETCROP_ANTSBET( ch_betcrop_antsbet )
+    ch_versions = ch_versions.mix(BETCROP_ANTSBET.out.versions)
+
+    ANATOMICAL_SEGMENTATION(
+        PREPROC_N4.out.image,
+        ch_freesurferseg,
+        ch_lesion,
+        ch_license
+    )
+emit:
+    ch_anatomical = PREPROC_N4.out.image               // channel: [ [id: string]      , path(image)      ]
+    ch_brain_mask = BETCROP_ANTSBET.out.mask           // channel: [ [id: string]      , path(brain_mask) ]
+
+    wm_mask = ANATOMICAL_SEGMENTATION.out.wm_mask      // channel: [ [id: string]      , path(wm_mask)    ]
+    gm_mask = ANATOMICAL_SEGMENTATION.out.gm_mask      // channel: [ [id: string]      , path(gm_mask)    ]
+    csf_mask = ANATOMICAL_SEGMENTATION.out.csf_mask    // channel: [ [id: string]      , path(csf_mask)   ]
+
+    wm_map = ANATOMICAL_SEGMENTATION.out.wm_map        // channel: [ [id: string]      , path(wm_map)     ]
+    gm_map = ANATOMICAL_SEGMENTATION.out.gm_map        // channel: [ [id: string]      , path(gm_map)     ]
+    csf_map = ANATOMICAL_SEGMENTATION.out.csf_map      // channel: [ [id: string]      , path(csf_map)    ]
+    versions = ch_versions                             // channel: [ path(versions.yml)                   ]
+}
+```
