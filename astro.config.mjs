@@ -104,10 +104,11 @@ export default defineConfig({
 							items: [
 								'contribute/create-your-subworkflow/1-template',
 								'contribute/create-your-subworkflow/2-main',
-								'contribute/create-your-subworkflow/3-configuration',
-								'contribute/create-your-subworkflow/4-metadata',
-								'contribute/create-your-subworkflow/5-tests',
-								'contribute/create-your-subworkflow/6-submit',
+								'contribute/create-your-subworkflow/3-optional-inputs',
+								'contribute/create-your-subworkflow/4-configuration',
+								'contribute/create-your-subworkflow/5-metadata',
+								'contribute/create-your-subworkflow/6-tests',
+								'contribute/create-your-subworkflow/7-submit',
 							]
 						},
 						{ label: 'Continuous Integration',
