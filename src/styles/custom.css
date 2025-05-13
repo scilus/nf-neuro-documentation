@@ -64,4 +64,9 @@ img {
 	padding-left: 2rem;
 }
 
+.tablist-wrapper > ul li {
+	list-style-type: inherit;
+	margin-left: inherit;
+}
+
 .expressive-code .copy .no-copy button  { display: none; }
