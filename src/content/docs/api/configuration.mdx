@@ -1,0 +1,55 @@
+---
+title: Configuration
+description: How to configure nf-neuro components at runtime.
+sidebar:
+    order: 1
+---
+
+Modules and subworkflows expose configuration endpoints that can be set at runtime. Look for the `arguments` section in
+the API documentation. Refer to the correct section below for information on the configuration procedure respective to
+each component.
+
+## Module Configuration
+
+Modules are configured through the `ext` parameter mapping, exclusive to each of them. Configuration **must be done
+inside** `nextflow.config` **files**, it cannot be done in `.nf` files. The configuration endpoint is accessible in the
+`process` scope :
+
+```groovy
+process {
+    ext.parameter_one = "value"
+}
+```
+
+To restrict the configuration to a specific module, say `MODULE_1`, use the `withName` process selector :
+
+```groovy
+process {
+    withName: "MODULE_1" {
+        ext.parameter_one = "value"
+    }
+}
+```
+
+Refer to the **arguments** section of modules in the [nf-neuro API documentation](/nf-neuro/api/categories) for
+available configuration endpoints and to the nextflow documentation for more information on
+[configuration](https://www.nextflow.io/docs/latest/config.html) and
+[process selectors](https://www.nextflow.io/docs/latest/config.html#process-selectors).
+
+:::caution
+By default, when configurations are provided by nf-neuro subworkflows, they use the **lowest priority selector available**.
+To ensure your selector targets the right module, in the right subworkflow, use its **fully qualified name**. For example,
+`MODULE_1` inside of `SUBWORKFLOW_2` has the fully qualified name : `SUBWORKFLOW_2::MODULE_1`.
+:::
+
+## Subworkflow configuration
+
+Subworkflows expose `params` configuration endpoints directly. You can define them either in the `nextflow.config` or in
+the `.nf` file that includes it.
+
+```groovy
+
+params {
+    subworkflow_parameter = "value"
+}
+```

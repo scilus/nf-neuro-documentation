@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightDocSearch from '@astrojs/starlight-docsearch';
 import Icons from 'unplugin-icons/vite';
 import tailwindcss from '@tailwindcss/vite';
 
@@ -12,6 +13,13 @@ export default defineConfig({
     integrations: [
 		starlight({
 			title: 'nf-neuro',
+			plugins: [
+				starlightDocSearch({
+					appId: 'GKBR5BGCDX',
+					apiKey: '2f0672163146bcd35654de2527809b92',
+					indexName: 'scilusio'
+				})
+			],
 			logo: {
 				light: './src/assets/nf-neuro_logo_light.svg',
 				dark: './src/assets/nf-neuro_logo_dark.svg',
@@ -41,6 +49,11 @@ export default defineConfig({
 			sidebar: [
 				{ label: 'Welcome', slug: 'welcome' },
 				{
+					label: 'API Documentation',
+					autogenerate: { directory: 'api' },
+					collapsed: true
+				},
+				{
 					label: 'Create your pipeline',
 					items: [
 						{ label: 'Setup your computer', slug: 'pipeline/1-setup' },
@@ -52,10 +65,10 @@ export default defineConfig({
 								{ label: 'Part 4 : Install modules', slug: 'pipeline/5-tutorial_step_4' },
 								{ label: 'Part 5 : Install subworkflows', slug: 'pipeline/6-tutorial_step_5' },
 								{ label: 'Part 6 : Create a module', slug: 'pipeline/7-tutorial_step_6' },
-								{ label: 'Part 7 : Create a subworkflow', slug: 'pipeline/8-tutorial_step_7' },
+								{ label: 'Part 7 : Create a subworkflow', slug: 'pipeline/8-tutorial_step_7' }
 							]
-						},
-					],
+						}
+					]
 				},
 				{
 					label: 'How-to',
@@ -64,25 +77,27 @@ export default defineConfig({
 							label: "Nextflow",
 							items: [
 								{ label: 'Top-5 Operators', slug: 'how-to/nextflow/1-top-5-operators' },
-								{ label: 'Custom Subworkflows', slug: 'how-to/nextflow/2-custom-subworkflows' },
-							]
+								{ label: 'Custom Subworkflows', slug: 'how-to/nextflow/2-custom-subworkflows' }
+							],
+							collapsed: true
 						},
 						{
 							label: "VSCode",
 							items: [
 								{ label: 'Data in devcontainers', slug: 'how-to/vscode/1-devcontainer-manage-data' },
 								{ label: 'Nextflow support', slug: 'how-to/vscode/2-nextflow-language-support' }
-							]
+							],
+							collapsed: true
 						}
-					],
+					]
 				},
 				{
 					label: 'Advanced Tutorials',
 					items: [
 						{ label: 'BIDS Input', slug: 'advanced-tutorials/1-bidsinput' },
 						{ label: 'BIDS Output', slug: 'advanced-tutorials/2-bidsoutput' },
-						{ label: 'MultiQC', slug: 'advanced-tutorials/3-multiqc' },
-					],
+						{ label: 'MultiQC', slug: 'advanced-tutorials/3-multiqc' }
+					]
 				},
 				{
 					label: 'Contribute to nf-neuro',
@@ -97,7 +112,7 @@ export default defineConfig({
 								'contribute/create-your-module/5-metadata',
 								'contribute/create-your-module/6-tests',
 								'contribute/create-your-module/7-quality-control',
-								'contribute/create-your-module/8-submit',
+								'contribute/create-your-module/8-submit'
 							]
 						},
 						{ label: 'Create your subworkflow',
@@ -108,24 +123,26 @@ export default defineConfig({
 								'contribute/create-your-subworkflow/4-configuration',
 								'contribute/create-your-subworkflow/5-metadata',
 								'contribute/create-your-subworkflow/6-tests',
-								'contribute/create-your-subworkflow/7-submit',
+								'contribute/create-your-subworkflow/7-submit'
 							]
 						},
 						{ label: 'Continuous Integration',
 							items: [
 								'contribute/continuous-integration/1-test-data',
 								'contribute/continuous-integration/2-ci'
-							]
+							],
+							collapsed: true
 						}
 					]
-				},
-				{
-					label: 'API Documentation',
-					autogenerate: { directory: 'api' },
-					collapsed: true,
-				},
-			],
-    	})
+				}
+			]
+    	}),
+		matomo({
+            enabled: true,
+            host: 'https://scilus-nf-neuro.matomo.cloud/',
+            siteId: 1,
+            disableCookies: true,
+        })
 	],
     vite: {
         plugins: [
