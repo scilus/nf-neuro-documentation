@@ -2,3 +2,273 @@
 title: Test definitions
 description: Add tests to ensure reproducible results.
 ---
+
+import { Steps } from '@astrojs/starlight/components';
+
+## Create test cases
+
+Adding tests to your subworkflow is a critical step to ensure it works correctly and continues to do so as the codebase evolves. The `nf-core` command automatically generates the test infrastructure when creating a subworkflow. Inside the `tests` directory of your subworkflow, you'll find `main.nf.test`, which contains inputs, test cases, and assertion instructions for [nf-test](https://www.nf-test.com), the Nextflow test framework. Open it and follow through the rest of this section.
+
+:::note
+In the `main.nf.test` file, define multiple test cases to cover most use-cases of your subworkflow and catch potential bugs. Be thorough but practical with your test coverage.
+:::
+
+### Setup before tests
+
+Setup sections are used to prepare data before test cases are run, to download data, prepare algorithms and generate awaited return values. In **nf-neuro**, test datasets are
+provided via the [LOAD_TEST_DATA](/nf-neuro/api/subworkflows/load_test_data) subworkflow (refer to [this section](/nf-neuro/contribute/create-your-module/7-test-data) to learn how to find packages). Once you've selected the archives and files needed, add a `setup` section before the test section:
+
+```groovy {"1": 2,3} {"2": 4-9}
+setup {
+    run("LOAD_TEST_DATA", alias: "LOAD_DATA") {
+        script "../../../../subworkflows/nf-neuro/load_test_data/main.nf"
+        workflow {
+            """
+            input[0] = Channel.from( [ "<archive>" ] )
+            input[1] = "test.load-test-data"
+            """
+        }
+    }
+}
+```
+
+:::note
+When using the `LOAD_TEST_DATA` subworkflow, or any other component in the `setup` section, make sure to **tag** it in
+the `nextflow_workflow` block accordingly:
+
+```groovy
+tag "subworkflows"
+tag "subworkflows/load_test_data"
+```
+:::
+
+Replace the `<archive>` with the name of the one you need and you'll be able to access
+the archives within your test suite!
+
+:::tip[What is happening here?]
+<Steps>
+1. The `run` instruction is used to call the `LOAD_TEST_DATA` subworkflow, under the alias `LOAD_DATA`. The alias could
+   be useful if multiple calls to the same subworkflow are needed. The `script` parameter inside the `run` block
+   specifies the path to the `LOAD_TEST_DATA` subworkflow file.
+2. The `workflow` block contains definitions for the input channels of the subworkflow. The `input[0]` channel
+   corresponds to t**he archives** to download for the test, while `input[1]` is a **test identifier**.
+</Steps>
+:::
+
+:::tip[Local setup for a test case]
+The setup section can either be used **globally**, before the test cases definitions, or inside a specific test case,
+where they will override the global setup.
+:::
+
+### Define test cases
+
+Test cases for subworkflows are defined each in their own test block:
+
+```groovy
+test("example - test") {
+    when{
+        workflow {
+            ...
+        }
+    }
+    then{
+        ...
+    }
+}
+```
+
+A block minimally contains a `when` (what to test) and a `then` (what to assert). Inside of them, **no need to define the
+name of the subworkflow being tested, or import it**. `nf-test` will take care of that for you when the test will be run,
+through the `workflow` **placeholder** inside the `when` block.
+
+### Define test inputs
+
+The only job of the `when` block is to define the inputs to supply to your subworkflow. You do so by adding a list of
+inputs inside the `workflow` block, as follows:
+
+```groovy {"1": 5} {"2": 7-9} {"3": 12-14}
+test("example - test") {
+    when {
+        workflow {
+            """
+            input[0] = LOAD_DATA.out.test_data_directory.map{
+                test_data_directory -> [
+                    [ id:'test1', single_end:false ], // meta map   // -> meta
+                    file("\${test_data_directory}/image.nii.gz"),   // -> image file
+                    []                                              // -> an optional input, not provided
+                ],
+                [
+                    [ id:'test2', single_end:false ], // meta map   // -> meta
+                    file("\${test_data_directory}/image.nii.gz"),   // -> image file
+                    file("\${test_data_directory}/mask.nii.gz")     // -> an optional input, provided this time
+                ]
+            }
+            """
+        }
+    }
+    then {
+        ...
+    }
+}
+```
+
+::tip[What is happening here?]
+<Steps>
+1. The first input channel of the subworkflow is created from the output of the `LOAD_TEST_DATA` subworkflow, called in
+   the setup `section`, and accessed through its alias `LOAD_DATA`.
+2. A first dataset to input into the subworkflow is created from the content downloaded by the subworkflow. The
+   subworkflow has an optional path in input, which is not provided using the empty list `[]`.
+3. A second dataset is created, this time with a mask as input.
+</Steps>
+In this example, for this single test case, the subworkflow would run separately on two inputs, `2` and `3`.
+:::
+
+### Define assertions
+
+The `then` block is where you define the assertions to check the outputs of your subworkflow. The `workflow` placeholder
+contains the outputs of the subworkflow in its `out` attribute, as well as boolean indicators for **success** and
+**failure**. Each assertion is prefixed with the keyword `assert`, and all are enclosed in an `assertAll` block:
+
+```groovy
+then {
+    assertAll(
+        { assert workflow.success },
+        { ... }
+    )
+}
+```
+
+Each files produced by the subworkflow while tested must go through a **reproducibilty** check, which is provided by
+nf-test using the `snapshot` function:
+
+```groovy
+then {
+    assertAll(
+        { assert workflow.success },
+        { assert snapshot(workflow.out).match() }
+    )
+}
+```
+
+:::tip[Nifti images are special!]
+`Nifti` images are hardly reproducible as is. This is due in part to uncontrolled header fields, which have no impact on
+the data itself. In the case of **floating point images**, or data obtained through **floating point operations**, the
+`Nifti` image data itself might be unreproducible, up to few decimals.
+
+Both cases are handled by the `Nifti_md5sum` function, which strips unimpactful and unreproducible header fields, and
+can truncate the data to a given number of decimals:
+
+```groovy {"1": 4}
+then {
+    assertAll(
+        { assert workflow.success },
+        { assert snapshot(
+            Nifti_md5sum(workflow.out.image_processed.get(0).get(1), 3),
+            ...
+        ).match() }
+    )
+}
+```
+
+<Steps>
+1. To call the `Nifti_md5sum` function, you need to unpack the **file** from the content of the subworkflow's output.
+   `nf-test` is kind enough to give it as a `list`, so you can use the `get` method to access it like above, or the `[]`
+   operator. You'll often use the combination `get(i).get(1)` on an output: associated to the `i-th` test dataset given
+   in input. The `.get(1)` gives access to the processed dataset, placed after its `meta` dictionary, as most
+   subworkflows define their outputs.
+</Steps>
+
+**Note however that this** `Nifti_md5sum` **in its current implementation might prove unsatisfactory in some cases and
+that we are working on a more robust solution. If you have propositions on the matter, please reach out to us!**
+:::
+
+## Configure the subworkflow
+
+To configure parameters of the subworkflow, use the `config` parameter, either globally or at the scope of the test case,
+to import a `nextflow.config` file.
+
+## Generate tests snapshots
+
+:::caution
+Verify you are located at the root of `nf-neuro` (not inside subworkflows) before running commands!
+:::
+
+Once you have correctly setup your test cases and made sure the data is available, the test subworkflow has to be
+pre-tested so output files that gets generated are snapshotted correctly before being pushed to `nf-neuro`.
+
+To do so, run:
+
+```bash
+nf-core subworkflows test -u <subworkflow_name>
+```
+
+All the test cases you defined will be run, watch out for errors! Once everything runs smoothly, look at the snapshot
+file produced at `tests/main.nf.test.snap` in your subworkflow's directory and validate that **ALL** outputs produced by
+test cases are caught. Their **md5sum** is critical to ensure future executions of your test produce valid outputs.
+
+## A complete example for a subworkflow
+
+Here's an example of a complete test for a hypothetical subworkflow that preprocesses imaging data:
+
+```groovy
+nextflow_workflow {
+
+    name "Test Workflow PREPROCESSING"
+    script "../main.nf"
+    workflow "PREPROCESSING"
+    config "./nextflow.config"
+
+    tag "subworkflows"
+    tag "subworkflows/preprocessing"
+    tag "subworkflows/load_test_data"
+
+    setup {
+        run("LOAD_TEST_DATA", alias: "LOAD_DATA") {
+            script "../../../../subworkflows/nf-neuro/load_test_data/main.nf"
+            workflow {
+                """
+                input[0] = Channel.from( [ "raw_b0.zip", "raw_segmentation.zip" ] )
+                input[1] = "test.load-test-data"
+                """
+            }
+        }
+    }
+
+    test("preprocessing - standard") {
+        when {
+            workflow {
+                """
+                ch_split_test_data = LOAD_DATA.out.test_data_directory
+                    .branch{
+                        b0: it.simpleName == "raw_b0"
+                        segmentation: it.simpleName == "raw_segmentation"
+                    }
+                ch_images = ch_split_test_data.b0.map{
+                    test_data_directory -> [
+                        [ id:'test', subject:'01' ],
+                        file("\${test_data_directory}/b0.nii.gz")
+                    ]
+                }
+                ch_masks = ch_split_test_data.segmentation.map{
+                    test_data_directory -> [
+                        [ id:'test', subject:'01' ],
+                        file("\${test_data_directory}/brainmask/slices/axial.nii.gz")
+                    ]
+                }
+                input[0] = ch_images
+                input[1] = ch_masks
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(workflow.out).match() }
+            )
+        }
+    }
+}
+```
+
+In this example, the subworkflow takes two input channels, one for images and one for masks, and produces outputs that
+are checked for reproducibility. The test case sets up the necessary input data using the `LOAD_TEST_DATA` subworkflow.
