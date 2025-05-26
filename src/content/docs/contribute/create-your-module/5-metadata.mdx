@@ -8,7 +8,7 @@ named `meta.yml`. This file is located in the root of your module, and documents
 dependencies of your module, as well as other useful fields used to construct an API and CLI outputs. Here, we'll go
 through the different fields that are required to be filled out.
 
-### The `description` field
+## The `description` field
 
 Each module requires a thourough description of it main purpose, its configuration and its behaviors. Here is a good
 example for the `denoising/nlmeans` module:
@@ -22,7 +22,7 @@ description: |
 +  number of coils used during the acquisition.
 ```
 
-### The `keywords` field
+## The `keywords` field
 
 The keywords field is a list of keywords that describe the module and will help users find him through search tools such
 as the ones included on this website. The keywords should be relevant to the module and its purpose. For example, for
@@ -43,7 +43,7 @@ description: |
 +  - intensity
 ```
 
-### The `tools` field
+## The `tools` field
 
 In the tools section, you describe each and every dependency included in the script and the `versions.yml` file. This
 section is a simple list of **named entries**, one for each tool, with a short `description` and a `homepage` link.
@@ -65,7 +65,7 @@ keywords:
 +      homepage: "https://github.com/scilus/scilpy"
 ```
 
-### The `args` field
+## The `args` field
 
 The args section documents which arguments can be supplied to your module via `task.ext` to customize its behavior.
 Depending the kind of argument, you will need to supply a `type` (typically `string`, `float`, `int`, or `boolean`), a
@@ -108,7 +108,7 @@ tools:
 +      default: basic_sigma
 ```
 
-### The `input` field
+## The `input` field
 
 The next section documents the `inputs` of your module. It contains an entry for every input channel, specifying the
 `name`, `type`, `description`, `pattern` and if it is `optional`. If the channel's elements are defined as `tuple`, its
@@ -152,7 +152,7 @@ The types allowed for the `inputs` and `outputs` are : `map`, `list`, `file`, `d
 and `boolean`.
 :::
 
-### The `output` field
+## The `output` field
 
 Finally, it's time to document the `outputs` of your module! This section is identical in its structure as the `input`
 section, but for your `output`. In the case of the Non-Local Means module, we have 3 outputs :
