@@ -5,15 +5,13 @@ description: Add tests to ensure reproducible results.
 
 import { Steps } from '@astrojs/starlight/components';
 
-## Create test cases
-
 Adding tests to your module is a critical step to ensure it works correctly and continues to do so as the codebase evolves. The `nf-core` command automatically generates the test infrastructure when creating a module. Inside the `tests` directory of your module, you'll find `main.nf.test`, which contains inputs, test cases, and assertion instructions for [nf-test](https://www.nf-test.com), the Nextflow test framework. Open it and follow through the rest of this section.
 
 :::note
 In the `main.nf.test` file, define multiple test cases to cover most use-cases of your module and catch potential bugs. Be thorough but practical with your test coverage.
 :::
 
-### Setup before tests
+## Setup before tests
 
 Setup sections are used to prepare data before test cases are run, to download data, prepare algorithms and generate awaited return values. In **nf-neuro**, test datasets are
 provided via the [LOAD_TEST_DATA](/nf-neuro/api/subworkflows/load_test_data) subworkflow (refer to [this section](/nf-neuro/contribute/create-your-module/7-test-data) to learn how to find packages). Once you've selected the archives and files needed, add a `setup` section before the test section:
@@ -59,7 +57,7 @@ The `setup` section can either be used **globally**, before the test cases defin
 or inside a specific test case, where they will override the global setup.
 :::
 
-### Define test cases
+## Define test cases
 
 Test cases are defined each in their own `test` block :
 
@@ -80,7 +78,7 @@ A block minimally contains a `when` (what to test) and a `then` (what to assert)
 name of the process being tested, or import it**. `nf-test` will take care of that for you when the test will be run, through
 the `process` **placeholder** inside the `when` block.
 
-#### Define test inputs
+### Define test inputs
 
 The only job of the `when` block is to define the inputs to supply to your module. You do so by adding a list of inputs inside
 the `process` block, as follows :
@@ -123,7 +121,7 @@ test("example - test") {
 In this example, for this single test case, the module would run separately on two inputs, `2` and `3`.
 :::
 
-#### Define assertions
+### Define assertions
 
 The `then` block is where you define the assertions to check the outputs of your module. The `process` placeholder
 contains the outputs of the module in its `out` attribute, as well as boolean indicators for **success** and **failure**.
@@ -182,7 +180,7 @@ then {
 we are working on a more robust solution. If you have propositions on the matter, please reach out to us !**
 :::
 
-#### Configure the module
+### Configure the module
 
     name "Test Process <CATEGORY>_<TOOL>"
     script "../main.nf"
@@ -244,7 +242,7 @@ optional parameters with `task.ext` and want to alter their values for some
 test cases. Refer to [this section](/nf-neuro/contribute/create-your-module/3-configuration) to
 see how to scope those parameters to specific tests using `selectors`.
 
-### Generate tests snapshots
+## Generate tests snapshots
 
 :::caution
 Verify you are located at the root of `nf-neuro` (not inside modules) before
@@ -267,7 +265,7 @@ everything runs smoothly, look at the snapshot file produced at
 outputs produced by test cases are caught. Their `md5sum` is
 critical to ensure future executions of your test produce valid outputs.
 
-### A complete example for the `denoising/nlmeans` module.
+## A complete example for the `denoising/nlmeans` module.
 
 Since we used the `denoising/nlmeans` module as an example from the beginning of
 this documentation, let's create a test case for this module as a final example.
