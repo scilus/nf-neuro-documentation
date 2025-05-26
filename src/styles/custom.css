@@ -49,8 +49,24 @@ img {
     width: 80%;
 }
 
-li {
+.sl-markdown-content > ol :where(ul) li,
+.starlight-aside__content ul li,
+.sl-markdown-content > ul li {
+	list-style-type: circle;
+	margin-left: 2rem;
+}
+
+.sl-markdown-content > ol :where(ul) li {
 	list-style-position: inside;
+}
+
+.sl-markdown-content > ul li ul {
+	padding-left: 2rem;
+}
+
+.tablist-wrapper > ul li {
+	list-style-type: inherit;
+	margin-left: inherit;
 }
 
 .expressive-code .copy .no-copy button  { display: none; }

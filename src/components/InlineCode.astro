@@ -1,0 +1,5 @@
+---
+const { parts } = Astro.props;
+---
+
+{parts.map( (part: { style: string; text: string; }) => ( <span class:list={part.style}>{part.text}</span> ) )}

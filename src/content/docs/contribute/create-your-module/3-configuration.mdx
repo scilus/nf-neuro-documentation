@@ -1,0 +1,96 @@
+---
+title: Process configuration
+description: Feeding optional parameters to your module.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+In **nf-neuro**, module's parameters that are static (their value don't change between executions of the
+same module in a pipeline) are defined using the <span class="text-slate=-200">task.ext</span> parameter
+map. This map is exclusive to each module, meaning that parameters defined in different modules don't
+interact together. Also, in comparison to inputs, they are optional by default and return the value
+<span class="text-blue-400">null</span> when undefined.
+
+## Defining optional parameter
+
+The command <span class="text-orange-400">scil_denoising_nlmeans.py</span> accepts a few parameters that allow
+users to fine tune its execution depending on the nature of their data :
+
+- We can force the estimated noise distribution to be `gaussian`.
+- The noise distribution can be set to a given `sigma`, estimated by a `basic_sigma` method or using
+  the `piesno` method.
+- We can set the number of coil use to acquire the MRI signal, using `number_coils`.
+- We can give a `mask_sigma` to restrict the noise estimation space, when using the `basic_sigma` method, or force
+  it to use all voxel with `sigma_from_all_voxels`.
+
+The definition of their parameter in the module go in the **groovy header** part of the script section, the one
+where the `prefix` and `args` variables are defined. Use the same operator logic, either the **ternary** or **elvis**
+operator, to define the parameters above. For example, the `number_coils` parameter can be defined as follows:
+
+```groovy
+    def number_coils = task.ext.number_of_coils ?: 1
+```
+
+:::note
+When defining **default values** for parameters, refer to the help commands or API documentation
+of the dependencies you use.
+:::
+
+The full modifications of the module is given below. Take note of the `mask_sigma` parameter, which required
+the addition of a new `input`, since it is a file which must be passed by nextflow at runtime. Also note the new
+**optional output**, that returns the noise mask when the `piesno` method is used :
+
+```diff lang="groovy" ins=", path(noise_mask) /* optional, input = [] */" {"1": 2-5} {"2": 11} {"3": 28-31}
+input:
+    tuple val(meta), path(image), path(mask) /* optional, input = [] */, path(noise_mask) /* optional, input = [] */
+output:
+    tuple val(meta), path("*__denoised.nii.gz"), emit: image
++    tuple val(meta), path("*__piesno_noise_mask.nii.gz"), emit: noise_mask, optional: true
+    path "versions.yml", emit: versions
+script:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def args = task.ext.args ?: []
+    def input_mask = mask ? "--mask_denoise $mask" : ""
++    def noise_mask = noise_mask ? "--mask_sigma $noise_mask" : ""
++    def ncoils = task.ext.number_of_coils ? "--number_coils $task.ext.number_of_coils" : "--number_coils 1"
++    def sigma = task.ext.sigma ? "--sigma $task.ext.sigma" : ""
++    def sigma_from_all_voxels = task.ext.sigma_from_all_voxels ? "--sigma_from_all_voxels" : ""
++    def gaussian = task.ext.gaussian ? "--gaussian" : ""
++
++    def method = ""
++    def save_mask = ""
++    if ( !sigma ) {
++        method = task.ext.method ? "--$task.ext.method" : "--basic_sigma"
++        save_mask = (task.ext.method == "piesno") ? "--save_piesno_mask ${prefix}__piesno_noise_mask.nii.gz" : ""
++    }
+    """
+    export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+
+-    scil_denoising_nlmeans.py $image ${prefix}__denoised.nii.gz $input_mask ${args.join(" ")} --processes $task.cpus
++    scil_denoising_nlmeans.py $image ${prefix}__denoised.nii.gz $input_mask $noise_mask $save_mask \
++        $ncoils $gaussian $method $sigma $sigma_from_all_voxels \
++        ${args.join(" ")} --processes $tasks.cpus
+    """
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        scilpy: \$(pip list | grep scilpy | tr -s ' ' | cut -d' ' -f2)
+    END_VERSIONS
+    """
+```
+
+:::tip[What is happening here ?]
+<Steps>
+1. As stated, we define a new optional input file, <span class="text-slate-200">noise_mask</span>, as well as an optional
+   output file, with the same name but it doesn't matter to nextflow in this particular case.
+2. We unpack the several new parameters we listed above, using the ternary logic, to usable strings which we can call in
+   the script section.
+3. We call all the parameters in the script section, so they get used at runtime.
+</Steps>
+:::
+
+With that, the module can be configured to the full extent of the command line it encloses. You will see how to acess
+those parameters in the [subworkflow configuration](/nf-neuro/create-your-subworkflow/3-configuration) section. For now,
+it's time to setup a container to host your dependencies, so users don't have to install them by themselves.
