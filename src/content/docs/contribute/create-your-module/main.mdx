@@ -316,9 +316,21 @@ the version of our tool:
 Sometimes, the help function of some tools returns non-zero exit code, which
 will make Nextflow crash when running the stub section. To avoid this, you
 can add a small function that will catch those non-zero exit code and
-hid them from Nextflow. If this is the case for your tool, please refer to
-the [`betcrop/fslbetcrop`](https://github.com/scilus/nf-neuro/blob/main/modules/nf-neuro/betcrop/fslbetcrop/main.nf)
-module for a complete example.
+hid them from Nextflow. If this is the case for your tool, include the following
+**bash function** and **trap mechanism** at the top of the stub section :
+
+```bash {4}
+set +e
+function handle_code () {
+local code=\$?
+ignore=( 1 )
+[[ " \${ignore[@]} " =~ " \$code " ]] || exit \$code
+}
+trap 'handle_code' ERR
+```
+
+Add the **error codes to ignore** in the highlighted array in a **space separated list**. 
+
 :::
 
 ### A complete example
