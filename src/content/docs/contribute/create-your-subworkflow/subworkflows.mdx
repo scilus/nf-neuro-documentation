@@ -138,12 +138,22 @@ don't need to specify them all. Provide at least 3 relevant `keywords` and list 
 
 ### Create test cases
 
-Adding tests to your subworkflow is near identical to modules. For detailed instructions, please see [here](/nf-neuro/contribute/create-your-module/tests#create-test-cases).
+Adding tests to your subworkflow is near identical to modules. However, subworkflows tests only execute as **stub runs**. Define them the same way as for modules,
+following the detailed instructions [here](/nf-neuro/contribute/create-your-module/tests#create-test-cases).
 
 :::note
-Take attention to the `wording` ! As the section refers to `modules` and `process`, carefully
-replace them with `subworkflow`, since both concepts boil down to this single descriptor in this
-specific case.
+Skip the singular stub test defined for module. Instead, **add at the top of the** `nextflow_workflow` **definition** the configuration :
+```groovy
+    tag "stub"
+    options "-stub-run"
+```
+
+This will enable all tests cases to run as stubs.
+:::
+
+:::note
+Take attention to the `wording`, as the sections refers to `modules` and `process`. Carefully replace them respectively with
+`subworkflows` and `workflow`.
 :::
 
 ## Lint your code
