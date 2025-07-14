@@ -3,7 +3,6 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import Icons from 'unplugin-icons/vite';
 import tailwindcss from '@tailwindcss/vite';
-import matomo from 'astro-matomo';
 
 // https://astro.build/config
 export default defineConfig({
@@ -113,13 +112,7 @@ export default defineConfig({
 					collapsed: true,
 				},
 			],
-    	}),
-		matomo({
-            enabled: true,
-            host: 'https://scilus-nf-neuro.matomo.cloud/',
-            siteId: 1,
-            disableCookies: true,
-        })
+    	})
 	],
     vite: {
         plugins: [
