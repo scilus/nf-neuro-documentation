@@ -31,7 +31,7 @@ jobs:
       - name: Generate markdown
         id: generate-module
         run: |
-          shopt -s extglob
+          shopt -s globstar
           function convert_module () {
             local file="$1"
             local module_name=$(basename "$(dirname "$file")")
