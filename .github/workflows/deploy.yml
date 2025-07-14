@@ -31,9 +31,24 @@ jobs:
       - name: Generate markdown
         id: generate-module
         run: |
+          shopt -s extglob
+          function convert_module () {
+            local file="$1"
+            local module_name=$(basename "$(dirname "$file")")
+            local category=$(basename "$(dirname "$(dirname "$file")")")
+            python nf-neuro/docs/astro/convert_module.py $file ${{ github.sha }} modules/${category}_${module_name}.md
+          }
+          function convert_subworkflow () {
+            local file="$1"
+            local sbwf_name=$(basename "$(dirname "$file")")
+            python nf-neuro/docs/astro/convert_subworkflow.py $file ${{ github.sha }} subworkflows/${sbwf_name}.md
+          }
+          export -f convert_module
+          export -f convert_subworkflow
+
           mkdir -p modules/ subworkflows/
-          python nf-neuro/docs/astro/convert_modules.py nf-neuro/modules/nf-neuro modules/
-          python nf-neuro/docs/astro/convert_subworkflows.py nf-neuro/subworkflows/nf-neuro subworkflows/
+          parallel --jobs $(nproc) convert_module ::: nf-neuro/modules/nf-neuro/**/meta.yml
+          parallel --jobs $(nproc) convert_subworkflow ::: nf-neuro/subworkflows/nf-neuro/**/meta.yml
       - name: Pack into artifact
         uses: actions/upload-artifact@v4
         with:
