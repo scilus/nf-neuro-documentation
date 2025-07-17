@@ -1,0 +1,32 @@
+---
+title: Software versioning
+description: Common software versioning patterns.
+---
+
+## Common software versioning patterns
+
+Versions have multiple fields, usually separated by dots `.`, sometimes hypens `-`, underscores `_` or the plus sign `+`,
+though it is less common and their support is not universal. Fields usually takes on a number, but can also contain other
+alphanumeric characters.
+
+A *semantic version* follows the pattern `MAJOR.MINOR.PATCH`, with all three field mandatory non-negative integers.
+Additionally, a label can be suffixed to the version :
+
+- `MAJOR.MINOR.PATCH-PRERELEASE` : a pre-release version, where `PRERELEASE` is an alphanumeric string.
+- `MAJOR.MINOR.PATCH+BUILD` : a build version, where `BUILD` is an alphanumeric string.
+- `MAJOR.MINOR.PATCH-PRERELEASE+BUILD` : a pre-release version with a build version.
+
+### Software version extraction
+
+Below is a list of useful commands to extract valid **semantic versions** from common neuroimaging software :
+
+|||
+| - | - |
+| **ANTs**        | `antsRegistration --version \| grep "Version" \| sed -E 's/.*v([0-9.a-zA-Z-]+).*/\\1/'`                         |
+| **Fastsurfer**  | `$FASTSURFER_HOME/run_fastsurfer.sh --version`                                                                  |
+| **Freesurfer**  | `mri_convert -version \| grep "freesurfer" \| sed -E 's/.* ([0-9.]+).*/\\1/'`                                   |
+| **FSL**         | `flirt -version 2>&1 \| sed -E 's/.*version ([0-9.]+).*/\\1/'`                                                  |
+| **ImageMagick** | `convert -version \| grep "Version:" \| sed -E 's/.*ImageMagick ([0-9.-]+).*/\\1/'`                             |
+| **Mrtrix3**     | `mrinfo -version 2>&1 \| grep "== mrinfo" \| sed -E 's/== mrinfo ([0-9.]+).*/\\1/'`                             |
+| **nii2dcm**     | `convert_nii2dcm.py -v`                                                                                         |
+| **Scilpy**      | `pip list --disable-pip-version-check --no-python-version-warning \| grep scilpy \| tr -s ' ' \| cut -d' ' -f2` |

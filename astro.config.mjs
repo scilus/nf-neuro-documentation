@@ -88,6 +88,12 @@ export default defineConfig({
 								{ label: 'Nextflow support', slug: 'how-to/vscode/2-nextflow-language-support' }
 							],
 							collapsed: true
+						},
+						{
+							label: "Lineage",
+							items: [
+								{ label: 'Software versioning', slug: 'how-to/versioning/1-common-software-version'}
+							]
 						}
 					]
 				},

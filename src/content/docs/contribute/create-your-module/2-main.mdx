@@ -343,10 +343,11 @@ Some help commands might return non-zero exit code, which is detected by
 Nextflow as an error. To avoid this, add this bash function in the stub :
 
 ```bash frame="none"
+set +e
 function handle_code () {
 local code=\$?
 ignore=( 1 )
-exit \$([[ " \${ignore[@]} " =~ " \$code " ]] && echo 0 || echo \$code)
+[[ " \${ignore[@]} " =~ " \$code " ]] || exit \$code
 }
 trap 'handle_code' ERR
 ```
