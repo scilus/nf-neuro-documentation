@@ -1,0 +1,201 @@
+---
+title: Conventions
+description: Any and all conventions.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { FileTree } from '@astrojs/starlight/components';
+
+## Spatial transformations
+
+### Format
+
+The common file format for anything that implies transformations is the [ITK format](https://github.com/ANTsX/ANTsPy/wiki/ANTs-transform-concepts-and-file-formats) :
+
+| Transformation type                            | format  |
+|------------------------------------------------|---------|
+| linear transformations (e.g. rigid and affine) | .mat    |
+| non-linear warps and deformation fields        | .nii.gz |
+
+:::note
+Modules can output their **format of preference** still, but must provide a **conversion module** if they decide to do so. Take a look at the
+[current conversion module](api/modules/registration/convert), which already supports most common formats.
+:::
+
+### Order of operations
+
+To guarantee perfect interaction between all components of its library, nf-neuro imposes **linear algebra order of operations (from right to left)**
+when applying transformations.
+
+:::note
+Modules that use **few transforms** (e.g. only an affine to a template) can **bypass** this but are encouraged to
+implement **parsing of the sequence of transforms** in order to provide exact registration universally.
+:::
+
+#### Subworkflows and pipelines
+
+To define a **sequence of transformations**, use either **a list** or a **glob pattern** to a list of transformation files
+
+<Tabs>
+<TabItem label="List">
+Consider the following sequence of transformations :
+
+```math
+moving \xrightarrow[T_1]{} \bullet \xrightarrow[T_2]{} \bullet \xrightarrow[T_3]{} fixed
+```
+
+and 3 channels, one for each transformation. Use the following to output a channel in the right order :
+
+```groovy
+// All channels are joined on meta, the basic required
+// metadata defining a subject, minimally [id: id]
+ch_transformations = ch_T1
+    .join(ch_T2)
+    .join(ch_T3)
+    .map{ meta, t1, t2, t3 -> [ meta, [ t3, t2, t1 ] ] }
+```
+</TabItem>
+
+<TabItem label="glob pattern">
+Consider the following sequence of transformations :
+
+```math
+moving \xrightarrow[T_1]{} \bullet \xrightarrow[T_2]{} \bullet \xrightarrow[T_3]{} fixed
+```
+
+corresponding to the following example files :
+
+<FileTree>
+- sub-007
+    - transforms
+        - transformX.mat
+        - transformY.nii.gz
+        - transformZ.mat
+</FileTree>
+
+Using the `Channel.fromFilePairs` filesystem parser, which implements alphabetical ordering
+by default, you obtain the correct oredering using :
+
+```groovy
+ch_transforms = Channel
+    .fromFilePairs("**/transforms/transform*.{mat,nii.gz}", size: -1)
+    { file -> file.parent.parent.name } // This defines the ID for the file, here subject sub-007
+    .map{ id, t1, t2, t3 -> [ [id: id], [ t3, t2, t1 ] ] } // [id: id] is the basic required metadata defining a subject
+```
+</TabItem>
+</Tabs>
+
+:::tip
+Here, we use semantics when joining the channel (apply `ch_T1`, then `ch_T2` and finally `ch_T3`) and
+switched to **linear algebra format at the end**. Only because it makes it more readlable. Note that
+**nextflow code is complied, so focus on readability**. 
+:::
+
+#### Modules that perform registration
+
+Registration modules **must** output their transforms in lists following **linear algebra ordering**.
+Additionally, for **compatibility with legacy modules**, they also **must** provide individual outputs
+for an affine and a deformation field (and their inverses).
+
+The following output channels **are required** :
+
+<Tabs>
+<TabItem label="Transform lists">
+
+|           Channel name           |                                                          Transformation                                                          |
+|----------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| **image_transform**              | Transformation from moving space to fixed space                                                                                  |
+| **inverse_image_transform**      | Transformation from fixed space to moving space                                                                                  |
+| **tractogram_transform**         | Reversed and inversed transformation from moving space to fixed space<br />(usually the same as the **inverse_image_transform**) |
+| **inverse_tractogram_transform** | Reversed and inversed transformation from fixed space to moving space<br />(usually the same as the **image_transform**)         |
+
+Transformation files **must** be collected in one single [path](https://www.nextflow.io/docs/latest/process.html#multiple-output-files)
+variable with a [glob pattern](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob), using the **arity** parameter to
+cast it as a **list of files** (see example below).
+
+```groovy
+output:
+    tuple val(meta), path("*__transform*.{mat,nii.gz}", arity: '1..*')        , emit: image_transform
+    tuple val(meta), path("*__inverse_transform*.{mat,nii.gz}", arity: '1..*'), emit: inverse_image_transform
+    tuple val(meta), path("*__inverse_transform*.{mat,nii.gz}", arity: '1..*'), emit: tractogram_transform
+    tuple val(meta), path("*__transform*.{mat,nii.gz}", arity: '1..*')        , emit: inverse_tractogram_transform
+script:
+    def prefix = meta.id
+    """
+    # Moving space
+    touch ${prefix}__transformZ.mat
+    touch ${prefix}__transformY.mat
+    touch ${prefix}__transformX.nii.gz
+    # Fixed space
+    touch ${prefix}__inverse_transformZ.nii.gz
+    touch ${prefix}__inverse_transformY.mat
+    touch ${prefix}__inverse_transformX.mat
+    # Moving space
+    """
+```
+</TabItem>
+
+<TabItem label="Individual transforms">
+
+|    Channel name    |                     Transformation                      |
+|--------------------|---------------------------------------------------------|
+| **affine**         | Linear transformation from moving space to fixed space  |
+| **warp**           | Non-linear deformation from moving space to fixed space |
+| **inverse_affine** | Linear transformation from fixed space to moving space  |
+| **inverse_warp**   | Non-linear deformation from fixed space to moving space |
+
+For compatibility with modules that don't support parsing the transformation sequences, you **must**
+provide **single file transformations between fixed and moving spaces**. There are many options here,
+**rely on your judgment and knowledge** of the module you are implementing. Here are some examples :
+
+<html>
+<li>Use a **transformation composition tool**, like [ComposeMultiTransform](https://manpages.debian.org/stretch/ants/ComposeMultiTransform.1.en.html)
+from [ANTs](https://github.com/ANTsX/ANTs).</li>
+<li>Use the transformations files that brings the moving image closest to the fixed image.</li>
+</html>
+
+</TabItem>
+</Tabs>
+
+---
+
+#### Modules that apply transformations
+
+All modules that use transformations and need them provided in input **should** expect a chain of transformations
+in the form of **a list** and ordered as stated above. If they only use parts of it, they should parse through it to select
+the transformations to apply. Define the **input variable** using a `path` and the **arity** parameter in order to ensure
+it is interpreted as a list in the script section of the module :
+
+```groovy
+input:
+    tuple val(meta), ..., path(transformations, arity: '1..*')
+...
+script:
+"""
+for transform in $transformations
+do
+    echo "I'm doing good work using transformation : \$transform"
+done
+"""
+```
+
+:::note
+If you consider you cannot parse through the transformation chain, you can still implement your inputs using **single-file transforms**.
+However, don't wait for the PR to get in [contact with the nf-neuro team](https://github.com/scilus/nf-neuro/issues) as we can help you
+evaluate the use-case and potentially implement the parsing.
+:::
+
+### Filenames convention
+
+nf-neuro aligns with the [BIDS specification](https://bids-specification.readthedocs.io/en/stable/) for management and to ensure observability
+of files generated by its modules. BIDS is not complete yet and doesn't define a convention for **spatial transformation derivatives**. Refer
+below for a custom convention to apply in your modules :
+
+| Position | Keyword |  Type   |       Value       |                                                            Description                                                                   |
+|----------|---------|---------|-------------------|------------------------------------------------------------------------------------------------------------------------------------------| 
+|  first   |  index  | Integer |        > 0        | Position of the transformation in the sequence, following **linear algebra ordering**<br />(transform `N` comes first, `0` comes last).  |
+|  any     |  from   | String  |        any        | Identifier for the **source space**.                                                                                                     |
+|  any     |   to    | String  |        any        | Identifier for the **target space**.                                                                                                     |
+|  any     |  mode   | String  | image<br />points | Kind of transformation. Either for **image** (voxel grids) or **points** (tractogram, surface, streamline).                              |
+|  last    |  desc   | String  | affine<br />warp  | Type of transformation. Use **affine** to encompass any linear transformation, and **warp** for deformation and displacement fields.     |
