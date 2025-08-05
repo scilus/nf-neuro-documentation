@@ -3,6 +3,9 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import Icons from 'unplugin-icons/vite';
 import tailwindcss from '@tailwindcss/vite';
+import remarkMath from 'remark-math';
+import rehypeDocument from 'rehype-document';
+import rehypeKatex from 'rehype-katex';
 
 // https://astro.build/config
 export default defineConfig({
@@ -78,6 +81,7 @@ export default defineConfig({
 				{
 					label: 'Advanced Tutorials',
 					items: [
+						{ label: 'Conventions', slug: 'advanced-tutorials/conventions' },
 						{ label: 'BIDS Input', slug: 'advanced-tutorials/bidsinput' },
 						{ label: 'BIDS Output', slug: 'advanced-tutorials/bidsoutput' },
 						{ label: 'MultiQC', slug: 'advanced-tutorials/multiqc' },
@@ -114,6 +118,19 @@ export default defineConfig({
 			],
     	})
 	],
+	markdown: {
+		remarkPlugins: [remarkMath],
+		rehypePlugins: [
+			[
+				rehypeDocument,
+				{
+					// Get the latest one from: <https://katex.org/docs/browser>.
+					css: 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css'
+				},
+			],
+			rehypeKatex
+		],
+	},
     vite: {
         plugins: [
 			Icons({ compiler: 'astro' }),
