@@ -142,13 +142,7 @@ export default defineConfig({
 					]
 				}
 			]
-    	}),
-		matomo({
-            enabled: true,
-            host: 'https://scilus-nf-neuro.matomo.cloud/',
-            siteId: 1,
-            disableCookies: true,
-        })
+    	})
 	],
     vite: {
         plugins: [
