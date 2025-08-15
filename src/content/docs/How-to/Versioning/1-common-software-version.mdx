@@ -1,7 +1,59 @@
 ---
 title: Software versioning
 description: Common software versioning patterns.
+coloredVersioning:
+  - text: MAJOR
+    style: text-slate-200
+  - text: "."
+    style: text-emerald-300
+  - text: MINOR
+    style: text-blue-400
+  - text: "."
+    style: text-emerald-300
+  - text: PATCH
+    style: text-orange-300
+coloredPrerelease:
+  - text: MAJOR
+    style: text-slate-200
+  - text: "."
+    style: text-emerald-300
+  - text: MINOR
+    style: text-blue-400
+  - text: "."
+    style: text-emerald-300
+  - text: PATCH
+    style: text-orange-300
+  - text: "-PRERELEASE"
+    style: text-purple-400
+coloredBuild:
+  - text: MAJOR
+    style: text-slate-200
+  - text: "."
+    style: text-emerald-300
+  - text: MINOR
+    style: text-blue-400
+  - text: "."
+    style: text-emerald-300
+  - text: PATCH
+    style: text-orange-300
+  - text: "+BUILD"
+    style: text-purple-400
+coloredPreBuild:
+  - text: MAJOR
+    style: text-slate-200
+  - text: "."
+    style: text-emerald-300
+  - text: MINOR
+    style: text-blue-400
+  - text: "."
+    style: text-emerald-300
+  - text: PATCH
+    style: text-orange-300
+  - text: "-PRERELEASE+BUILD"
+    style: text-purple-400
 ---
+
+import InlineCode from '../../../../components/InlineCode.astro';
 
 ## Common software versioning patterns
 
@@ -9,12 +61,18 @@ Versions have multiple fields, usually separated by dots `.`, sometimes hypens `
 though it is less common and their support is not universal. Fields usually takes on a number, but can also contain other
 alphanumeric characters.
 
-A *semantic version* follows the pattern `MAJOR.MINOR.PATCH`, with all three field mandatory non-negative integers.
-Additionally, a label can be suffixed to the version :
+**A _semantic version_ follows the pattern <InlineCode parts={frontmatter.coloredVersioning} />**. Fields are **hierarchically mandatory** :
 
-- `MAJOR.MINOR.PATCH-PRERELEASE` : a pre-release version, where `PRERELEASE` is an alphanumeric string.
-- `MAJOR.MINOR.PATCH+BUILD` : a build version, where `BUILD` is an alphanumeric string.
-- `MAJOR.MINOR.PATCH-PRERELEASE+BUILD` : a pre-release version with a build version.
+- <code class="text-blue-400">MINOR</code> field cannot be defined without a <code class="text-slate-200">MAJOR</code>.
+- <code class="text-orange-300">PATCH</code> field needs **both others.**
+
+**Additionally, a <code class="text-purple-400">LABEL</code> can be suffixed to the version** :
+
+- <InlineCode parts={frontmatter.coloredPrerelease} /> : a pre-release version, where **<code class="text-purple-400">PRERELEASE</code> is
+  an _alphanumeric string_**.
+- <InlineCode parts={frontmatter.coloredBuild} /> : a build version, where **<code class="text-purple-400">BUILD</code> is an _alphanumeric string_**.
+- <InlineCode parts={frontmatter.coloredPreBuild} /> : a **<code class="text-purple-400">PRERELEASE</code>** version based on a specific
+  **<code class="text-purple-400">BUILD</code>**, **with both _alphanumeric strings_**.
 
 ### Software version extraction
 
