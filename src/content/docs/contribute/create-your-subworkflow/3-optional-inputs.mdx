@@ -1,9 +1,17 @@
 ---
 title: Optional inputs
 description: Improve the subworkflow i/o capabilities
+coloredRemainder:
+  - text: remainder
+    style: text-blue-300
+  - text: " : "
+    style: text-slate-200
+  - text: true
+    style: text-blue-300
 ---
 
 import { Steps } from '@astrojs/starlight/components';
+import InlineCode from '../../../../components/InlineCode.astro';
 
 In the previous section, you only added inputs if you needed them to supply a **required input** for an included
 component. Now, you'll define new inputs, optional ones, that users can use to modify the behavior of the subworkflow.
@@ -14,7 +22,7 @@ A good first optional input to define for the subworkflow is an **input brain ma
 times : once with `BETCROP_SYNTHBET` to **control intensity normalization** by `PREPROC_N4`, then a second time with
 `BETCROP_ANTSBET` to obtain a **robust mask based on a population template**. A user might have a different technique
 of preference to compute the brain mask, or he might want to do it by hand. To allow him to input it, add the
-`ch_brain_mask` input in the `take` section of the subworkflow :
+`ch_brain_mask` input in the <code class="text-blue-300">take</code> section of the subworkflow :
 
 ```diff lang="groovy"
 workflow PREPROC_ANAT {
@@ -27,8 +35,8 @@ main:
 ```
 
 Now, you can start using the mask to improve the behavior of included components, but you have to be careful about it,
-since the mask is **optional**. To associate it with another channel, use `join` with the special argument `remainder: true`,
-which keeps **incomplete elements** resulting from the operation :
+since the mask is **optional**. To associate it with another channel, use `join` with the special argument
+<InlineCode parts={frontmatter.coloredRemainder} />, which keeps **incomplete elements** resulting from the operation :
 
 ```diff lang="groovy" {"1": 10} {"2": 11}
 workflow PREPROC_ANAT {
@@ -50,20 +58,22 @@ main:
 
 :::tip[What is happening here ?]
 <Steps>
-1. `ch_anatomical` and `ch_brain_mask` are joined together, using `remainder: true`. Element in `ch_anatomical` are
-   associated with ones in `ch_brain_mask`, if their `meta` field is identical (`[meta, image, mask]`). If no
-   association is found in `ch_brain_mask`, the element gets appended with the value `null` ( `[meta, image, null]`).
-2. Using the `map` operator, each element is verified. If the mask value is `null`, it is replaced with the
-   **empty array, the nextflow default value for path**. In addition, some organisation of the element's content is
-   performed so the mask is used for noise estimation only.
+1. `ch_anatomical` and `ch_brain_mask` are joined together, using <InlineCode parts={frontmatter.coloredRemainder} />.
+   Element in `ch_anatomical` are associated with ones in `ch_brain_mask`, if their `meta` field is identical (`[meta, image, mask]`).
+   If no association is found in `ch_brain_mask`, the element gets appended with the value <code class="text-blue-300">null</code>
+   ( `[meta, image, null]`).
+2. Using the `map` operator, each element is verified. If the mask value is <code class="text-blue-300">null</code>, it is replaced with the
+   **empty array** `[]`, **the nextflow default value for path**. In addition, some organisation of the element's content is
+   performed so the `mask` is used for noise estimation only.
 </Steps>
 :::
 
 ## Skipping a component execution given an optional input
 
 If a brain mask is given in input, then brain masking modules included in the subworflow should not be executed. This is
-not as simple as doing a conditional test on `ch_brain_mask`, it will return `true` even if empty. Instead, you need to
-**filter** the content of a component's input you wish to skip, **to empty it of all elements for which a mask exists** :
+not as simple as doing a conditional test on `ch_brain_mask`, it will return <code class="text-blue-300">true</code> even if
+empty. Instead, you need to `filter` the content of a component's input you wish to skip, **to empty it of all elements for
+which a mask exists** :
 
 ```diff lang="groovy" {"1": 10,11} {"2": 12}
 workflow PREPROC_ANAT {
@@ -85,7 +95,7 @@ main:
 
 :::tip[What is happening here ?]
 <Steps>
-1. As previously, we join using `remainder: true`. Using `filter`, we remove all elements which are associated to a
+1. As previously, we join using <InlineCode parts={frontmatter.coloredRemainder} />. Using `filter`, we remove all elements which are associated to a
    mask provided through `ch_brain_mask`.
 2. We use `map` again to organize the elements, this time additionally ditching the `mask` entry.
 </Steps>

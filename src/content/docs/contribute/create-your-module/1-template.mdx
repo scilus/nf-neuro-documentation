@@ -4,25 +4,26 @@ description: Generate your module's template using `nf-core` commands.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
+import FileIcon from '~icons/codicon/file-code';
 
-This tutorial series explains how to contributea module to `nf-neuro`. For the purpose of this tutorial, you will
-create a module that denoises T1w images using the **Non-Local Means** (NLM) algorithm's implementation
-available in [scilpy](https://github.com/scilus/scilpy) via the script
-[`scil_denoising_nlmeans.py`](https://scilpy.readthedocs.io/en/latest/scripts/scil_denoising_nlmeans.html).
+This tutorial series explains **how to contribute a module to nf-neuro**. For the exercise, you will
+recreate an already available module, [DENOISING_NLMEANS](api/modules/denoising/nlmeans), so you can refer
+to [its implementation](https://github.com/scilus/nf-neuro/tree/main/modules/nf-neuro/denoising/nlmeans) if needed.
+The purpose of this module is **denoising anatomical MRI images**, like T1w and T2w images, using the **Non-Local Means**
+(NLM) algorithm. We'll use the implementation available in [scilpy](https://github.com/scilus/scilpy), via the script
+[scil_denoising_nlmeans.py](https://scilpy.readthedocs.io/en/latest/scripts/scil_denoising_nlmeans.html).
 
 ## First steps
 
-<span class="text-blue-400">**[Skip if working in the devcontainer]**</span> If not done already, clone the `nf-neuro` repository locally
-and navigate to it :
+<span class="text-blue-400">**[Skip if working in the devcontainer]**</span> If not done already, **clone the nf-neuro repository** locally and navigate to it :
 
 ```bash
 git clone https://github.com/scilus/nf-neuro.git
 cd nf-neuro
 ```
 
-Create a new branch for your module, following the convention `module/<category>_<tool>`
-for the branch name (for the current tutorial : `module/denoising_nlmeans`). This will help
-you and maintainers keep track of changes made to the module :
+**Create a new branch for your module**. To help you and maintainers track changes, use the convention `module/<category>_<tool>`
+to name your branch (we'll use : `module/denoising_nlmeans`) :
 
 ```bash
 git checkout -b module/denoising_nlmeans
@@ -30,8 +31,8 @@ git checkout -b module/denoising_nlmeans
 
 ### Generate the template
 
-In a **terminal** with access to `nf-core`, use `cd` to locate yourself in the `nf-neuro`
-repository. Then, generate a **skeleton** for your module by running the interactive command :
+**Open a terminal** (with access to the `nf-core` command). Use `cd` to move to the location of the **nf-neuro repository**
+and generate the module's _skeleton_ :
 
 ```bash
 nf-core modules create
@@ -40,15 +41,13 @@ nf-core modules create
 Answer the prompts using the information below :
 
 <Steps>
-1. **Name of tool/subtool** : `denoising/nlmean`
+1. **Name of tool/subtool** : `denoising/nlmeans`
     - This is the `<category>/<tool>` of the module you plan creating
 2. **Bioconda package** : select `no`.
-    - Nextflow is able to automatically install dependencies using `conda`, but we haven't
-      explored those avenues yet. We welcome any collaboration on this topic, please open an
-      issue on the [nf-neuro repository](https://github.com/scilus/nf-neuro/issues). 
-      You can refer to the [nf-core documentation](https://nf-co.re/docs/guidelines/components/modules#software-requirements)
+    - There are no offical **neuroconda** package distributor yet, so **we don't support it**, but you are welcome to investiguate !
+    - Nextflow integrates conda, refer to the [nf-core documentation](https://nf-co.re/docs/guidelines/components/modules#software-requirements)
       for more information on the matter.
-3. **Github author** : your Github handle, or `@scilus` if you prefer no accreditation.
+3. **Github author** : your Github handle (prefixed with `@`), or `@scilus` if you prefer no accreditation.
 4. **Resource label** : for **denoising/nlmeans**, select `process_medium`, since it can parallelize computations
     - Resource allocation with labels can vary depending on infrastructure and availability.
     - All labels below get allocated around **4Gb** of RAM. For CPU, a rule of thumb is :
@@ -68,11 +67,11 @@ nf-core modules create --author @scilus --label process_medium --meta denoising/
 You will still have to interact with the **bioconda** prompt, still select `no`.
 
 :::note
-  Once used to the conventions for developping within `nf-neuro`, adding `--empty-template`
+  Once used to the conventions for developping within **nf-neuro**, adding `--empty-template`
   to the command will disable auto-generation of comments, examples and TODOs and
   can be a time-saver.
 :::
 
-The command will generate your new module template in the `./modules/nf-neuro/denoising/nlmeans`
+The command will generate your new module template in the **_./modules/nf-neuro/denoising/nlmeans_**
 directory. Navigate to it and familiarize yourself with the various files generated. After that,
-switch to the next section of the tutorial and proceed to edit the `main.nf` file.
+switch to the next section of the tutorial and proceed to edit the **_main.nf_** file.

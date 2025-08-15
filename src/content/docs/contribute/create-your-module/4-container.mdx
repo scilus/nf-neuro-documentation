@@ -3,42 +3,42 @@ title: Container definition
 description: Associate a container to your module.
 ---
 
-The container for a module is defined in the `container` section. This container can be provided from
-multiple different online repositories (in the skeleton, you see `depot.galaxyproject.org` and `biocontainers`,
-but there are also the more popular [docker](https://docker.com), [apptainer](https://apptainer.org),
-[podman](https://podman.io) and [quay](https://quay.io)). A container can also be defined as `http` link to an image
-file.
+The container a module uses is defined in the **container** section. This container can be provided for
+various engines and runtimes, like [docker](https://docker.com), [apptainer](https://apptainer.org)
+and [podman](https://podman.io), from official and private repositories (see [dockerhub](https://hub.docker.com)
+and [quay](https://quay.io)). A container can also be defined as a link to a **valid OCI artifact** (e.g. `*.img`, `*.simg`, `*.tar.gz`).
 
-For the Non-Local Means module, neither `deopt.galaxyproject.org` or `biocontainers` host the dependencies. For most
-of the neuroimaging software, you'll find them on [dockerhub](https://hub.docker.com). A popular repository for
-**versioned images** for neuroimaging is [neurodesk](https://www.neurodesk.org); their images are located
-[here](https://hub.docker.com/u/vnmd).
+:::note
+For the Non-Local Means module, neither the `depot.galaxyproject.org` or `biocontainers` repositories defined in the
+auto-generated template host the dependencies we need. For most of the neuroimaging software, you'll find them on
+[dockerhub](https://hub.docker.com). A popular repository for **versioned images** for neuroimaging is
+maintained by [neurodesk](https://www.neurodesk.org); their images are located [here](https://hub.docker.com/u/vnmd).
 
-:::caution
-Note that Neurodesk are not image managers and will not version your software if they don't have use for it.
+**Note that Neurodesk are not image managers and will not version your software if they don't have use for it.**
 :::
 
 Since our dependency is **scilpy**, we will use their images. Do the following replacements in the container section :
 
-```groovy ins="https://scil.usherbrooke.ca/containers/scilus_2.0.2.sif" ins="scilus/scilus:2.0.2"
+```groovy ins="https://scil.usherbrooke.ca/containers/scilus_2.1.1.sif" ins="scilus/scilus:2.1.1"
 container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-    'https://scil.usherbrooke.ca/containers/scilus_2.0.2.sif' :
-    'scilus/scilus:2.0.2' }"
+    'https://scil.usherbrooke.ca/containers/scilus_2.1.1.sif' :
+    'scilus/scilus:2.1.1' }"
 ```
 
 :::tip[What is happening here ?]
 On the first line, the module template has provided some logic to select between a **docker** or **apptainer** image,
-that have two distinct formats and require different configuration. For this, it uses the `workflow.containerEngine`
-variable. However, apptainer images can be built from docker, and in case the `task.ext.singularity_pull_docker_container`
-parameter, it will do so from `'scilus/scilus:2.0.2'`, instead of using `scilus_2.0.2.sif` available by `http`.
+that have two distinct formats and require different configuration. It does it using the `workflow.containerEngine`
+variable. Apptainer images can be built from docker, and if the `task.ext.singularity_pull_docker_container`
+parameter is set, it will do so from `'scilus/scilus:2.1.1'`. Else, it will download `scilus_2.1.1.sif` using the link.
 :::
 
 ## Conda environment
 
-For now, **nf-neuro** does not use `conda` environments and does not run tests for it, but it is possible to define a
+**nf-neuro does not use `conda` environments and does not run tests for it, but it is possible to define a
 `conda` environment following [nf-core guidelines](https://nf-co.re/docs/tutorials/nf-core_training/writing-nf-core-modules/chapter-5-writing-your-module#the-environmentyml-file).
-If you do not wish to set one, as it is the case for the `denoising/nlmeans` module, replace the content
-of the `environment.yml` file with the following:
+If doing so, open [an issue](https://github.com/scilus/nf-neuro/issues) to discuss it with the maintainers.**
+
+For now, we disable `conda` support by filling the **_environment.yml_** file with the content below :
 
 ```yaml
 name: denoising_nlmeans
@@ -46,6 +46,6 @@ channels: [] # Empty, since we do not use conda.
 dependencies: [] # Empty, since we do not use conda.
 ```
 
-With this, the **main portion** of the module is complete. Next, you will add **metadata** and **tests* to the
+With this, the **main portion** of the module is complete. Next, you will add **metadata** and **tests** to the
 module. You will also learn how to include **quality control** that get automatically collected into a report for
 your users to review after execution.

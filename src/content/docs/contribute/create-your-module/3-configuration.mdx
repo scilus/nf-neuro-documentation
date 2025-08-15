@@ -5,40 +5,62 @@ description: Feeding optional parameters to your module.
 
 import { Steps } from '@astrojs/starlight/components';
 
-In **nf-neuro**, module's parameters that are static (their value don't change between executions of the
-same module in a pipeline) are defined using the <span class="text-slate=-200">task.ext</span> parameter
-map. This map is exclusive to each module, meaning that parameters defined in different modules don't
-interact together. Also, in comparison to inputs, they are optional by default and return the value
-<span class="text-blue-400">null</span> when undefined.
+In **nf-neuro**, we use the **<code class="text-slate-200">task.ext</code> parameter namespace** to define
+configuration options that user can use to fine-tune the behavior of a module. Those options have two
+specificities :
+
+<Steps>
+1. **They are _optional_ by default**. If a `parameter` is not defined, <code class="text-slate-200">task.ext.parameter</code>
+   will return the value <code class="text-blue-400">null</code>.
+2. **They are _static_**. Their value is bound to the module's name. _Dynamic parameters_ have to be defined using
+   [inputs](/nf-neuro/create-your-module/2-main#the-input-section).
+</Steps>
+
+The guidelines below present how to define those parameters, using the **DENOISING_NLMEANS** module example.
 
 ## Defining optional parameter
 
-The command <span class="text-orange-400">scil_denoising_nlmeans.py</span> accepts a few parameters that allow
-users to fine tune its execution depending on the nature of their data :
+The command [scil_denoising_nlmeans.py](https://scilpy.readthedocs.io/en/latest/scripts/scil_denoising_nlmeans.html) accepts a few
+parameters that allow users to adjust its execution to the nature of their data :
 
-- We can force the estimated noise distribution to be `gaussian`.
-- The noise distribution can be set to a given `sigma`, estimated by a `basic_sigma` method or using
-  the `piesno` method.
-- We can set the number of coil use to acquire the MRI signal, using `number_coils`.
-- We can give a `mask_sigma` to restrict the noise estimation space, when using the `basic_sigma` method, or force
-  it to use all voxel with `sigma_from_all_voxels`.
+- We can force the estimated noise distribution to be **gaussian**.
+- The noise distribution can be set to a given **sigma**, estimated by a **basic_sigma** method
+  or using the **piesno** method.
+- We can set the number of coil use to acquire the MRI signal, using **number_coils**.
+- We can restrict the noise estimation space using a mask.
+  - When using the **basic_sigma** method, it's the **mask_sigma** parameter.
+  - We can force the use of all voxel with **sigma_from_all_voxels**.
 
 The definition of their parameter in the module go in the **groovy header** part of the script section, the one
-where the `prefix` and `args` variables are defined. Use the same operator logic, either the **ternary** or **elvis**
-operator, to define the parameters above. For example, the `number_coils` parameter can be defined as follows:
+where the `prefix` and `args` variables are defined. Use the same operator logic, either the [ternary](https://groovy-lang.org/operators.html#_ternary_operator)
+or [elvis](https://groovy-lang.org/operators.html#_elvis_operator) operator, to define the parameters above.
+
+:::tip
+For example, the `number_coils` parameter can be defined as follows:
 
 ```groovy
-    def number_coils = task.ext.number_of_coils ?: 1
+def number_coils = "--number_coils ${task.ext.number_of_coils ?: 1}"
 ```
+
+The **elvis operator** (<code class="text-orange-300">?:</code>) will select <code class="text-orange-300">task.ext.number_of_coils</code> if it is defined,
+and the _default value_ <code class="text-orange-300">1</code> otherwise.
+
+For the `gaussian` parameter, which is a boolean flag, use the following :
+
+```groovy
+def gaussian = task.ext.gaussian ? "--gaussian" : ""
+```
+
+:::
 
 :::note
 When defining **default values** for parameters, refer to the help commands or API documentation
 of the dependencies you use.
 :::
 
-The full modifications of the module is given below. Take note of the `mask_sigma` parameter, which required
+The full modifications of the module is given below. **Take note of the `mask_sigma` parameter, which required
 the addition of a new `input`, since it is a file which must be passed by nextflow at runtime. Also note the new
-**optional output**, that returns the noise mask when the `piesno` method is used :
+**optional output**, that returns the noise mask when the `piesno` method is used** :
 
 ```diff lang="groovy" ins=", path(noise_mask) /* optional, input = [] */" {"1": 2-5} {"2": 11} {"3": 28-31}
 input:
@@ -83,14 +105,14 @@ script:
 
 :::tip[What is happening here ?]
 <Steps>
-1. As stated, we define a new optional input file, <span class="text-slate-200">noise_mask</span>, as well as an optional
-   output file, with the same name but it doesn't matter to nextflow in this particular case.
+1. As stated, we define a new **optional input file**, <code class="text-slate-200">path(noise_mask)</code>, as well as an
+   **optional output file**.
 2. We unpack the several new parameters we listed above, using the ternary logic, to usable strings which we can call in
    the script section.
 3. We call all the parameters in the script section, so they get used at runtime.
 </Steps>
 :::
 
-With that, the module can be configured to the full extent of the command line it encloses. You will see how to acess
+With that, the module can be configured to the full extent of the command line it encloses. You will see how to access
 those parameters in the [subworkflow configuration](/nf-neuro/create-your-subworkflow/3-configuration) section. For now,
-it's time to setup a container to host your dependencies, so users don't have to install them by themselves.
+**it's time to setup a container to host your dependencies, so users don't have to install them by themselves**.

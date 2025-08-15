@@ -7,13 +7,13 @@ description: Add quality control to commands outputs
 
 When applicable, each module should include its own quality control (QC) steps compatible with the
 [MultiQC](https://docs.seqera.io/multiqc) report. This step should be run only
-if specified in the `nextflow.config` file, using the `ext.run_qc` scope.
+if specified in the **_nextflow.config_** file, using the `ext.run_qc` scope.
 The QC can take different form depending on which processing steps are
 performed within your module.
 Common types are:
-    - Static image (overlay of labels/segmentation on T1w image, `.{png,jpeg,tiff,...}`),
-    - Dynamic image (dynamic change between pre-post eddy correction, `.{gif,webp}`)
-    - Simple numerical values as either `.{txt,csv,tsv,...}` files.
+    - **Static image** : **.png**, **.jpeg**, **.tiff**, ... (e.g. overlay of labels/segmentation on T1w image),
+    - **Dynamic image** : **.gif**, **.webp**, ... (e.g. dynamic change between pre and post processing),
+    - **Tabular values** : **.txt**, **.csv**, **.tsv**, ... (e.g. summary statistics, quality metrics).
 
 Typically, the images are created using the mid slice for all three axes and then
 combined into a mosaic using [ImageMagick](https://imagemagick.org/index.php).
@@ -59,4 +59,4 @@ Below is a code snippet giving general instructions or guidelines for this QC se
 For simplicity, we will not add a QC step for the current `denoising/nlmeans` module.
 For more complete example, you can refer to the [`preproc/topup`](https://github.com/scilus/nf-neuro/blob/main/modules/nf-neuro/preproc/topup/main.nf),
 [`preproc/eddy`](https://github.com/scilus/nf-neuro/blob/main/modules/nf-neuro/preproc/eddy/main.nf),
-or [`registration/anattodwi`](https://github.com/scilus/nf-neuro/blob/main/modules/nf-neuro/registration/anattodwi/main.nf).
+or [`registration/anattodwi`](https://github.com/scilus/nf-neuro/blob/main/modules/nf-neuro/registration/anattodwi/main.nf) module.

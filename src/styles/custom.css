@@ -70,3 +70,16 @@ img {
 }
 
 .expressive-code .copy .no-copy button  { display: none; }
+
+.inline-code code:not(:first-child):not(:last-child) {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+.inline-code code:first-child {
+	padding-right: 0;
+}
+
+.inline-code code:last-child{
+	padding-left: 0;
+}

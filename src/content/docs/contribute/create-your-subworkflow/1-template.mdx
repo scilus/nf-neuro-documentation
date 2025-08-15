@@ -5,23 +5,23 @@ description: Generate your subworkflow's template using `nf-core` commands.
 
 import { Steps } from '@astrojs/starlight/components';
 
-This tutorial series focusing on the contribution of a subworkflow to `nf-neuro`. In it, you will create a subworkflow
-from **anatomical MRI preprocessing**, using components already implemented in `nf-neuro` for
+This tutorial series focusing on the contribution of a subworkflow to **nf-neuro**. In it, you will create a subworkflow
+from **anatomical MRI preprocessing**, using components already implemented in **nf-neuro** for
 [denoising](/nf-neuro/api/modules/preproc_anat), [brain extraction](/nf-neuro/api/modules/betcrop/antsbet),
 [intensity normalization](/nf-neuro/api/modules/preproc/n4) and [segmentation](/nf-neuro/api/subworkflows/anatomical_segmentation).
 
 ## First steps
 
-If not done already, clone the `nf-neuro` repository locally and navigate to it :
+<span class="text-blue-400">**[Skip if working in the devcontainer]**</span> If not done already, **clone the nf-neuro repository**
+locally and navigate to it :
 
 ```bash
 git clone https://github.com/scilus/nf-neuro.git
 cd nf-neuro
 ```
 
-Create a new branch for your subworkflow, following the convention `subworkflow/<category>_<tool>`
-for the branch name (for the current tutorial : `subworkflow/preproc_anat`). This will help
-you and maintainers keep track of changes made to the subworkflow :
+**Create a new branch for your subworkflow**. To help you and maintainers track changes, use the convention `subworkflow/<category>_<tool>`
+for the branch name (we'll use : `subworkflow/preproc_anat`) :
 
 ```bash
 git checkout -b subworkflow/preproc_anat
@@ -29,8 +29,8 @@ git checkout -b subworkflow/preproc_anat
 
 ### Generate the template
 
-In a **terminal** with access to `nf-core`, use `cd` to locate yourself in the `nf-neuro`
-repository. Then, generate a **skeleton** for your subworkflow by running the interactive command :
+**Open a terminal** (with access to the `nf-core` command). Use `cd` to move to the location of the **nf-neuro** repository
+and generate the subworkflow's _skeleton_ :
 
 ```bash
 nf-core subworkflows create
@@ -39,16 +39,16 @@ nf-core subworkflows create
 Answer the prompts using the information below :
 
 <Steps>
-1. **Name of subworkflow** : `preproc_anat`
-2. **Github author** : your Github handle, or `@scilus` if you prefer no accreditation.
+1. **Name of subworkflow** : `preproc_anat`.
+2. **Github author** : your Github handle (prefixed with `@`), or `@scilus` if you prefer no accreditation.
 </Steps>
 
-Alternatively, you can use the following command to supply nearly all information :
+Alternatively, you can use the following command to supply all information :
 
 ```bash
-nf-core subworkflows create --author @scilus
+nf-core subworkflows create --author @scilus preproc_anat
 ```
 
-The command will generate your new subworkflow template in the `./subworkflows/nf-neuro/preproc_anat`
+The command will generate your new subworkflow template in the **_subworkflows/nf-neuro/preproc_anat/_**
 directory. Navigate to it and familiarize yourself with the various files generated. After that,
-switch to the next section of the tutorial and proceed to edit the `main.nf` file.
+switch to the next section of the tutorial and proceed to edit the **_main.nf_** file.

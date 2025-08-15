@@ -1,13 +1,21 @@
 ---
 title: Test definitions
 description: Add tests to ensure reproducible results.
+coloredWorkflowSuccess:
+  - text: workflow
+    style: text-slate-200
+  - text: "."
+    style: text-emerald-300
+  - text: success
+    style: text-slate-200
 ---
 
 import { Steps } from '@astrojs/starlight/components';
+import InlineCode from '../../../../components/InlineCode.astro';
 
 Adding tests to your subworkflow is a critical step to ensure it works correctly and continues to do so as the codebase
 evolves. The `nf-core` command automatically generates the test infrastructure when creating a subworkflow. Inside the
-`tests` directory of your subworkflow, you'll find `main.nf.test`, which contains inputs, test cases, and assertion
+**_tests_** directory of your subworkflow, you'll find **_main.nf.test_**, which contains inputs, test cases, and assertion
 instructions for [nf-test](https://www.nf-test.com), the Nextflow test framework. Open it and follow through the rest of
 this section.
 
@@ -17,14 +25,14 @@ as **stubs**, meaning no processes are executed and output data is faked. This p
 covering the dataflows implemented by subworkflows.
 :::
 
-::tip[Native subworkflows]
+:::tip[Native subworkflows]
 Native nextflow subworkflows don't include any **modules** in their definition. Those will need to be **unit tested** in
 addition to **stub testing**.
 :::
 
 ## Enable stubbing
 
-Each module comes with it's stub. To activate **stubbing** for the subworkflows, add the following **tag** and **options**
+Each module comes with it's stub. To activate **stubbing** for the subworkflows, add the following `tag` and `options`
 to the `nextflow_workflow` block :
 
 ```groovy ins={6-7}
@@ -40,7 +48,7 @@ nextflow_workflow {
 ```
 
 :::note
-If some tests need to be carried without stubbing, move the **tag** and **options** definitions inside each of the
+If some tests need to be carried without stubbing, move the `tag` and `options` definitions inside each of the
 test cases that **require stubbing**.
 :::
 
@@ -56,7 +64,7 @@ Setup sections are used to prepare data before test cases are run, to download d
 return values. In **nf-neuro**, test datasets are provided via the [LOAD_TEST_DATA](/nf-neuro/api/subworkflows/load_test_data)
 subworkflow (refer to [this section](/nf-neuro/contribute/create-your-module/7-test-data) to learn how to find packages).
 Once you've selected the archives and files needed, add a `setup` section before the test section. Replace the `<archive>`
-with the name of the one you need and you'll be able to access the archives within your test suite :
+with the name of the one you need and you'll be able to access its content within your test suite :
 
 ```groovy {"1": 2,3} {"2": 4-9}
 setup {
@@ -73,16 +81,18 @@ setup {
 ```
 :::tip[What is happening here?]
 <Steps>
-1. The `run` instruction is used to call the `LOAD_TEST_DATA` subworkflow, under the alias `LOAD_DATA`. The alias could
-   be useful if multiple calls to the same subworkflow are needed. The `script` parameter inside the `run` block
-   specifies the path to the `LOAD_TEST_DATA` subworkflow file.
-2. The `workflow` block contains definitions for the input channels of the subworkflow. The `input[0]` channel
-   corresponds to t**he archives** to download for the test, while `input[1]` is a **test identifier**.
+1. The `run` instruction is used to call the <code class="text-orange-300">LOAD_TEST_DATA</code> subworkflow, under the alias
+   <code class="text-orange-300">LOAD_DATA</code>. The alias could be useful if multiple calls to the same subworkflow are needed.
+   The `script` parameter inside the `run` block specifies the path to the <code class="text-orange-300">LOAD_TEST_DATA</code>
+   subworkflow file.
+2. The `workflow` block contains definitions for the input channels of the subworkflow. The <code class="text-orange-300">input[0]</code>
+   channel corresponds to **the archives** to download for the test, while <code class="text-orange-300">input[1]</code> is a
+   **test dataset identifier** for the current run.
 </Steps>
 :::
 
 :::note
-When using the `LOAD_TEST_DATA` subworkflow, or any other component in the `setup` section, make sure to **tag** it in
+When using the `LOAD_TEST_DATA` subworkflow, or any other component in the `setup` section, make sure to `tag` it in
 the `nextflow_workflow` block accordingly:
 
 ```groovy
@@ -145,8 +155,8 @@ test("example - test") {
 
 :::tip[What is happening here?]
 <Steps>
-1. The first input channel of the subworkflow is created from the output of the `LOAD_TEST_DATA` subworkflow, called in
-   the setup `section`, and accessed through its alias `LOAD_DATA`.
+1. The first input channel of the subworkflow is created from the output of the <code class="text-orange-300">LOAD_TEST_DATA</code>
+   subworkflow, called in the `setup` section, and accessed through its alias <code class="text-orange-300">LOAD_DATA</code>.
 2. A first dataset to input into the subworkflow is created from the content downloaded by the subworkflow. The
    subworkflow has an optional path in input, which is not provided using the empty list `[]`.
 3. A second dataset is created, this time with a mask as input.
@@ -157,7 +167,7 @@ In this example, for this single test case, the subworkflow would run separately
 ### Define assertions
 
 The assertions for a subworkflow have to finely inspect the structure and shape of the output data of the subworkflow,
-without accessing the data itself. The only file required to be **snapshotted** is the **versions** file that keeps track
+without accessing the data itself. The only file required to be **snapshotted** is the **_versions.yml_** file that keeps track
 of dependencies :
 
 ```groovy {"1": 2} {"2": 3} {"3": 4-9} {"4": 10-14}
@@ -182,8 +192,8 @@ then {
 :::tip[What is happening here?]
 <Steps>
 1. The `assertAll` function is used to group multiple assertions together, ensuring that all of them are checked.
-2. The first assertion checks that the workflow ran successfully, using `workflow.success`.
-3. The second assertion snapshots the **versions** file content and checks file naming, ensuring their consistency
+2. The first assertion checks that the workflow ran successfully, using <InlineCode parts={frontmatter.coloredWorkflowSuccess} />.
+3. The second assertion snapshots the **_versions.yml_** file content and checks file naming, ensuring their consistency
    with maintenance practices. Other files are usually empty in `stub` mode, so only their names are checked.
 4. The third assertion checks that all output channels area populated with results, ensuring that the subworkflow
    produced the expected outputs.
@@ -212,7 +222,7 @@ then {
 
 :::tip[What is happening here?]
 <Steps>
-1. Channels names in the **list** should be empty and their size be `0`.
+1. Channels names in the **list** should be empty and their size be <code class="text-red-300">0</code>.
 2. Channels not in the list should be populated with data. They either contain single items or lists. The `every` operator
    iterates on all **subjects** in the channel and either emits the item itself, or the second element of the list
    (the item placed after the `meta` map).
@@ -222,10 +232,10 @@ then {
 ## Configure the subworkflow
 
 To configure parameters of the subworkflow, use the `config` parameter, either globally or at the scope of the test case,
-to import a `nextflow.config` file.
+to import a **_nextflow.config_** file.
 
 :::tip[Layered configuration]
-**nf-test** supports layering configuration files. It applies configuration in hierarchy, from parent `config` statements
+**nf-test** supports layering configuration files. It applies configuration in hierarchy, from parent **_config_** statements
 defined in the `nextflow_process` block down to overriding `config` in children `test` blocks.
 :::
 
@@ -245,7 +255,7 @@ nf-core subworkflows test -u <subworkflow_name>
 ```
 
 All the test cases you defined will be run, watch out for errors! Once everything runs smoothly, look at the snapshot
-file produced at `tests/main.nf.test.snap` in your subworkflow's directory and validate that **ALL** outputs produced by
+file produced at **_tests/main.nf.test.snap_** in your subworkflow's directory and validate that **ALL** outputs produced by
 test cases are caught. Their **md5sum** is critical to ensure future executions of your test produce valid outputs.
 
 ## A complete example for a subworkflow

@@ -1,9 +1,15 @@
 ---
 title: Subworkflow definition
-description: Edit the subworkflow definition in the `main.nf` file.
+description: Edit the subworkflow definition in the **_main.nf_** file.
+coloredPreprocN4image:
+  - text: "PREPROC_N4"
+    style: text-blue-300
+  - text: .out.image
+    style: text-slate-200
 ---
 
 import { Steps } from '@astrojs/starlight/components';
+import InlineCode from '../../../../components/InlineCode.astro';
 
 :::caution[Empty template not available for subworkflows !]
 The first edition steps for the subworkflow are to :
@@ -14,15 +20,15 @@ The first edition steps for the subworkflow are to :
 </Steps>
 :::
 
-## Including other `nf-neuro` components
+## Including other nf-neuro components
 
-Defining a subworkflow for `nf-neuro` is a bit like creating a custom one for a project, with a few exceptions. For one,
-you cannot use modules or subworkflows from outside the nf-neuro scope. If you need one, then you have to contribute it
-as well. However, that means you don't have to install anything, you can use components by referencing their path
+Defining a subworkflow for nf-neuro is a bit like creating a custom one for a project, with a few exceptions. For one,
+**you cannot use modules or subworkflows from outside nf-neuro**. If you need one, you'll have to contribute it
+as well. However, that means **you don't have to install anything**, you can use components by referencing their path
 relative to the subworkflow :
 
-- For modules : `../../../modules/nf-neuro/`
-- For subworkflows : `../`
+- For modules : **_../../../modules/nf-neuro/_**
+- For subworkflows : **_../_**
 
 For the **anatomical preprocessing** subworkflow, add the following include statements at the top of the file :
 
@@ -52,9 +58,9 @@ want to execute the following linear processing flow :
 5. Segment brain tissues with `ANATOMICAL_SEGMENTATION`.
 </Steps>
 
-Instead of defining input channels now, start by describing the chaining of channels in the `main`. This will help
+Instead of defining input channels now, start by describing the chaining of channels in the `main` section. This will help
 detect which data is needed in input and what should be defined in a configuration. Take into account that you have
-access to an anatomical images channel, containing **tuple** elements of the shape :
+access to an anatomical images channel, containing `tuple` elements of the shape :
 
 ```groovy
 [ [id: string], path(anat_image) ]
@@ -62,7 +68,7 @@ access to an anatomical images channel, containing **tuple** elements of the sha
 
 Add the channel to the inputs, then create an input channel for the nl-means module :
 
-```diff lang="groovy" {"1": 3} {"2": 6-7} {"3": 9-10}
+```diff lang="groovy" {"1": 3} {"2": 7-8} {"3": 10-11}
 workflow PREPROC_ANAT {
 take:
 +    ch_anatomical  // Structure : [ [id: string], path(anat_image) ]
@@ -79,11 +85,11 @@ main:
 
 :::tip[What is happening here ?]
 <Steps>
-1. Each line in the `take` section define a distinct input channel users employ to pass data into your subworkflow.
-2. The `DENOISING_NLMEANS` module optionally takes two masks in addition to an image to denoise. The `map` operator
+1. Each line in the <code class="text-blue-300">take</code> section define a distinct input channel users employ to pass data into your subworkflow.
+2. The <code class="text-blue-300">DENOISING_NLMEANS</code> module optionally takes two masks in addition to an image to denoise. The `map` operator
    add two empty arrays at the end of each elements of `ch_anatomical`, acting as placeholders that will indicate to
    the modules there are no masks provided.
-3. The data prepared at the step above is given to the `DENOISING_NLMEANS` module. Then, the dependencies versions are
+3. The data prepared at the step above is given to the <code class="text-blue-300">DENOISING_NLMEANS</code> module. Then, the dependencies versions are
    collected in a channel for later use.
 </Steps>
 :::
@@ -128,10 +134,10 @@ main:
 
 :::tip[What is happening here ?]
 <Steps>
-1. To prepare the input for synthbet, we access the output of `DENOISING_NLMEANS`, using its output map and the
+1. To prepare the input for synthbet, we access the output of <code class="text-blue-300">DENOISING_NLMEANS</code>, using its output map and the
    name of the channel of interest (here `image`, refer to the [API documentation](/nf-neuro/api/modules/denoising/nlmeans)
    for more).
-2. Just as previously, the module is called on the prepared inputs and the versions collected.
+2. Just as previously, the <code class="text-blue-300">BETCROP_SYNTHBET</code> module is called on the prepared inputs and the versions collected.
 </Steps>
 :::
 
@@ -190,10 +196,10 @@ main:
 :::tip[What is happening here ?]
 The main difference here is the use of the [combine](https://www.nextflow.io/docs/latest/reference/operator.html#combine)
 operator. In this case, it acts as a **cartesian products** and appends the content of `ch_template` to each elements
-contained in the `PREPROC_N4.out.image` channel.
+contained in the <InlineCode parts={frontmatter.coloredPreprocN4image} /> channel.
 :::
 
-The last step to implement is the **segmentation**. This one is particular, since it is a call to another `subworkflow`,
+The last step to implement is the **segmentation**. This one is particular, since it is a call to another **subworkflow**,
 not to a module. Contrary to the other calls, it has **more than one input channel** (not that modules are exempt from
 it). However, for the case of this subworkflow, we'll only supply the image channel, all others will be given **empty
 channels** :
