@@ -132,7 +132,7 @@ under the **_directory_ specified as input**.
 
 The archives contents are accessed using the output parameter of the workflow
 `LOAD_TEST_DATA.out.test_data_directory`. To define actual **test inputs** from
-it use the `.map` operator :
+it, use the `.map` operator :
 
 ```groovy
 input = LOAD_TEST_DATA.out.test_data_directory
@@ -144,7 +144,7 @@ input = LOAD_TEST_DATA.out.test_data_directory
   ] }
 ```
 
-then feed it to it :
+Then, feed it to your subworkflow as follows :
 
 <Tabs>
 <TabItem label='Subworkflow "preproc_A"'>

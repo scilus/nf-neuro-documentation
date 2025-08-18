@@ -147,7 +147,7 @@ params {
 Selectors have [pre-defined importance levels](https://www.nextflow.io/docs/latest/config.html#selector-priority). Above,
 we used the **process base name**, which means the user still can modify its value using the **same name as us** or the
 **include name in the subworkflow** (for the NL-MEANS denoising in the `PREPROC_ANAT` subworkflow, this name is
-`PREPROC_ANAT::DENOISING_NLMEANS`).
+`PREPROC_ANAT:DENOISING_NLMEANS`).
 
 The **rule of thumb** is to use the name with the **least priority**, so users have
 all means of changing the behavior as they please. In the current case, we could have devised **a label** to do the
