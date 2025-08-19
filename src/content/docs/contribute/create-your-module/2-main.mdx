@@ -3,41 +3,41 @@ title: Process definition
 description: Edit the process definition in the **_main.nf_** file.
 coloredPrefix:
   - text: "${"
-    style: text-rose-400
+    style: dark:text-rose-300 text-amber-700
   - text: prefix
-    style: text-orange-300
+    style: dark:text-orange-300 text-yellow-800
   - text: "}"
-    style: text-rose-400
+    style: dark:text-rose-300 text-amber-700
 coloredDenoised:
   - text: "${"
-    style: text-rose-400
+    style: dark:text-rose-300 text-amber-700
   - text: prefix
-    style: text-orange-300
+    style: dark:text-orange-300 text-yellow-800
   - text: "}"
-    style: text-rose-400
+    style: dark:text-rose-300 text-amber-700
   - text: "__denoised.nii.gz"
-    style: text-orange-300
+    style: dark:text-orange-300 text-yellow-800
 taskDotExt:
   - text: task
-    style: text-slate-200
+    style: dark:text-slate-200 text-slate-700
   - text: "."
-    style: text-emerald-400
+    style: dark:text-emerald-300 text-emerald-700
   - text: ext
-    style: text-slate-200
+    style: dark:text-slate-200 text-slate-700
 taskDotCpu:
   - text: "$task"
-    style: text-lime-300
+    style: dark:text-lime-300 text-sky-700
   - text: "."
-    style: text-purple-300
+    style: dark:text-violet-400 text-violet-800
   - text: cpus
-    style: text-lime-300
+    style: dark:text-lime-300 text-sky-700
 taskDotMemory:
   - text: "$task"
-    style: text-lime-300
+    style: dark:text-lime-300 text-sky-700
   - text: "."
-    style: text-purple-300
+    style: dark:text-violet-400 text-violet-800
   - text: memory
-    style: text-lime-300
+    style: dark:text-lime-300 text-sky-700
 ---
 
 import { Steps } from '@astrojs/starlight/components';
@@ -95,9 +95,9 @@ The **bash script** contains the commands that will be run at execution of your 
 
 - All terminal commands, from the system (e.g. `cd`, `ls`, `find`) and those installed by dependencies (e.g. scilpy commands
 such as `scil_denoising_nlmeans.py`)
-- Environment variables available at runtime (`PATH` and others). **Use the prefix <code class="text-blue-400">\\$</code>** (e.g. `\$PATH`)
+- Environment variables available at runtime (`PATH` and others). **Use the prefix <code class="dark:text-blue-300 text-blue-500">\\$</code>** (e.g. `\$PATH`)
 - Variables defined in the **groovy header**, in the `input` and `output` sections and through the `task` object. **Use
-the prefix <code class="text-blue-400">$</code>** (e.g. `$prefix` or `$task.cpus`)
+the prefix <code class="dark:text-blue-300 text-blue-500">$</code>** (e.g. `$prefix` or `$task.cpus`)
 
 :::caution
 Variables defined in the `params` map of **_nextflow.config_** files are also available, but their usage is prohibited,
@@ -125,21 +125,21 @@ script:
 :::tip[What is happening here ?]
 <Steps>
 1. In the **groovy header**, two variables are defined for you : the `prefix` and the `args` list. They both use the
-   [elvis operator](https://groovy-lang.org/operators.html#_elvis_operator) <code class="text-emerald-400">?:</code>, a
+   [elvis operator](https://groovy-lang.org/operators.html#_elvis_operator) <code class="dark:text-emerald-300 text-emerald-700">?:</code>, a
    shorthand of an _if-else_ conditional statement, to select between a value defined in <InlineCode parts={frontmatter.taskDotExt} />
    or a default value.
-   - The default value for the `prefix` is defined throught the <code class="text-orange-300">meta</code> variable, which is an
+   - The default value for the `prefix` is defined throught the <code class="dark:text-orange-300 text-yellow-800">meta</code> variable, which is an
      [obligatory input](https://nf-co.re/docs/contributing/components/meta_map) containing the metadata associated with the subject.
      It's usage is defined later.
-2. The scilpy command can handle its own parallelization. Using <code class="text-orange-300">export</code>,
+2. The scilpy command can handle its own parallelization. Using <code class="dark:text-orange-300 text-yellow-800">export</code>,
    we declared **3 environment variables** to limit the threads used by dependencies (e.g. `ITK`, `OMP`, `OPENBLAS`).
-3. The <code class="text-orange-300">scil_denoising_nlmeans.py</code> command is called on an input
-   <code class="text-lime-300">$image</code>, a variable you will define in the `input` section later.
+3. The <code class="dark:text-orange-300 text-yellow-800">scil_denoising_nlmeans.py</code> command is called on an input
+   <code class="dark:text-lime-300 text-sky-700">$image</code>, a variable you will define in the `input` section later.
 4. The denoised image is written to a file named <InlineCode parts={frontmatter.coloredDenoised} />, with
    <InlineCode parts={frontmatter.coloredPrefix} /> as defined in the **groovy header**. You will define an `output` to catch this file later.
-   - The brackets usage around <InlineCode parts={frontmatter.coloredPrefix} /> is equivalent to <code class="text-lime-300">$prefix</code>.
-5. The user's custom arguments are passed to the command, by unraveling the <code class="text-orange-300">args</code> variable
-   using <code class="text-orange-300">join</code>, a **groovy** operator.
+   - The brackets usage around <InlineCode parts={frontmatter.coloredPrefix} /> is equivalent to <code class="dark:text-lime-300 text-sky-700">$prefix</code>.
+5. The user's custom arguments are passed to the command, by unraveling the <code class="dark:text-orange-300 text-yellow-800">args</code> variable
+   using <code class="dark:text-orange-300 text-yellow-800">join</code>, a **groovy** operator.
 6. The <InlineCode parts={frontmatter.taskDotCpu} /> variable is used to limit the number of threads used by the command to
    the number of CPUs allocated to the process.
    - If the command allows it, this can also be done for memory (<InlineCode parts={frontmatter.taskDotMemory} />) and other
@@ -169,13 +169,13 @@ input:
 ```
 
 :::note
-Each channel defined below <code class="text-blue-300">input:</code> is independent. Their elements **have no association**
+Each channel defined below <code class="dark:text-blue-300 text-blue-500">input:</code> is independent. Their elements **have no association**
 with each other, as the dataflow in Nextflow is **asynchronous**. This means that the elements in each channel are processed
 independently and in parallel, without any direct relationship between them, **unless stated otherwise**.
 :::
 
 Each channel describes the **structure** of the elements that pass through it. From the `script` we defined above, we know
-we need **two variables in input** : the <code class="text-orange-300">meta</code> and the <code class="text-lime-300">image</code>.
+we need **two variables in input** : the <code class="dark:text-orange-300 text-yellow-800">meta</code> and the <code class="dark:text-lime-300 text-sky-700">image</code>.
 We can't define them in separate channels, since **the metadata is associated with the image**. Instead, we state **we want them
 grouped using a tuple** :
 
@@ -247,7 +247,7 @@ script:
 2. We defined a new variable `input_mask` in the **groovy header**. This variable will be used to store the value of the
    mask argument if the mask is present.
    - To do so, we use the [groovy truth](https://groovy-lang.org/semantics.html#the-groovy-truth), which states the empty
-   list `[]` is equivalent to <code class="text-blue-300">false</code>, combined with the [ternary operator](https://groovy-lang.org/operators.html#_ternary_operator).
+   list `[]` is equivalent to <code class="dark:text-blue-300 text-blue-500">false</code>, combined with the [ternary operator](https://groovy-lang.org/operators.html#_ternary_operator).
 3. The `input_mask` variable is then used in the **bash script** to pass the mask to the command.
    - If the mask is not present, the variable will be an **empty string**, which is equivalent to not passing the argument at all.
 </Steps>
@@ -271,7 +271,7 @@ An **optional output** doesn't emit default values. In case no values are caught
 
 **To define an output file, use the `path` type, along with a [glob pattern](https://man7.org/linux/man-pages/man7/glob.7.html)
 that targets it**. For the current module, the output file to target is the denoised image named :
-<InlineCode parts={frontmatter.coloredDenoised} />. The matching glob pattern is <span class="text-orange-300">"*__denoised.nii.gz"</span>.
+<InlineCode parts={frontmatter.coloredDenoised} />. The matching glob pattern is <span class="dark:text-orange-300 text-yellow-800">"*__denoised.nii.gz"</span>.
 Here, the character `*` will **match with any <InlineCode parts={frontmatter.coloredPrefix} />, the only part that changes in
 the filename**. The output section should look like this :
 
@@ -468,5 +468,5 @@ stub:
 ```
 
 On the next part of the tutorial, you will add configuration options to the module, using the
-<code class="text-slate-200">task.ext</code> argument namespace. This will **enable users to
+<code class="dark:text-slate-200 text-slate-700">task.ext</code> argument namespace. This will **enable users to
 fine-tune the behavior of your module**.

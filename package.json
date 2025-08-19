@@ -10,16 +10,17 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.32.2",
+    "@astrojs/starlight": "^0.35.2",
     "@astrojs/starlight-docsearch": "^0.6.0",
+    "@astrojs/starlight-tailwind": "^4.0.1",
     "@iconify/json": "^2.2.315",
     "@mdx-js/runtime": "1.6.22",
-    "@tailwindcss/vite": "^4.0.13",
-    "astro": "^5.4.3",
+    "@tailwindcss/vite": "^4.1.12",
+    "astro": "^5.13.2",
     "astro-matomo": "^1.8.1",
     "pnpm": "^10.6.2",
     "sharp": "^0.32.6",
-    "tailwindcss": "^4.0.13",
+    "tailwindcss": "^4.1.12",
     "uninstall": "^0.0.0",
     "unplugin-icons": "^22.1.0"
   }

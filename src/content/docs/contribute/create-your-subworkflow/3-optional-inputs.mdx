@@ -3,11 +3,11 @@ title: Optional inputs
 description: Improve the subworkflow i/o capabilities
 coloredRemainder:
   - text: remainder
-    style: text-blue-300
+    style: dark:text-blue-300 text-blue-500
   - text: " : "
-    style: text-slate-200
+    style: dark:text-slate-200 text-slate-700
   - text: true
-    style: text-blue-300
+    style: dark:text-blue-300 text-blue-500
 ---
 
 import { Steps } from '@astrojs/starlight/components';
@@ -22,7 +22,7 @@ A good first optional input to define for the subworkflow is an **input brain ma
 times : once with `BETCROP_SYNTHBET` to **control intensity normalization** by `PREPROC_N4`, then a second time with
 `BETCROP_ANTSBET` to obtain a **robust mask based on a population template**. A user might have a different technique
 of preference to compute the brain mask, or he might want to do it by hand. To allow him to input it, add the
-`ch_brain_mask` input in the <code class="text-blue-300">take</code> section of the subworkflow :
+`ch_brain_mask` input in the <code class="dark:text-blue-300 text-blue-500">take</code> section of the subworkflow :
 
 ```diff lang="groovy"
 workflow PREPROC_ANAT {
@@ -60,9 +60,9 @@ main:
 <Steps>
 1. `ch_anatomical` and `ch_brain_mask` are joined together, using <InlineCode parts={frontmatter.coloredRemainder} />.
    Element in `ch_anatomical` are associated with ones in `ch_brain_mask`, if their `meta` field is identical (`[meta, image, mask]`).
-   If no association is found in `ch_brain_mask`, the element gets appended with the value <code class="text-blue-300">null</code>
+   If no association is found in `ch_brain_mask`, the element gets appended with the value <code class="dark:text-blue-300 text-blue-500">null</code>
    ( `[meta, image, null]`).
-2. Using the `map` operator, each element is verified. If the mask value is <code class="text-blue-300">null</code>, it is replaced with the
+2. Using the `map` operator, each element is verified. If the mask value is <code class="dark:text-blue-300 text-blue-500">null</code>, it is replaced with the
    **empty array** `[]`, **the nextflow default value for path**. In addition, some organisation of the element's content is
    performed so the `mask` is used for noise estimation only.
 </Steps>
@@ -71,7 +71,7 @@ main:
 ## Skipping a component execution given an optional input
 
 If a brain mask is given in input, then brain masking modules included in the subworflow should not be executed. This is
-not as simple as doing a conditional test on `ch_brain_mask`, it will return <code class="text-blue-300">true</code> even if
+not as simple as doing a conditional test on `ch_brain_mask`, it will return <code class="dark:text-blue-300 text-blue-500">true</code> even if
 empty. Instead, you need to `filter` the content of a component's input you wish to skip, **to empty it of all elements for
 which a mask exists** :
 

@@ -3,27 +3,27 @@ title: Subworkflow configuration
 description: Configure the subworkflow inner logic.
 coloredNLMeans:
   - text: "DENOISING_NLMEANS"
-    style: text-blue-300
+    style: dark:text-blue-300 text-blue-500
   - text: .out.image
-    style: text-slate-200
+    style: dark:text-slate-200 text-slate-700
 coloredTaskDotExtDotNbCoils:
   - text: task
-    style: text-slate-200
+    style: dark:text-slate-200 text-slate-700
   - text: "."
-    style: text-emerald-300
+    style: dark:text-emerald-300 text-emerald-700
   - text: ext
-    style: text-slate-200
+    style: dark:text-slate-200 text-slate-700
   - text: "."
-    style: text-emerald-300
+    style: dark:text-emerald-300 text-emerald-700
   - text: number_of_coils
-    style: text-slate-200
+    style: dark:text-slate-200 text-slate-700
 coloredParamsNbCoils:
   - text: params
-    style: text-slate-200
+    style: dark:text-slate-200 text-slate-700
   - text: "."
-    style: text-emerald-300
+    style: dark:text-emerald-300 text-emerald-700
   - text: preproc_anat_nlmeans_number_of_coils
-    style: text-slate-200
+    style: dark:text-slate-200 text-slate-700
 ---
 
 import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
@@ -40,7 +40,7 @@ For subworkflows, configuration acts on two fronts :
 ## Define subworkflow behaviors
 
 :::caution
-**NEVER** define a configuration logic using the **content of a channel**. Channels evaluate to <code class="text-blue-400">true</code>
+**NEVER** define a configuration logic using the **content of a channel**. Channels evaluate to <code class="dark:text-blue-300 text-blue-500">true</code>
 nonetheless, even when empty. You need to use configuration through `params` or `task.ext`, or apply
 [nextflow operators](https://www.nextflow.io/docs/latest/reference/operator.html) to unravel the logic at runtime by
 removing data that should not be processed.
@@ -82,8 +82,8 @@ main:
 ```
 
 :::tip[What is happening here ?]
-- The <span class="text-blue-300">DENOISING_NLMEANS</span> module is only run if the parameter `preproc_anat_denoise` is set
-  to <span class="text-blue-300">true</span>. When it is, it changes the channel assigned to `ch_anatomical` for the output
+- The <span class="dark:text-blue-300 text-blue-500">DENOISING_NLMEANS</span> module is only run if the parameter `preproc_anat_denoise` is set
+  to <span class="dark:text-blue-300 text-blue-500">true</span>. When it is, it changes the channel assigned to `ch_anatomical` for the output
   of the module.
 - The other downstream components then access this variable, instead of calling <InlineCode parts={frontmatter.coloredNLMeans} /> directly.
 :::
@@ -135,11 +135,11 @@ params {
 
 :::tip[What is happening here ?]
 <Steps>
-1. We define a new parameter `preproc_anat_number_of_coils` in the `params` scope, with a default value of <code class="text-orange-300">1</code>,
+1. We define a new parameter `preproc_anat_number_of_coils` in the `params` scope, with a default value of <code class="dark:text-orange-300 text-yellow-800">1</code>,
    that users will use to set the actual number of coils in the receiver antenna used to acquire the MRI signal.
-2. In the `process` scope, we define a selector that targets the <code class="text-orange-300">DENOISING_NLMEANS</code> module only.
+2. In the `process` scope, we define a selector that targets the <code class="dark:text-orange-300 text-yellow-800">DENOISING_NLMEANS</code> module only.
    In it, we bind the <InlineCode parts={frontmatter.coloredTaskDotExtDotNbCoils} /> variable to the value of
-   <InlineCode parts={frontmatter.coloredParamsNbCoils} />, or to <code class="text-orange-300">1</code> **if it is unset by users**.
+   <InlineCode parts={frontmatter.coloredParamsNbCoils} />, or to <code class="dark:text-orange-300 text-yellow-800">1</code> **if it is unset by users**.
 </Steps>
 :::
 

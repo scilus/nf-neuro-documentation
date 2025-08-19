@@ -1,1 +1,22 @@
-@import "tailwindcss";
+@layer base, starlight, theme, components, utilities;
+
+@import "@astrojs/starlight-tailwind";
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme inline {
+    /* On the website, we accent using shades of green. */
+    --color-accent-200: var(--color-green-200);
+    --color-accent-600: var(--color-green-600);
+    --color-accent-900: var(--color-green-900);
+    --color-accent-950: var(--color-green-950);
+    /* Gray color palette with tints of green. */
+    --color-gray-100: #f4f7f4;
+    --color-gray-200: #e9f0e9;
+    --color-gray-300: #bcc5bc;
+    --color-gray-400: #809181;
+    --color-gray-500: #4d5d4e;
+    --color-gray-700: #2e3d2f;
+    --color-gray-800: #1d2b1e;
+    --color-gray-900: #141a14;
+}

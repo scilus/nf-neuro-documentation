@@ -3,11 +3,11 @@ title: Test definitions
 description: Add tests to ensure reproducible results.
 coloredWorkflowSuccess:
   - text: workflow
-    style: text-slate-200
+    style: dark:text-slate-200 text-slate-700
   - text: "."
-    style: text-emerald-300
+    style: dark:text-emerald-300 text-emerald-700
   - text: success
-    style: text-slate-200
+    style: dark:text-slate-200 text-slate-700
 ---
 
 import { Steps } from '@astrojs/starlight/components';
@@ -81,12 +81,12 @@ setup {
 ```
 :::tip[What is happening here?]
 <Steps>
-1. The `run` instruction is used to call the <code class="text-orange-300">LOAD_TEST_DATA</code> subworkflow, under the alias
-   <code class="text-orange-300">LOAD_DATA</code>. The alias could be useful if multiple calls to the same subworkflow are needed.
-   The `script` parameter inside the `run` block specifies the path to the <code class="text-orange-300">LOAD_TEST_DATA</code>
+1. The `run` instruction is used to call the <code class="dark:text-orange-300 text-yellow-800">LOAD_TEST_DATA</code> subworkflow, under the alias
+   <code class="dark:text-orange-300 text-yellow-800">LOAD_DATA</code>. The alias could be useful if multiple calls to the same subworkflow are needed.
+   The `script` parameter inside the `run` block specifies the path to the <code class="dark:text-orange-300 text-yellow-800">LOAD_TEST_DATA</code>
    subworkflow file.
-2. The `workflow` block contains definitions for the input channels of the subworkflow. The <code class="text-orange-300">input[0]</code>
-   channel corresponds to **the archives** to download for the test, while <code class="text-orange-300">input[1]</code> is a
+2. The `workflow` block contains definitions for the input channels of the subworkflow. The <code class="dark:text-orange-300 text-yellow-800">input[0]</code>
+   channel corresponds to **the archives** to download for the test, while <code class="dark:text-orange-300 text-yellow-800">input[1]</code> is a
    **test dataset identifier** for the current run.
 </Steps>
 :::
@@ -155,8 +155,8 @@ test("example - test") {
 
 :::tip[What is happening here?]
 <Steps>
-1. The first input channel of the subworkflow is created from the output of the <code class="text-orange-300">LOAD_TEST_DATA</code>
-   subworkflow, called in the `setup` section, and accessed through its alias <code class="text-orange-300">LOAD_DATA</code>.
+1. The first input channel of the subworkflow is created from the output of the <code class="dark:text-orange-300 text-yellow-800">LOAD_TEST_DATA</code>
+   subworkflow, called in the `setup` section, and accessed through its alias <code class="dark:text-orange-300 text-yellow-800">LOAD_DATA</code>.
 2. A first dataset to input into the subworkflow is created from the content downloaded by the subworkflow. The
    subworkflow has an optional path in input, which is not provided using the empty list `[]`.
 3. A second dataset is created, this time with a mask as input.

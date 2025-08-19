@@ -5,13 +5,13 @@ description: Feeding optional parameters to your module.
 
 import { Steps } from '@astrojs/starlight/components';
 
-In **nf-neuro**, we use the **<code class="text-slate-200">task.ext</code> parameter namespace** to define
+In **nf-neuro**, we use the **<code class="dark:text-slate-200 text-slate-700">task.ext</code> parameter namespace** to define
 configuration options that user can use to fine-tune the behavior of a module. Those options have two
 specificities :
 
 <Steps>
-1. **They are _optional_ by default**. If a `parameter` is not defined, <code class="text-slate-200">task.ext.parameter</code>
-   will return the value <code class="text-blue-400">null</code>.
+1. **They are _optional_ by default**. If a `parameter` is not defined, <code class="dark:text-slate-200 text-slate-700">task.ext.parameter</code>
+   will return the value <code class="dark:text-blue-300 text-blue-500">null</code>.
 2. **They are _static_**. Their value is bound to the module's name. _Dynamic parameters_ have to be defined using
    [inputs](/nf-neuro/create-your-module/2-main#the-input-section).
 </Steps>
@@ -42,8 +42,8 @@ For example, the `number_coils` parameter can be defined as follows:
 def number_coils = "--number_coils ${task.ext.number_of_coils ?: 1}"
 ```
 
-The **elvis operator** (<code class="text-orange-300">?:</code>) will select <code class="text-orange-300">task.ext.number_of_coils</code> if it is defined,
-and the _default value_ <code class="text-orange-300">1</code> otherwise.
+The **elvis operator** (<code class="dark:text-orange-300 text-yellow-800">?:</code>) will select <code class="dark:text-orange-300 text-yellow-800">task.ext.number_of_coils</code> if it is defined,
+and the _default value_ <code class="dark:text-orange-300 text-yellow-800">1</code> otherwise.
 
 For the `gaussian` parameter, which is a boolean flag, use the following :
 
@@ -105,7 +105,7 @@ script:
 
 :::tip[What is happening here ?]
 <Steps>
-1. As stated, we define a new **optional input file**, <code class="text-slate-200">path(noise_mask)</code>, as well as an
+1. As stated, we define a new **optional input file**, <code class="dark:text-slate-200 text-slate-700">path(noise_mask)</code>, as well as an
    **optional output file**.
 2. We unpack the several new parameters we listed above, using the ternary logic, to usable strings which we can call in
    the script section.

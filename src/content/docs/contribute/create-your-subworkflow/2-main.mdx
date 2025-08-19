@@ -3,9 +3,9 @@ title: Subworkflow definition
 description: Edit the subworkflow definition in the **_main.nf_** file.
 coloredPreprocN4image:
   - text: "PREPROC_N4"
-    style: text-blue-300
+    style: dark:text-blue-300 text-blue-500
   - text: .out.image
-    style: text-slate-200
+    style: dark:text-slate-200 text-slate-700
 ---
 
 import { Steps } from '@astrojs/starlight/components';
@@ -85,11 +85,11 @@ main:
 
 :::tip[What is happening here ?]
 <Steps>
-1. Each line in the <code class="text-blue-300">take</code> section define a distinct input channel users employ to pass data into your subworkflow.
-2. The <code class="text-blue-300">DENOISING_NLMEANS</code> module optionally takes two masks in addition to an image to denoise. The `map` operator
+1. Each line in the <code class="dark:text-blue-300 text-blue-500">take</code> section define a distinct input channel users employ to pass data into your subworkflow.
+2. The <code class="dark:text-blue-300 text-blue-500">DENOISING_NLMEANS</code> module optionally takes two masks in addition to an image to denoise. The `map` operator
    add two empty arrays at the end of each elements of `ch_anatomical`, acting as placeholders that will indicate to
    the modules there are no masks provided.
-3. The data prepared at the step above is given to the <code class="text-blue-300">DENOISING_NLMEANS</code> module. Then, the dependencies versions are
+3. The data prepared at the step above is given to the <code class="dark:text-blue-300 text-blue-500">DENOISING_NLMEANS</code> module. Then, the dependencies versions are
    collected in a channel for later use.
 </Steps>
 :::
@@ -134,10 +134,10 @@ main:
 
 :::tip[What is happening here ?]
 <Steps>
-1. To prepare the input for synthbet, we access the output of <code class="text-blue-300">DENOISING_NLMEANS</code>, using its output map and the
+1. To prepare the input for synthbet, we access the output of <code class="dark:text-blue-300 text-blue-500">DENOISING_NLMEANS</code>, using its output map and the
    name of the channel of interest (here `image`, refer to the [API documentation](/nf-neuro/api/modules/denoising/nlmeans)
    for more).
-2. Just as previously, the <code class="text-blue-300">BETCROP_SYNTHBET</code> module is called on the prepared inputs and the versions collected.
+2. Just as previously, the <code class="dark:text-blue-300 text-blue-500">BETCROP_SYNTHBET</code> module is called on the prepared inputs and the versions collected.
 </Steps>
 :::
 
