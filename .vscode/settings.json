@@ -5,4 +5,8 @@
     "[astro]": {
         "editor.defaultFormatter": "astro-build.astro-vscode"
     },
+    "typescript.inlayHints.parameterNames.enabled": "all",
+    "markdownlint.config": {
+        "MD033": false
+    }
 }

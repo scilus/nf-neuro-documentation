@@ -32,20 +32,27 @@ your data into a clean report, and how to implement it in your own pipeline.
 
 :::note[If you use MultiQC in your work]
 Please cite their original paper:
-Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results
-for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 
-1;32(19):3047-8. doi: [10.1093/bioinformatics/btw354](https://doi.org/10.1093/bioinformatics/btw354).
-Epub 2016 Jun 16. PMID: 27312411; PMCID: PMC5039924.
+
+>Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results
+>for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 
+>1;32(19):3047-8. doi: [10.1093/bioinformatics/btw354](https://doi.org/10.1093/bioinformatics/btw354).
+>Epub 2016 Jun 16. PMID: 27312411; PMCID: PMC5039924.
+
+A citation to **nf-neuro** for this tutorial is also appreciated:
+
+>Valcourt Caron A, Boré A, Edde M, Gagnon, A, Thoumyre S, Royer A, Rheault F, Descoteaux M. nf-neuro:
+>Developing Maintainable Pipelines for Seamless Processing of Diffusion MRI. Proceedings of the ISMRM
+>Workshop on 40 Years of Diffusion: Past, Present and Future Perspectives. 2025.
 :::
 
 ## Prerequisites
 
 You need to work on a pipeline that follows the `nf-core` conventions and have access to the [`nf-core` tools commands](https://nf-co.re/docs/nf-core-tools/).
 
-For the purpose of this walkthrough, we will reused the completed pipeline from the tutorial [Your pipeline from A to Z](/nf-neuro/pipeline/tutorial_explore/).
+For the purpose of this walkthrough, we will reused the completed pipeline from the tutorial [Your pipeline from A to Z](/nf-neuro/pipeline/2-tutorial_explore/).
 
 :::caution[If you did not complete the pipeline creation tutorial]
-Don't worry! You can still catch up by following the [setup section](/nf-neuro/pipeline/setup/).
+Don't worry! You can still catch up by following the [setup section](/nf-neuro/pipeline/1-setup/).
 Once you are setup, we prepared a branch that contains the complete pipeline. To access it,
 checkout the `full_tutorial` branch.
 ```bash
@@ -225,7 +232,7 @@ Your MultiQC module is now up-and-running for our neuroimaging needs!
 
 :::note[If you do not already have QC within your modules]
 The instructions for how to create QC files within your modules have
-been deeply covered in the [create your own module tutorial](/nf-neuro/contribute/create-your-module/main/#including-quality-control-qc-steps-within-your-module).
+been deeply covered in the [create your own module tutorial](/nf-neuro/contribute/create-your-module/2-main/#including-quality-control-qc-steps-within-your-module).
 The current section will assume QC is already available within your
 modules, and will cover how to generate and collect QC files during
 pipeline execution. 
@@ -458,7 +465,7 @@ empty list if we do not have them.
     </TabItem>
     </Tabs>
 
-3. <RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, you can run nextflow..**
+3. <RunIcon class="inline-icon dark:text-blue-300 text-blue-500" aria-hidden /> **Now, you can run nextflow..**
 
    <CommandOutputs>
    <span slot="command">
@@ -632,7 +639,7 @@ Change your `./main.nf` file.
     </TabItem>
     </Tabs>
 
-7. <RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, you can run nextflow..**
+7. <RunIcon class="inline-icon dark:text-blue-300 text-blue-500" aria-hidden /> **Now, you can run nextflow..**
 
    <CommandOutputs>
    <span slot="command">

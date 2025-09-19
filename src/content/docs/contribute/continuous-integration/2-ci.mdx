@@ -1,0 +1,48 @@
+---
+title: Resources for testing 
+description: Specify resources requirements for your test cases.
+---
+
+Test runners on the online nf-neuro repository restrain their resources usage to specifically what is asked for by
+Nextflow through the configuration files. For **nf-neuro tests**, you can find this configuration in
+**_tests/config/nextflow.config_**.
+
+**If any of your tests ask for more, you need to define it correctly**.
+
+:::note
+**Usually, containers detects out-of-bound resource consumption automatically**. When using the [devcontainer]() or configuring
+**Nextflow** to run using `docker` or `apptainer`, tests will fail if they haven't been assigned them sufficiently. It can be
+a good way to see if your workload needs more resources quickly !
+:::
+
+## Available runner classes
+
+| Runner Class                       | CPUs | RAM |
+| ---------------------------------- | ---- | --- |
+| **(default)**                      | 4    | 4G  |
+| **scilus-nf-neuro-bigmem-runners** | 6    | 32G |
+
+## Request for more test resources
+
+:::caution
+**Specialized runners are limited !!!** They are allocated for hungry processes, such as **AI/ML** models and **large dataset studies**,
+don't abuse them. _The more they are requested for, the longer PR take to merge_. Don't ask for them for nothing, meaning be smart in
+designing your modules ! **PRs deemed not needing them will be automatically closed.**
+:::
+
+**Custom resource requirements need to be defined in _nextflow.config_ file(s) associated to your tests and/or
+test cases**. In them, add the `process.cpu` and `process.memory` and set their requirements as needed :
+
+```
+process.memory = '9G'
+process.cpus = 6
+```
+
+**Select an appropriate runner class for your tests**. To do so, edit **_github/workflows/run_checks_suite.yml_**. Find the
+`matrix` definition for the `nf-test` job (currently around `line 133`) and add the following request for a runner in the
+`include` section :
+
+```
+- runner: <name-of-the-runner-class>
+  path: modules/nf-neuro/<category>/<tool>
+```

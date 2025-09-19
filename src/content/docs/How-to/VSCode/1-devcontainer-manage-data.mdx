@@ -15,10 +15,10 @@ to your data to the container.
 
 #### Small dataset
 
-The simpler way is to **copy your data** in the <span class="text-blue-300">nf-neuro-tutorial</span>
+The simpler way is to **copy your data** in the <span class="dark:text-blue-300 text-blue-500">nf-neuro-tutorial</span>
 directory on your computer. If you used **VSCode** to clone the repository, it's the path you chose previously.
 This will make your data instantly available inside the `devcontainer`, since **VScode connects your workspace**,
-available in the <span class="text-blue-300">editor</span>, to the <span class="text-blue-300">nf-neuro-tutorial</span>
+available in the <span class="dark:text-blue-300 text-blue-500">editor</span>, to the <span class="dark:text-blue-300 text-blue-500">nf-neuro-tutorial</span>
 directory at launch. This way, any modifications made from your computer reflect instantly inside the container (and
 vice-versa).
 
@@ -29,7 +29,7 @@ For larger datasets, too heavy to duplicate, copying is impractical. There are 2
 1. Mounting paths in the devcontainer
 
     Define a **new mount point** in the devcontainer definition. You will find it in `.devcontainer/devcontainer.json`.
-    Look for the **mounts** entry, near <span class="text-blue-300">line 15</span>. To define a mount point add the
+    Look for the **mounts** entry, near <span class="dark:text-blue-300 text-blue-500">line 15</span>. To define a mount point add the
     following in the mounts entry :
 
     ```json
@@ -40,8 +40,8 @@ For larger datasets, too heavy to duplicate, copying is impractical. There are 2
     }
     ```
 
-    Replace <span class="text-blue-300">\<source\></span> by the **absolute path** to the data
-    on your computer and <span class="text-blue-300">\<target\></span> with the name of the directory
+    Replace <span class="dark:text-blue-300 text-blue-500">\<source\></span> by the **absolute path** to the data
+    on your computer and <span class="dark:text-blue-300 text-blue-500">\<target\></span> with the name of the directory
     you'd like your data to be placed inside the container, under `/workspaces`.
 
     :::caution
@@ -53,7 +53,7 @@ For larger datasets, too heavy to duplicate, copying is impractical. There are 2
 2. Piggyback on Nextflow
 
     Note that there is also a way to not copy data on your computer. A great feature of Nextflow
-    is that it handles **remote files** quite well. By that, we mean <span class="text-blue-300">HTTP
-    links</span>, <span class="text-blue-300">amazon s3 buckets</span> and even <span class="text-blue-300">
+    is that it handles **remote files** quite well. By that, we mean <span class="dark:text-blue-300 text-blue-500">HTTP
+    links</span>, <span class="dark:text-blue-300 text-blue-500">amazon s3 buckets</span> and even <span class="dark:text-blue-300 text-blue-500">
     ftp links</span>. If possible, define your inputs using those, you'll find all the information needed
     in the [Nextflow documentation](https://nextflow.io/docs/latest/working-with-files.html#remote-files).

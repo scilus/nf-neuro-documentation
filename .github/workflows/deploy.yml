@@ -37,12 +37,12 @@ jobs:
             local module_name=$(basename "$(dirname "$file")")
             local category=$(basename "$(dirname "$(dirname "$file")")")
             mkdir -p modules/$category
-            python nf-neuro/docs/astro/convert_module.py $file ${{ github.sha }} modules/${category}/${module_name}.md
+            python nf-neuro/docs/astro/convert_module.py $(dirname "$file") ${{ github.sha }} modules/${category}/${module_name}.md
           }
           function convert_subworkflow () {
             local file="$1"
             local sbwf_name=$(basename "$(dirname "$file")")
-            python nf-neuro/docs/astro/convert_subworkflow.py $file ${{ github.sha }} subworkflows/${sbwf_name}.md
+            python nf-neuro/docs/astro/convert_subworkflow.py $(dirname "$file") ${{ github.sha }} subworkflows/${sbwf_name}.md
           }
           export -f convert_module
           export -f convert_subworkflow

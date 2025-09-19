@@ -1,0 +1,34 @@
+---
+title: Submit your subworkflow
+description: Submit your subworkflow for review !
+---
+
+## Lint your code
+
+Run linting on your new subworkflow, through the `nf-core` command line :
+
+```bash
+nf-core subworkflows lint <subworkflow>
+```
+
+and fix all **errors** and as many **warnings** as possible. If at any point you modified files outside of your subworkflow's
+directory, those also need to be linted. To do so, run the following commands at the root of the repository :
+
+```bash
+prettier --check .
+editorconfig-checker
+```
+
+You'll get lists of syntax errors to fix from both commands. For prettier, you can run `prettier --write .` to fix most
+of them automatically. For `editorconfig-checker`, you'll have to fix them manually.
+
+## Submit your PR
+
+Open a PR to the [nf-neuro repository main branch](https://github.com/scilus/nf-neuro/pulls). We'll test everything, make
+sure it's working and that code follows standards.
+
+:::note
+It's the perfect place to get new tools added to our containers, if need be !
+:::
+
+Once **LGTM** has been declared, wave to the maintainers and look at your hard work paying off. **PR merged !**

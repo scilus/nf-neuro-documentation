@@ -1,0 +1,472 @@
+---
+title: Process definition
+description: Edit the process definition in the **_main.nf_** file.
+coloredPrefix:
+  - text: "${"
+    style: dark:text-rose-300 text-amber-700
+  - text: prefix
+    style: dark:text-orange-300 text-yellow-800
+  - text: "}"
+    style: dark:text-rose-300 text-amber-700
+coloredDenoised:
+  - text: "${"
+    style: dark:text-rose-300 text-amber-700
+  - text: prefix
+    style: dark:text-orange-300 text-yellow-800
+  - text: "}"
+    style: dark:text-rose-300 text-amber-700
+  - text: "__denoised.nii.gz"
+    style: dark:text-orange-300 text-yellow-800
+taskDotExt:
+  - text: task
+    style: dark:text-slate-200 text-slate-700
+  - text: "."
+    style: dark:text-emerald-300 text-emerald-700
+  - text: ext
+    style: dark:text-slate-200 text-slate-700
+taskDotCpu:
+  - text: "$task"
+    style: dark:text-lime-300 text-sky-700
+  - text: "."
+    style: dark:text-violet-400 text-violet-800
+  - text: cpus
+    style: dark:text-lime-300 text-sky-700
+taskDotMemory:
+  - text: "$task"
+    style: dark:text-lime-300 text-sky-700
+  - text: "."
+    style: dark:text-violet-400 text-violet-800
+  - text: memory
+    style: dark:text-lime-300 text-sky-700
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import InlineCode from '../../../../components/InlineCode.astro';
+
+With the module's skeleton ready, it's time to edit the process to define the `script` to run and its
+`input` and `output` sections. For now, open the **_main.nf_** file. We'll go through the following steps in order :
+
+<Steps>
+1. [Write the script section](#write-the-script)
+2. [Define the inputs and outputs](#define-the-inputs-and-outputs)
+3. [Add dependencies versioning](#obligatory-versionyml-output)
+4. [Define a stub for quick test](#define-a-stub-for-quick-testing)
+</Steps>
+
+## Write the script
+
+The script section is defined in two parts : the **groovy header** and the **bash script**.
+
+```groovy
+script:
+    def GROOVY HEADER GOES HERE !
+    """
+    BASH SCRIPT GOES HERE !
+    """
+```
+
+### Groovy header
+
+In the **groovy header**, you can define variables and modify them using the power of the
+[groovy language](https://groovy-lang.org/). You can see the `args` and `prefix` variables
+already defined for you by the template :
+
+```groovy {"1": 2} {"2": 3}
+script:
+    def args = task.ext.args ?: ''
+    def prefix = task.ext.prefix ?: "${meta.id}"
+```
+
+:::tip[What is happening here ?]
+<Steps>
+1. The `args` variable is a **string** of custom arguments to pass to a command line inside the
+  **bash script**. You can add configuration parameters to it and users can change the behavior
+  of your module by redefining it in their configuration.
+  **In nf-neuro, the `args` variable is not used directly. Instead, you define [task.ext](/nf-neuro/contribute/create-your-module/3-configuration)
+  parameters. You'll define them later**.
+2. The `prefix` variable is the prefix to use for all files outputed by your module.
+</Steps>
+:::
+
+### Bash script
+
+The **bash script** contains the commands that will be run at execution of your module. It is enclosed by
+**triple quotes**. In the script, you have access to :
+
+- All terminal commands, from the system (e.g. `cd`, `ls`, `find`) and those installed by dependencies (e.g. scilpy commands
+such as `scil_denoising_nlmeans.py`)
+- Environment variables available at runtime (`PATH` and others). **Use the prefix <code class="dark:text-blue-300 text-blue-500">\\$</code>** (e.g. `\$PATH`)
+- Variables defined in the **groovy header**, in the `input` and `output` sections and through the `task` object. **Use
+the prefix <code class="dark:text-blue-300 text-blue-500">$</code>** (e.g. `$prefix` or `$task.cpus`)
+
+:::caution
+Variables defined in the `params` map of **_nextflow.config_** files are also available, but their usage is prohibited,
+reserved for workflow confguration.
+:::
+
+For the Non-Local Means module, replace the whole script section with the following definition :
+
+```groovy {"1": 2-3} {"2": 5-7} {"3": 9} {"4": 10} {"5": 11} {"6": 12}
+script:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def args = task.ext.args ?: []
+    """
+    export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+
+    scil_denoising_nlmeans.py $image \
+        ${prefix}__denoised.nii.gz \
+        ${args.join(" ")} \
+        --processes $tasks.cpus
+    """
+```
+
+:::tip[What is happening here ?]
+<Steps>
+1. In the **groovy header**, two variables are defined for you : the `prefix` and the `args` list. They both use the
+   [elvis operator](https://groovy-lang.org/operators.html#_elvis_operator) <code class="dark:text-emerald-300 text-emerald-700">?:</code>, a
+   shorthand of an _if-else_ conditional statement, to select between a value defined in <InlineCode parts={frontmatter.taskDotExt} />
+   or a default value.
+   - The default value for the `prefix` is defined throught the <code class="dark:text-orange-300 text-yellow-800">meta</code> variable, which is an
+     [obligatory input](https://nf-co.re/docs/contributing/components/meta_map) containing the metadata associated with the subject.
+     It's usage is defined later.
+2. The scilpy command can handle its own parallelization. Using <code class="dark:text-orange-300 text-yellow-800">export</code>,
+   we declared **3 environment variables** to limit the threads used by dependencies (e.g. `ITK`, `OMP`, `OPENBLAS`).
+3. The <code class="dark:text-orange-300 text-yellow-800">scil_denoising_nlmeans.py</code> command is called on an input
+   <code class="dark:text-lime-300 text-sky-700">$image</code>, a variable you will define in the `input` section later.
+4. The denoised image is written to a file named <InlineCode parts={frontmatter.coloredDenoised} />, with
+   <InlineCode parts={frontmatter.coloredPrefix} /> as defined in the **groovy header**. You will define an `output` to catch this file later.
+   - The brackets usage around <InlineCode parts={frontmatter.coloredPrefix} /> is equivalent to <code class="dark:text-lime-300 text-sky-700">$prefix</code>.
+5. The user's custom arguments are passed to the command, by unraveling the <code class="dark:text-orange-300 text-yellow-800">args</code> variable
+   using <code class="dark:text-orange-300 text-yellow-800">join</code>, a **groovy** operator.
+6. The <InlineCode parts={frontmatter.taskDotCpu} /> variable is used to limit the number of threads used by the command to
+   the number of CPUs allocated to the process.
+   - If the command allows it, this can also be done for memory (<InlineCode parts={frontmatter.taskDotMemory} />) and other
+   [process](https://www.nextflow.io/docs/latest/reference/process.html) properties and directives.
+</Steps>
+:::
+
+## Define the inputs and outputs
+
+The `input` section of the process define how users of your module **shape and structure the data passed to it for processing**.
+In the same manner, the `output` section define how you **shape and structure the data processed** by the module, how the user collects it for usage in other downstream processes.
+
+:::caution
+Declaring an output doesn't mean **publishing an output to results**. It doesn't make it accessible as a file outside the
+module's workspace. **This task is handled by the `publishDir` directive, defined in pipelines**.
+:::
+
+### The input section
+
+The input section is defined on multiple lines, each line stating a different input channel.
+
+```groovy
+input:
+    CHANNEL_1
+    CHANNEL_2
+    ...
+```
+
+:::note
+Each channel defined below <code class="dark:text-blue-300 text-blue-500">input:</code> is independent. Their elements **have no association**
+with each other, as the dataflow in Nextflow is **asynchronous**. This means that the elements in each channel are processed
+independently and in parallel, without any direct relationship between them, **unless stated otherwise**.
+:::
+
+Each channel describes the **structure** of the elements that pass through it. From the `script` we defined above, we know
+we need **two variables in input** : the <code class="dark:text-orange-300 text-yellow-800">meta</code> and the <code class="dark:text-lime-300 text-sky-700">image</code>.
+We can't define them in separate channels, since **the metadata is associated with the image**. Instead, we state **we want them
+grouped using a tuple** :
+
+```diff lang="groovy"
++input:
++    tuple val(meta), path(image)
+script:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def args = task.ext.args ?: []
+    """
+    export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+
+    scil_denoising_nlmeans.py $image \
+        ${prefix}__denoised.nii.gz \
+        ${args.join(" ")} \
+        --processes $tasks.cpus
+    """
+```
+
+:::note
+In **nextflow**, the main [datatypes](https://www.nextflow.io/docs/latest/reference/process.html#inputs) are `val`,
+to define a groovy variable (e.g. number, string, map, list), and `path`, a local or remote filesystem location.
+`tuple` is only used at the beginning of a channel definition, to indicate elements are groups of values. For a
+comprehensive overview of channels, refer to the [Nextflow documentation](https://www.nextflow.io/docs/latest/channel.html)
+and [Nextflow hello tutorials](https://training.nextflow.io/latest/hello_nextflow/02_hello_channels/).
+:::
+
+### Optional input value
+
+Denoising with the Non-Local Means algorithm can be accelerated and improved using a mask. This
+mask is optional, so we need to define it as such. In **nextflow**, there is no concept of
+optional inputs. This is a limitation of the language itself, not of the framework. However,
+we can work around this using **default null values**.
+
+:::note
+A **default null value** can be detected and skipped inside the script section, using the
+[groovy truth](https://groovy-lang.org/semantics.html#the-groovy-truth) and bash operations.
+For a `path`, the default value is the **empty list** `[]`. For the various types encompassed
+by `val`, refer to the link above.
+:::
+
+```diff lang="groovy" ins=", path(mask) /* optional, input = [] */" {"1": 2} {"2": 6} {"3": 14}
+input:
+    tuple val(meta), path(image), path(mask) /* optional, input = [] */
+script:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def args = task.ext.args ?: []
++    def input_mask = mask ? "--mask_denoise $mask" : ""
+    """
+    export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+
+    scil_denoising_nlmeans.py $image \
+        ${prefix}__denoised.nii.gz \
++        $input_mask \
+        ${args.join(" ")} \
+        --processes $tasks.cpus
+    """
+```
+
+:::tip[What is happening here ?]
+<Steps>
+1. We added the optional `path(mask)` input, with the comment `/* optional, input = [] */`
+   to indicate so.
+   - The comment is not required, since we will document the input later, but it is a good practice nonetheless.
+2. We defined a new variable `input_mask` in the **groovy header**. This variable will be used to store the value of the
+   mask argument if the mask is present.
+   - To do so, we use the [groovy truth](https://groovy-lang.org/semantics.html#the-groovy-truth), which states the empty
+   list `[]` is equivalent to <code class="dark:text-blue-300 text-blue-500">false</code>, combined with the [ternary operator](https://groovy-lang.org/operators.html#_ternary_operator).
+3. The `input_mask` variable is then used in the **bash script** to pass the mask to the command.
+   - If the mask is not present, the variable will be an **empty string**, which is equivalent to not passing the argument at all.
+</Steps>
+:::
+
+### The output section
+
+Like the input section, the output section is defined on multiple lines, **each line defining a different output channel**.
+The difference is that **each channel gets a name, using the identifier `emit:`, and can be tagged as `optional:`**.
+
+```groovy
+output:
+    CHANNEL_1, emit: <name>
+    CHANNEL_2, emit: <name>, optional: true
+    ...
+```
+
+:::caution
+An **optional output** doesn't emit default values. In case no values are caught, it is simply **empty**.
+:::
+
+**To define an output file, use the `path` type, along with a [glob pattern](https://man7.org/linux/man-pages/man7/glob.7.html)
+that targets it**. For the current module, the output file to target is the denoised image named :
+<InlineCode parts={frontmatter.coloredDenoised} />. The matching glob pattern is <span class="dark:text-orange-300 text-yellow-800">"*__denoised.nii.gz"</span>.
+Here, the character `*` will **match with any <InlineCode parts={frontmatter.coloredPrefix} />, the only part that changes in
+the filename**. The output section should look like this :
+
+```diff lang="groovy"
+input:
+    tuple val(meta), path(image), path(mask) /* optional, input = [] */
++output:
++    tuple val(meta), path("*__denoised.nii.gz"), emit: image
+script:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def args = task.ext.args ?: []
+    def input_mask = mask ? "--mask_denoise $mask" : ""
+    """
+    export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+
+    scil_denoising_nlmeans.py $image \
+        ${prefix}__denoised.nii.gz \
+        $input_mask \
+        ${args.join(" ")} \
+        --processes $tasks.cpus
+    """
+```
+
+:::note
+The denoised image, as for the input image, is bound to metadata. For this reason, the output elements
+**MUST** be grouped in a `tuple` with the metadata as well.
+:::
+
+### Obligatory **_version.yml_** output
+
+To ensure reproducibility of software, **it is mandatory you export the versions from the full
+first layer dependencies used within your module** (the ones called inside your script) **to a _versions.yml_
+file**. For this module, this means exporting the version of `scilpy`, which is done by modifying the process
+as follows :
+
+```diff lang="groovy"
+input:
+    tuple val(meta), path(image), path(mask) /* optional, input = [] */
+output:
+    tuple val(meta), path("*__denoised.nii.gz"), emit: image
++    path "versions.yml", emit: versions
+script:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def args = task.ext.args ?: []
+    def input_mask = mask ? "--mask_denoise $mask" : ""
+    """
+    export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+
+    scil_denoising_nlmeans.py $image \
+        ${prefix}__denoised.nii.gz \
+        $input_mask \
+        ${args.join(" ")} \
+        --processes $tasks.cpus
+
++    cat <<-END_VERSIONS > versions.yml
++    "${task.process}":
++        scilpy: \$(pip list --disable-pip-version-check --no-python-version-warning | grep scilpy | tr -s ' ' | cut -d' ' -f2)
++    END_VERSIONS
+    """
+```
+
+:::note
+For [scilpy](https://github.com/scilus/scilpy), we use the command :
+
+```bash frame="none"
+pip list --disable-pip-version-check --no-python-version-warning | grep scilpy | tr -s ' ' | cut -d' ' -f2
+```
+
+Each software has its own way of exporting the version, so you will need to adapt this command to your needs.
+
+**We gathered versioning commands for common neuroimaging software. [Take a look here](/nf-neuro/how-to/versioning/1-common-software-version).**
+:::
+
+## Define a stub for quick testing
+
+The `stub` section is a special script that does not get executed at runtime. Instead, it is used to
+perform _quick integration tests, using multiple modules, to verify how well they work together_. **In
+order for a stub to be efficient, it must do three things :**
+
+<Steps>
+1. **Guarantee dependencies availablility to the script**.
+   - For most dependencies, calling the command's **usage** (usually `-h` or `--help`) is enough.
+2. **Generate all outputs produced by the script**.
+   - Often done by **creating empty files** using the `touch` command, but some use-cases might need more.
+3. **Export dependencies versions to _versions.yml_**.
+   - Just like in the actual script.
+</Steps>
+
+For the Non-Local Means denoising module, we'll :
+
+<Steps>
+1. Call `scil_denoising_nlmeans.py -h` to display the **usage information**.
+2. Create an empty file named <InlineCode parts={frontmatter.coloredDenoised} />.
+3. Export the version of `scilpy` to a **_versions.yml_** file.
+</Steps>
+
+To do so, replace the stub skeleton in your file with the following :
+
+```groovy
+stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    scil_denoising_nlmeans.py -h
+
+    touch ${prefix}_denoised.nii.gz
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        scilpy: \$(pip list --disable-pip-version-check --no-python-version-warning | grep scilpy | tr -s ' ' | cut -d' ' -f2)
+    END_VERSIONS
+    """
+```
+
+:::caution
+Some help commands might return non-zero exit code, which is detected by
+Nextflow as an error. To avoid this, add this bash function in the stub :
+
+```bash frame="none"
+set +e
+function handle_code () {
+local code=\$?
+ignore=( 1 )
+[[ " \${ignore[@]} " =~ " \$code " ]] || exit \$code
+}
+trap 'handle_code' ERR
+```
+
+Add or change the codes in the `ignore` array to match the ones you want to ignore,
+each separated by a space.
+:::
+
+## A complete example
+
+If you followed every step on page, you should now have a complete, guideline-abiding,
+and usable **_main.nf_** file! Your resulting file should be closely similar to the
+`denoising/nlmeans` module :
+
+```groovy
+process DENOISING_NLMEANS {
+
+tag "$meta.id"
+label 'process_medium'
+
+container " ... "
+
+input:
+    tuple val(meta), path(image), path(mask)
+
+output:
+    tuple val(meta), path("*_denoised.nii.gz")      , emit: image
+    path "versions.yml"                             , emit: versions
+
+when:
+    task.ext.when == null || task.ext.when
+
+script:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def args = task.ext.args ?: []
+    def input_mask = mask ? "--mask $mask" : ""
+    """
+    export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+
+    scil_denoising_nlmeans.py $image \
+        ${prefix}__denoised.nii.gz \
+        $input_mask \
+        ${args.join(" ")} \
+        --processes $task.cpus
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        scilpy: \$(pip list --disable-pip-version-check --no-python-version-warning | grep scilpy | tr -s ' ' | cut -d' ' -f2)
+    END_VERSIONS
+    """
+
+stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    scil_denoising_nlmeans.py -h
+
+    touch ${prefix}_denoised.nii.gz
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        scilpy: \$(pip list --disable-pip-version-check --no-python-version-warning | grep scilpy | tr -s ' ' | cut -d' ' -f2)
+    END_VERSIONS
+    """
+}
+```
+
+On the next part of the tutorial, you will add configuration options to the module, using the
+<code class="dark:text-slate-200 text-slate-700">task.ext</code> argument namespace. This will **enable users to
+fine-tune the behavior of your module**.

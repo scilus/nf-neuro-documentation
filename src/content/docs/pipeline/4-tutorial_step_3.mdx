@@ -5,12 +5,8 @@ description: Learn how to build a simple pipeline using nf-neuro components
 
 import RunIcon from '~icons/codicon/run-all';
 import CommandOutputs from '../../../components/CommandOutputs.astro';
-import { Steps } from '@astrojs/starlight/components';
 import { Tabs, TabItem } from '@astrojs/starlight/components';
-import { FileTree } from '@astrojs/starlight/components';
 import { Code } from '@astrojs/starlight/components';
-import { Card } from '@astrojs/starlight/components';
-import Runtime from "@mdx-js/runtime";
 
 :::tip[What to expect from this walkthrough]
 In this tutorial, you'll learn how to create a basic pipeline workflow, using components from `nf-neuro`. 
@@ -164,7 +160,7 @@ operator, which will display the results directly in the **terminal**, very usef
   </TabItem>
 </Tabs>
 
-<RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, you can run nextflow..**
+<RunIcon class="inline-icon dark:text-blue-300 text-blue-500" aria-hidden /> **Now, you can run nextflow..**
 
    <CommandOutputs>
    <span slot="command">
@@ -343,7 +339,7 @@ process {
 **Uncomment the `RECONST_DTIMETRICS` module in `main.nf`.**
 :::
 
-<RunIcon class="inline-icon text-blue-300" aria-hidden /> **Now, you can run nextflow..**
+<RunIcon class="inline-icon dark:text-blue-300 text-blue-500" aria-hidden /> **Now, you can run nextflow..**
 
 <CommandOutputs>
    <span slot="command">

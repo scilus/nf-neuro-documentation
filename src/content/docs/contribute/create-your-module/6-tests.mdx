@@ -1,0 +1,412 @@
+---
+title: Create test cases
+description: Add tests to ensure reproducible results.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Adding tests to your module is a critical step to ensure it works correctly and continues to do so as the codebase evolves.
+The `nf-core` command automatically generates the test infrastructure when creating a module. Inside the **tests** directory of
+your module, you'll find **_main.nf.test_**, which contains inputs, test cases, and assertion instructions for
+[nf-test](https://www.nf-test.com), the Nextflow test framework. Open it and follow through the rest of this section.
+
+:::note
+In the **_main.nf.test_** file, define multiple test cases to cover most use-cases of your module and catch potential bugs. Be
+thorough but practical with your test coverage. **A good test case should not take more than a minute to run**, though there
+are exceptions.
+:::
+
+## Setup before tests
+
+Setup sections are used to prepare data before test cases are run, to download data, prepare algorithms and generate awaited
+return values. In **nf-neuro**, test datasets are provided via the [LOAD_TEST_DATA](/nf-neuro/api/subworkflows/load_test_data)
+subworkflow (refer to [this section](/nf-neuro/contribute/create-your-module/7-test-data) to learn how to find packages).
+Once you've selected the archives and files needed, add a `setup` section before the test section:
+
+```groovy {"1": 2,3} {"2": 4-9}
+setup {
+    run("LOAD_TEST_DATA", alias: "LOAD_DATA") {
+        script "../../../../../subworkflows/nf-neuro/load_test_data/main.nf"
+        workflow {
+            """
+            input[0] = Channel.from( [ "<archive>" ] )
+            input[1] = "test.load-test-data"
+            """
+        }
+    }
+}
+```
+
+:::note
+When using the `LOAD_TEST_DATA` subworkflow, or any other component in the `setup` section, make sure to **tag**
+it in the `nextflow_process` block accordingly :
+
+```groovy
+    tag "subworkflows"
+    tag "subworkflows/load_test_data"
+```
+:::
+
+Replace the `<archive>` with the name of the one you need and you'll be able to access the archives within your test suite !
+
+:::tip[What is happening here?]
+<Steps>
+1. The `run` instruction is used to call the `LOAD_TEST_DATA` subworkflow, under the alias `LOAD_DATA`. The alias could
+   be useful if multiple calls to the same subworkflow are needed. The `script` parameter inside the `run` block specifies
+   the path to the `LOAD_TEST_DATA` subworkflow script.
+2. The `process` block contains definitions for the input channels of the subworkflow. The `input[0]` channel corresponds
+   to the **archives** to download for the test, while `input[1]` is a **test identifier**.
+</Steps>
+:::
+
+:::tip[Local setup for a test case]
+The `setup` section can either be used **globally**, before the test cases definitions,
+or inside a specific test case, where they will override the global setup.
+:::
+
+## Define test cases
+
+Test cases are defined each in their own `test` block :
+
+```groovy
+test("example - test") {
+    when{
+        process {
+            ...
+        }
+    }
+    then{
+        ...
+    }
+}
+```
+
+A block minimally contains a `when` (what to test) and a `then` (what to assert). Inside of them, **no need to define the
+name of the process being tested, or import it**. `nf-test` will take care of that for you when the test will be run, through
+the `process` **placeholder** inside the `when` block.
+
+### Define test inputs
+
+The only job of the `when` block is to define the inputs to supply to your module. You do so by adding a list of inputs inside
+the `process` block, as follows :
+
+```groovy {"1": 4} {"2": 6-8} {"3": 11-13}
+test("example - test") {
+    when {
+        process {
+            """
+            input[0] = LOAD_DATA.out.test_data_directory.map{
+                test_data_directory -> [
+                    [ id:'test1', single_end:false ], // meta map   // -> meta
+                    file("\${test_data_directory}/image.nii.gz"),   // -> image file
+                    []                                              // -> an optional input, not provided
+                ],
+                [
+                    [ id:'test2', single_end:false ], // meta map   // -> meta
+                    file("\${test_data_directory}/image.nii.gz"),   // -> image file
+                    file("\${test_data_directory}/mask.nii.gz")     // -> an optional input, provided this time
+                ]
+            }
+            """
+        }
+    }
+    then {
+        ...
+    }
+}
+```
+
+:::tip[What is happening here?]
+<Steps>
+1. The first input channel of the module is created from the output of the `LOAD_TEST_DATA` subworkflow, called in the
+   `setup` section, and accessed through its alias `LOAD_DATA`.
+2. A first dataset to input into the module is created from the content downloaded by the subworkflow. The module has an
+   optional path in input, which is not provided using the empty list `[]`.
+3. A second dataset is created, this time with a mask as input.
+</Steps>
+
+In this example, for this single test case, the module would run separately on two inputs, `2` and `3`.
+:::
+
+### Define assertions
+
+The `then` block is where you define the assertions to check the outputs of your module. The `process` placeholder
+contains the outputs of the module in its `out` attribute, as well as boolean indicators for **success** and **failure**.
+Each **assertion** is prefixed with the keyword `assert`, and all are enclosed in an `assertAll` block :
+
+```groovy
+then {
+    assertAll(
+        { assert process.success },
+        { ... }
+    )
+}
+```
+
+Each files produces by the module while tested must go through a **reproducibilty** check, which is provided by nf-test
+using the `snapshot` function :
+
+```groovy
+then {
+    assertAll(
+        { assert process.success },
+        { assert snapshot(process.out).match() }
+    )
+}
+```
+
+:::tip[Nifti images are special !]
+**Nifti images are hardly reproducible as is**. This is due in part to uncontrolled header fields, which have no impact
+on the data itself. In the case of **floating point images**, or data obtained through **floating point operations**,
+the image data itself might be unreproducible, up to few decimals.
+
+Both cases are handled by the `Nifti_md5sum` function, which strips unimpactful and unreproducible header fields, and
+can truncate the data to a given number of decimals :
+
+```groovy {"1": 4}
+then {
+    assertAll(
+        { assert process.success },
+        { assert snapshot(
+            Nifti_md5sum(process.out.image_processed.get(0).get(1), 3),
+            ...
+        ).match() }
+    )
+}
+```
+
+<Steps>
+1. To call the `Nifti_md5sum` function, you need to unpack the **file** from the content of the module's output. `nf-test`
+   is kind enough to give it as a `list`, so you can use the `get` method to access it like above, or the `[]` operator.
+   You'll often use the combination `get(i).get(1)` on an output : associated to the `i-th` test dataset given in input.
+   The `.get(1)` gives access to the processed dataset, placed after its `meta` dictionary, as most modules define their
+   outputs.
+</Steps>
+
+**Note however that this `Nifti_md5sum` in its current implementation might prove unsatisfactory in some cases and that
+we are working on a more robust solution. If you have propositions on the matter, please reach out to us !**
+:::
+
+### Configure the module
+
+Module configuration is done using a **_nextflow.config_** file. You provide it either **globally** or inside each test case,
+using the `config` parameter :
+
+<Tabs>
+<TabItem label="Global configuration">
+```groovy { 5 }
+nextflow_process {
+    name "Test Process <CATEGORY>_<TOOL>"
+    script "../main.nf"
+    process "<CATEGORY>_<TOOL>"
+    config "./nextflow.config"
+```
+</TabItem>
+<TabItem label="Test case configuration">
+```groovy { 4 }
+nextflow_process {
+    ...
+    test("My test case") {
+        config "./nextflow.config"
+        ...
+    }
+```
+</TabItem>
+</Tabs>
+
+### Edit **_tests/nextflow.config_**
+
+The **_nextflow.config_** file does not exist by default, so you will have to
+create it if needed. This is not mandatory, except if you have defined
+optional parameters with `task.ext` and want to alter their values for some
+test cases. Refer to [this section](/nf-neuro/contribute/create-your-module/3-configuration) to
+see how to scope those parameters to specific tests using `selectors`.
+
+:::tip[Layered configuration]
+**nf-test** supports layering configuration files. It applies configuration in hierarchy, from parent `config` statements
+defined in the `nextflow_process` block down to overriding `config` in children `test` blocks.
+:::
+
+## Obligatory stub testing
+
+All modules in **nf-neuro** contain a `stub` section, which requires a test case in the **_tests/main.nf.test_** file. It
+may seem redundant, but those tests are essential to the **CI/CD** infrastructure, to quickly test that downstream workflows
+work well without executing the module itself. We call this **functional testing**, if you contribute a subworkflow you'll
+learn more about it.
+
+To enable those tests for downstream users, create a new test case, like done previously, specifying inputs and potential
+configuration. To run the module in **stub mode** add the `tag "stub"` and `options "-stub-run"` clauses before the `when`
+block.
+
+```groovy
+test("stub - test") {
+    tag "stub"
+    options "-stub-run"
+    config "./nextflow.config"
+    when {
+        process {
+            """
+            input[0] = LOAD_DATA.out.test_data_directory.map{
+                test_data_directory -> [
+                    [ id:'test_stub', single_end:false ], // meta map   // -> meta
+                    file("\${test_data_directory}/image.nii.gz")   // -> image file
+                ]
+            }
+            """
+        }
+    }
+}
+```
+
+:::tip
+It could be good to test the different inputs your module accepts, if it has optional ones. You can do that in a single
+test case, by providing multiple inputs in each channels (refer above).
+:::
+
+For stubs, the only assertion needed is on the **_version.yml_** file that gets generated by the module. Here is a complete
+stub test with assertion on the **_version.yml_** file :
+
+```groovy
+test("stub - test") {
+    tag "stub"
+    options "-stub-run"
+    config "./nextflow.config"
+    when {
+        process {
+            """
+            input[0] = LOAD_DATA.out.test_data_directory.map{
+                test_data_directory -> [
+                    [ id:'test_stub', single_end:false ], // meta map   // -> meta
+                    file("\${test_data_directory}/image.nii.gz")   // -> image file
+                ]
+            }
+            """
+        }
+    }
+    then {
+        assertAll(
+            { assert process.success },
+            { assert snapshot(process.out.versions).match() }
+        )
+    }
+}
+```
+
+## Generate tests snapshots
+
+:::caution
+Verify you are located at the root of **nf-neuro** (not inside modules) before
+running commands !
+:::
+
+Once you have correctly setup your test cases and made sure the data is available,
+the test module has to be pre-tested so output files that gets generated are
+snapshotted correctly before being pushed to nf-neuro.
+
+To do so, run:
+
+```bash
+nf-core modules test -u <category>/<tool>
+```
+
+All the test case you defined will be run, watch out for errors ! Once
+everything runs smoothly, look at the snapshot file produced at
+**_tests/main.nf.test.snap_** in your module's directory and validate that ALL
+outputs produced by test cases are caught. Their `md5sum` is
+critical to ensure future executions of your test produce valid outputs.
+
+## A complete example for the `denoising/nlmeans` module.
+
+Since we used the `denoising/nlmeans` module as an example from the beginning of
+this documentation, let's create a test case for this module as a final example.
+This example contains only a single test, providing an image and an optional mask
+as inputs:
+
+```groovy
+nextflow_process {
+
+    name "Test Process DENOISING_NLMEANS"
+    script "../main.nf"
+    process "DENOISING_NLMEANS"
+    config "./nextflow.config"
+
+    tag "modules"
+    tag "modules_nfcore"
+    tag "denoising"
+    tag "denoising/nlmeans"
+
+    tag "subworkflows"
+    tag "subworkflows/load_test_data"
+
+    setup {
+        run("LOAD_TEST_DATA", alias: "LOAD_DATA") {
+            script "../../../../../subworkflows/nf-neuro/load_test_data/main.nf"
+            process {
+                """
+                input[0] = Channel.from( [ "raw_b0.zip", "raw_segmentation.zip" ] )
+                input[1] = "test.load-test-data"
+                """
+            }
+        }
+    }
+
+    test("denoising - nlmeans") {
+        when {
+            process {
+                """
+                ch_split_test_data = LOAD_DATA.out.test_data_directory
+                    .branch{
+                        b0: it.simpleName == "raw_b0"
+                        segmentation: it.simpleName == "raw_segmentation"
+                    }
+                ch_b0 = ch_split_test_data.b0.map{
+                    test_data_directory -> [
+                        [ id:'test' ],
+                        file("\${test_data_directory}/b0.nii.gz")
+                    ]
+                }
+                ch_mask = ch_split_test_data.segmentation.map{
+                    test_data_directory -> [
+                        [ id:'test' ],
+                        file("\${test_data_directory}/brainmask/slices/axial.nii.gz")
+                    ]
+                }
+                input[0] = ch_b0
+                    .join(ch_mask)
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+
+    test("stub - test") {
+        tag "stub"
+        options "-stub-run"
+        config "./nextflow.config"
+        when {
+            process {
+                """
+                input[0] = LOAD_DATA.out.test_data_directory.map{
+                    test_data_directory -> [
+                        [ id:'test_stub', single_end:false ], // meta map   // -> meta
+                        file("\${test_data_directory}/image.nii.gz")   // -> image file
+                    ]
+                }
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out.versions).match() }
+            )
+        }
+    }
+}
+```

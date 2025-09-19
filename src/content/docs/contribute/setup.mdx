@@ -91,8 +91,8 @@ Next step is to **install nf-neuro** locally.
 
 <Steps>
 
-1. In you VSCode window, find <CloneIcon class="inline-icon text-blue-300" aria-hidden />
-   <span class="text-blue-300">Clone git repository</span> under the **Start** main menu.
+1. In you VSCode window, find <CloneIcon class="inline-icon dark:text-blue-300 text-blue-500" aria-hidden />
+   <span class="dark:text-blue-300 text-blue-500">Clone git repository</span> under the **Start** main menu.
    Clicking on it opens the **command palette** at the top of the window.
 
    ![vscode clone github repository](../../../assets/images/vscode-clone-github.png)
@@ -117,19 +117,19 @@ It will take only a few seconds for the editor to load up, but you don't have ac
 
 <Steps>
 
-1. Install the <span class="text-blue-300">Dev Containers</span> extension. You'll
-   find it in the <ExtensionsIcon class="inline-icon text-blue-300" aria-hidden />
-   <span class="text-blue-300">Extension Marketplace</span>, located in the navigation bar on the left.
+1. Install the <span class="dark:text-blue-300 text-blue-500">Dev Containers</span> extension. You'll
+   find it in the <ExtensionsIcon class="inline-icon dark:text-blue-300 text-blue-500" aria-hidden />
+   <span class="dark:text-blue-300 text-blue-500">Extension Marketplace</span>, located in the navigation bar on the left.
 
    ![dev containers extension](../../../assets/images/devcontainers-extension.png)
    
-2. Locate and click on the <span class="text-blue-300">Remote Window Menu</span> icon
+2. Locate and click on the <span class="dark:text-blue-300 text-blue-500">Remote Window Menu</span> icon
    <RemoteIcon class="inline-icon hover:bg-blue-400" aria-hidden /> at the bottom left
    corner of the **VSCode** window. The **command palette** opens at the top of the window.
 
    ![vscode remote window](../../../assets/images/open-remote-window.png)
 
-3. Find the <span class="text-blue-300">Reopen in Container</span> option and click it.
+3. Find the <span class="dark:text-blue-300 text-blue-500">Reopen in Container</span> option and click it.
 
    ![reopen in container](../../../assets/images/reopen-in-container.png)
 
@@ -150,8 +150,8 @@ It will take only a few seconds for the editor to load up, but you don't have ac
 :::note
 Once you get access to your files through the editor, you might want to wait a little longer.
 Some extensions may still be installing and some features of the development environment not
-available yet, indicated by a <WaitIcon class="inline-icon text-blue-300" aria-hidden />
-<span class="text-blue-300">wait icon</span> over the <ExtensionsIcon class="inline-icon" aria-hidden />
+available yet, indicated by a <WaitIcon class="inline-icon dark:text-blue-300 text-blue-500" aria-hidden />
+<span class="dark:text-blue-300 text-blue-500">wait icon</span> over the <ExtensionsIcon class="inline-icon" aria-hidden />
 **extension marketplace**.
 :::
 
@@ -161,19 +161,19 @@ Once in the container, you'll notice that, well, not much has changed in fact !
 
 <Tabs>
 <TabItem label="Explorer panel">
-The whole content of the **custom pipeline template** you cloned locally on your computer is accessible
-through the <span class="text-blue-300">Explorer panel</span> on the left.
+The whole content of the **nf-neuro repository** you cloned locally on your computer is accessible
+through the <span class="dark:text-blue-300 text-blue-500">Explorer panel</span> on the left.
 </TabItem>
 <TabItem label="Editor area">
-Clicking on any file in the <span class="text-blue-300">Explorer panel</span> will open it in the
+Clicking on any file in the <span class="dark:text-blue-300 text-blue-500">Explorer panel</span> will open it in the
 **Editor area**. Its content is the same locally and in the container. When you modify it inside the
 container and save the file (`ctrl+s`), changes apply instantly on your computer.
 </TabItem>
 <TabItem label="Terminal">
 The **terminal** is still located at the bottom of the window. Thugging at VSCode window's footer will
 open it, or you can use the `` ctrl+shift+` `` shortcut. There, you have access to tools installed **inside
-the container**, like <span class="text-blue-300">nextflow</span>, <span class="text-blue-300">nf-core</span>, 
-<span class="text-blue-300">nf-test</span> and <span class="text-blue-300">docker</span>.
+the container**, like <span class="dark:text-blue-300 text-blue-500">nextflow</span>, <span class="dark:text-blue-300 text-blue-500">nf-core</span>,
+<span class="dark:text-blue-300 text-blue-500">nf-test</span> and <span class="dark:text-blue-300 text-blue-500">docker</span>.
 </TabItem>
 </Tabs>
 
@@ -184,7 +184,7 @@ Let's verify that tools are available and working by running some quick and simp
 <Steps>
 
 1. Open a **VSCode terminal** (pulling on the window's footer or with the `` ctrl+shift+` ``
-   shortcut, `` ` `` is on the left of the enter key). 
+   shortcut, `` ` `` is on the left of the enter key).
 
 2. In the terminal, every command should have a **specific prefix**, added by `poetry`, which
    means your **python environment** is valid. Nothing required, but if its not the case, open

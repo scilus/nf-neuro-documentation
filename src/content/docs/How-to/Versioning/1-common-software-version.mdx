@@ -1,0 +1,131 @@
+---
+title: Software versioning
+description: Common software versioning patterns.
+coloredVersioning:
+  - text: MAJOR
+    style: dark:text-slate-200 text-slate-700
+  - text: "."
+    style: dark:text-emerald-300 text-emerald-700
+  - text: MINOR
+    style: text-blue-400
+  - text: "."
+    style: dark:text-emerald-300 text-emerald-700
+  - text: PATCH
+    style: dark:text-orange-300 text-yellow-800
+coloredPrerelease:
+  - text: MAJOR
+    style: dark:text-slate-200 text-slate-700
+  - text: "."
+    style: dark:text-emerald-300 text-emerald-700
+  - text: MINOR
+    style: text-blue-400
+  - text: "."
+    style: dark:text-emerald-300 text-emerald-700
+  - text: PATCH
+    style: dark:text-orange-300 text-yellow-800
+  - text: "-PRERELEASE"
+    style: dark:text-violet-400 text-violet-800
+coloredBuild:
+  - text: MAJOR
+    style: dark:text-slate-200 text-slate-700
+  - text: "."
+    style: dark:text-emerald-300 text-emerald-700
+  - text: MINOR
+    style: text-blue-400
+  - text: "."
+    style: dark:text-emerald-300 text-emerald-700
+  - text: PATCH
+    style: dark:text-orange-300 text-yellow-800
+  - text: "+BUILD"
+    style: dark:text-violet-400 text-violet-800
+coloredPreBuild:
+  - text: MAJOR
+    style: dark:text-slate-200 text-slate-700
+  - text: "."
+    style: dark:text-emerald-300 text-emerald-700
+  - text: MINOR
+    style: text-blue-400
+  - text: "."
+    style: dark:text-emerald-300 text-emerald-700
+  - text: PATCH
+    style: dark:text-orange-300 text-yellow-800
+  - text: "-PRERELEASE+BUILD"
+    style: dark:text-violet-400 text-violet-800
+---
+
+import InlineCode from '../../../../components/InlineCode.astro';
+
+## Common software versioning patterns
+
+Versions have multiple fields, usually separated by dots `.`, sometimes hypens `-`, underscores `_` or the plus sign `+`,
+though it is less common and their support is not universal. Fields usually takes on a number, but can also contain other
+alphanumeric characters.
+
+**A _semantic version_ follows the pattern <InlineCode parts={frontmatter.coloredVersioning} />**. Fields are **hierarchically mandatory** :
+
+- <code class="dark:text-blue-300 text-blue-500">MINOR</code> field cannot be defined without a <code class="dark:text-slate-200 text-slate-700">MAJOR</code>.
+- <code class="dark:text-orange-300 text-yellow-800">PATCH</code> field needs **both others.**
+
+**Additionally, a <code class="dark:text-violet-400 text-violet-800">LABEL</code> can be suffixed to the version** :
+
+- <InlineCode parts={frontmatter.coloredPrerelease} /> : a pre-release version, where **<code class="dark:text-violet-400 text-violet-800">PRERELEASE</code> is
+  an _alphanumeric string_**.
+- <InlineCode parts={frontmatter.coloredBuild} /> : a build version, where **<code class="dark:text-violet-400 text-violet-800">BUILD</code> is an _alphanumeric string_**.
+- <InlineCode parts={frontmatter.coloredPreBuild} /> : a **<code class="dark:text-violet-400 text-violet-800">PRERELEASE</code>** version based on a specific
+  **<code class="dark:text-violet-400 text-violet-800">BUILD</code>**, **with both _alphanumeric strings_**.
+
+## Software version extraction
+
+Below is a list of useful commands to extract valid **semantic versions** from common neuroimaging software :
+
+### **ANTs**
+
+```bash
+antsRegistration --version \| grep "Version" \| sed -E 's/.*v([0-9.a-zA-Z-]+).*/\\1/'
+```
+
+### **Fastsurfer**
+
+```bash
+$FASTSURFER_HOME/run_fastsurfer.sh --version
+```
+
+### **Freesurfer**
+
+```bash
+mri_convert -version \| grep "freesurfer" \| sed -E 's/.* ([0-9.]+).*/\\1/'
+```
+
+### **FSL**
+
+```bash
+flirt -version 2>&1 \| sed -E 's/.*version ([0-9.]+).*/\\1/'
+```
+
+### **ImageMagick**
+
+```bash
+convert -version \| grep "Version:" \| sed -E 's/.*ImageMagick ([0-9.-]+).*/\\1/'
+```
+
+### **Mrtrix3**
+
+```bash
+mrinfo -version 2>&1 \| grep "== mrinfo" \| sed -E 's/== mrinfo ([0-9.]+).*/\\1/'
+```
+
+### **nii2dcm**
+
+```bash
+convert_nii2dcm.py -v
+```
+
+### **Scilpy**
+
+```bash title="scilpy < 2.2.0"
+pip list --disable-pip-version-check --no-python-version-warning \| grep scilpy \| tr -s ' ' \| cut -d' ' -f2
+```
+
+```bash title="scilpy >= 2.2.0"
+uv pip list --disable-pip-version-check --no-python-version-warning \| grep scilpy \| tr -s ' ' \| cut -d' ' -f2
+```
