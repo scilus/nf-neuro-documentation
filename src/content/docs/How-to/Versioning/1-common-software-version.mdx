@@ -74,17 +74,58 @@ alphanumeric characters.
 - <InlineCode parts={frontmatter.coloredPreBuild} /> : a **<code class="dark:text-violet-400 text-violet-800">PRERELEASE</code>** version based on a specific
   **<code class="dark:text-violet-400 text-violet-800">BUILD</code>**, **with both _alphanumeric strings_**.
 
-### Software version extraction
+## Software version extraction
 
 Below is a list of useful commands to extract valid **semantic versions** from common neuroimaging software :
 
-|||
-| - | - |
-| **ANTs**        | `antsRegistration --version \| grep "Version" \| sed -E 's/.*v([0-9.a-zA-Z-]+).*/\\1/'`                         |
-| **Fastsurfer**  | `$FASTSURFER_HOME/run_fastsurfer.sh --version`                                                                  |
-| **Freesurfer**  | `mri_convert -version \| grep "freesurfer" \| sed -E 's/.* ([0-9.]+).*/\\1/'`                                   |
-| **FSL**         | `flirt -version 2>&1 \| sed -E 's/.*version ([0-9.]+).*/\\1/'`                                                  |
-| **ImageMagick** | `convert -version \| grep "Version:" \| sed -E 's/.*ImageMagick ([0-9.-]+).*/\\1/'`                             |
-| **Mrtrix3**     | `mrinfo -version 2>&1 \| grep "== mrinfo" \| sed -E 's/== mrinfo ([0-9.]+).*/\\1/'`                             |
-| **nii2dcm**     | `convert_nii2dcm.py -v`                                                                                         |
-| **Scilpy**      | `pip list --disable-pip-version-check --no-python-version-warning \| grep scilpy \| tr -s ' ' \| cut -d' ' -f2` |
+### **ANTs**
+
+```bash
+antsRegistration --version \| grep "Version" \| sed -E 's/.*v([0-9.a-zA-Z-]+).*/\\1/'
+```
+
+### **Fastsurfer**
+
+```bash
+$FASTSURFER_HOME/run_fastsurfer.sh --version
+```
+
+### **Freesurfer**
+
+```bash
+mri_convert -version \| grep "freesurfer" \| sed -E 's/.* ([0-9.]+).*/\\1/'
+```
+
+### **FSL**
+
+```bash
+flirt -version 2>&1 \| sed -E 's/.*version ([0-9.]+).*/\\1/'
+```
+
+### **ImageMagick**
+
+```bash
+convert -version \| grep "Version:" \| sed -E 's/.*ImageMagick ([0-9.-]+).*/\\1/'
+```
+
+### **Mrtrix3**
+
+```bash
+mrinfo -version 2>&1 \| grep "== mrinfo" \| sed -E 's/== mrinfo ([0-9.]+).*/\\1/'
+```
+
+### **nii2dcm**
+
+```bash
+convert_nii2dcm.py -v
+```
+
+### **Scilpy**
+
+```bash title="scilpy < 2.2.0"
+pip list --disable-pip-version-check --no-python-version-warning \| grep scilpy \| tr -s ' ' \| cut -d' ' -f2
+```
+
+```bash title="scilpy >= 2.2.0"
+uv pip list --disable-pip-version-check --no-python-version-warning \| grep scilpy \| tr -s ' ' \| cut -d' ' -f2
+```

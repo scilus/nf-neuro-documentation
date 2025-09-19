@@ -10,18 +10,18 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.35.2",
-    "@astrojs/starlight-docsearch": "^0.6.0",
-    "@astrojs/starlight-tailwind": "^4.0.1",
-    "@iconify/json": "^2.2.315",
+    "@astrojs/starlight": "0.35.2",
+    "@astrojs/starlight-docsearch": "0.6.0",
+    "@astrojs/starlight-tailwind": "4.0.1",
+    "@iconify/json": "2.2.376",
     "@mdx-js/runtime": "1.6.22",
-    "@tailwindcss/vite": "^4.1.12",
-    "astro": "^5.13.2",
-    "astro-matomo": "^1.8.1",
-    "pnpm": "^10.6.2",
-    "sharp": "^0.32.6",
-    "tailwindcss": "^4.1.12",
-    "uninstall": "^0.0.0",
-    "unplugin-icons": "^22.1.0"
+    "@tailwindcss/vite": "4.1.12",
+    "astro": "5.13.2",
+    "pnpm": "10.15.0",
+    "remark-rehype": "11.1.2",
+    "sharp": "0.32.6",
+    "tailwindcss": "4.1.12",
+    "uninstall": "0.0.0",
+    "unplugin-icons": "22.2.0"
   }
 }
