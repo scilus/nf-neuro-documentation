@@ -44,7 +44,7 @@ jobs:
             local file="$1"
             local sbwf_name=$(basename "$(dirname "$file")")
             cd nf-neuro
-            python nf-neuro/docs/astro/convert_subworkflow.py ../$(dirname "$file") ${{ github.sha }} ../subworkflows/${sbwf_name}.md
+            python docs/astro/convert_subworkflow.py ../$(dirname "$file") ${{ github.sha }} ../subworkflows/${sbwf_name}.md
           }
           export -f convert_module
           export -f convert_subworkflow
