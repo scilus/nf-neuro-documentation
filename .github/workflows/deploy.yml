@@ -27,7 +27,7 @@ jobs:
           cache: pip
       - name: Install dependencies
         run: |
-          pip install pyyaml
+          pip install pyyaml jinja2
       - name: Generate markdown
         id: generate-module
         run: |
