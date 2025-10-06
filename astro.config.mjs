@@ -141,6 +141,12 @@ export default defineConfig({
                             collapsed: true
                         }
                     ]
+                },
+                {
+                    label: 'Pipelines using nf-neuro',
+                    items: [
+                        { label: 'nf-pediatric', link: 'https://scilus.github.io/nf-pediatric/' },
+                    ]
                 }
             ]
         })
