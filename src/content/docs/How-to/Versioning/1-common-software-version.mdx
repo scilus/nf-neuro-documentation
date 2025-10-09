@@ -81,7 +81,7 @@ Below is a list of useful commands to extract valid **semantic versions** from c
 ### **ANTs**
 
 ```bash
-antsRegistration --version \| grep "Version" \| sed -E 's/.*v([0-9.a-zA-Z-]+).*/\\1/'
+antsRegistration --version \| grep "Version" \| sed -E 's/.*: v?([0-9.a-zA-Z-]+).*/\\1/'
 ```
 
 ### **Fastsurfer**
